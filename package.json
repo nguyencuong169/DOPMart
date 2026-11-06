@@ -1,0 +1,21 @@
+{
+  "name": "dopmart",
+  "version": "1.0.0",
+  "description": "DOP Mart - cửa hàng trực tuyến (Node.js, không phụ thuộc thư viện ngoài)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "dopmart",
+    "ecommerce",
+    "nodejs"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

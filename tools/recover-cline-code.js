@@ -38,7 +38,67 @@ if (!fs.existsSync(inputFile)) {
 }
 
 const parsed = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
-const messages = Array.isArray(parsed) ? parsed : parsed.messages || [];
+const toolCalls = normalizeTranscript(parsed);
+
+/**
+ * Chuẩn hoá nhiều định dạng lịch sử Cline về danh sách { name, input }.
+ * Hỗ trợ:
+ *  - <id>.messages.json / api_conversation_history.json  → { messages: [{ content: [{ type: 'tool_use', ... }] }] }
+ *  - ui_messages.json của extension VS Code             → [{ type: 'say', say: 'tool', text: '{"tool":"write_to_file",...}' }]
+ *  - mảng message thô
+ */
+function normalizeTranscript(source) {
+  const calls = [];
+  const list = Array.isArray(source)
+    ? source
+    : Array.isArray(source.messages)
+      ? source.messages
+      : Array.isArray(source.history)
+        ? source.history
+        : [];
+
+  const pushUiTool = (rawText) => {
+    if (typeof rawText !== 'string') return;
+    let payload;
+    try {
+      payload = JSON.parse(rawText);
+    } catch (error) {
+      return;
+    }
+    if (payload && typeof payload === 'object') {
+      const name = payload.tool || payload.toolName || payload.name;
+      if (name) calls.push({ name, input: payload });
+    }
+  };
+
+  for (const message of list) {
+    if (!message) continue;
+
+    // Định dạng UI message của extension VS Code
+    if (message.say === 'tool' || message.say === 'command') {
+      pushUiTool(message.text);
+      continue;
+    }
+
+    const blocks = Array.isArray(message.content) ? message.content : [];
+    for (const block of blocks) {
+      if (!block) continue;
+      if (block.type === 'tool_use') {
+        calls.push({ name: block.name || '', input: block.input || {} });
+      } else if (block.type === 'text' && typeof block.text === 'string' && block.text.includes('"tool"')) {
+        pushUiTool(block.text);
+      }
+    }
+
+    // Một số bản lưu tool call trực tiếp trong message
+    if (message.tool_use) {
+      calls.push({ name: message.tool_use.name || '', input: message.tool_use.input || {} });
+    }
+  }
+
+  return calls;
+}
+
 
 const files = new Map(); // path -> nội dung mới nhất
 const stats = { write: 0, replace: 0, skipped: 0, failed: 0 };
@@ -89,31 +149,27 @@ function recordEdit(filePath, diff) {
   stats.replace += 1;
 }
 
-for (const message of messages) {
-  const blocks = Array.isArray(message && message.content) ? message.content : [];
-  for (const block of blocks) {
-    if (!block || block.type !== 'tool_use') continue;
-    const name = block.name || '';
-    const input = block.input || {};
-    const filePath = input.path || input.file_path || input.filePath || input.fileName;
+for (const call of toolCalls) {
+  const name = call.name || '';
+  const input = call.input || {};
+  const filePath = input.path || input.file_path || input.filePath || input.fileName;
 
-    if (name === 'write_to_file' || name === 'new_file') {
-      if (!filePath) continue;
-      recordWrite(filePath, typeof input.content === 'string' ? input.content : '');
-      continue;
-    }
+  if (name === 'write_to_file' || name === 'new_file') {
+    if (!filePath) continue;
+    recordWrite(filePath, typeof input.content === 'string' ? input.content : '');
+    continue;
+  }
 
-    if (name === 'replace_in_file' || name === 'edit_file' || name === 'insert_content') {
-      if (!filePath) continue;
-      const diff = input.diff || input.patch || input.content || '';
-      recordEdit(filePath, diff);
-      continue;
-    }
+  if (name === 'replace_in_file' || name === 'edit_file' || name === 'insert_content') {
+    if (!filePath) continue;
+    const diff = input.diff || input.patch || input.content || '';
+    recordEdit(filePath, diff);
+    continue;
+  }
 
-    if (['apply_patch', 'apply_diff', 'multi_replace_in_file'].includes(name)) {
-      skippedTools.set(name, (skippedTools.get(name) || 0) + 1);
-      stats.skipped += 1;
-    }
+  if (['apply_patch', 'apply_diff', 'multi_replace_in_file'].includes(name)) {
+    skippedTools.set(name, (skippedTools.get(name) || 0) + 1);
+    stats.skipped += 1;
   }
 }
 

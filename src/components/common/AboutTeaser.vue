@@ -1,5 +1,18 @@
 <script setup>
+import { computed } from "vue";
 import SectionHeader from "./SectionHeader.vue";
+import { useProductStore } from "../../stores/productStore";
+import { FLOORS } from "../../stores/floorStore";
+const catalog = useProductStore();
+/* the chips read live numbers instead of hard-coded 02 / 08 / 32 */
+const stats = computed(() => {
+  const pad = (n) => String(n).padStart(2, "0");
+  return [
+    { n: pad(FLOORS.length), label: "tầng phục vụ" },
+    { n: pad(catalog.categories.length), label: "kệ hàng" },
+    { n: String(catalog.products.length), label: "món sẵn kệ" },
+  ];
+});
 </script>
 <template>
   <section class="about-teaser">
@@ -13,9 +26,7 @@ import SectionHeader from "./SectionHeader.vue";
         to="/about"
       />
       <div class="about-teaser__stats">
-        <span><b>02</b> tầng phục vụ</span>
-        <span><b>08</b> kệ hàng</span>
-        <span><b>32</b> món sẵn kệ</span>
+        <span v-for="s in stats" :key="s.label"><b>{{ s.n }}</b> {{ s.label }}</span>
       </div>
     </div>
   </section>

@@ -1,5 +1,5 @@
 <script setup>
-import { Instagram, Facebook, Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
+import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
 </script>
 <template>
   <footer class="site-footer">
@@ -22,24 +22,20 @@ import { Instagram, Facebook, Mail, MapPin, Clock, ArrowUpRight } from "lucide-v
       <div class="footer-col">
         <h4>Hỗ trợ</h4>
         <RouterLink to="/how-it-works">Cách đặt hàng</RouterLink
-        ><RouterLink to="/how-it-works">Thanh toán QR</RouterLink
-        ><a href="#">Chính sách đổi trả</a
-        ><RouterLink to="/about">Liên hệ DOP Mart</RouterLink>
+        ><RouterLink to="/checkout">Thanh toán QR</RouterLink
+        ><RouterLink to="/about">Về DOP Mart</RouterLink>
       </div>
       <div class="footer-col footer-contact">
         <h4>Snack station</h4>
-        <span><MapPin /> Tầng 14 & tầng 20</span
-        ><span><Clock /> 08:30 - 17:30, Thứ 2 - Thứ 6</span
-        ><span><Mail /> dopmart@internal.local</span>
+        <span><MapPin /> Tầng 14 &amp; Tầng 20</span
+        ><span><Clock /> 08:30 – 17:30, Thứ 2 – Thứ 6</span
+        ><a class="footer-mail" href="mailto:dopmart@internal.local"
+          ><Mail /> dopmart@internal.local</a
+        >
       </div>
     </div>
     <div class="footer-bottom">
       <span>© 2026 DOP Mart. Internal office mini mart.</span>
-      <div class="social">
-        <a href="#" aria-label="Instagram"><Instagram /></a
-        ><a href="#" aria-label="Facebook"><Facebook /></a
-        ><a href="#" aria-label="Email"><Mail /></a>
-      </div>
       <a href="#top">Lên đầu trang <ArrowUpRight /></a>
     </div>
   </footer>

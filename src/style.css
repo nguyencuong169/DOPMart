@@ -10249,3 +10249,46 @@ html {
   font-size: var(--fs-meta);
   font-weight: 700;
 }
+
+/* ===== V54 · DOP combo as a home section (below FRESH DROP) ===== */
+.dop-combo {
+  padding: 80px var(--gutter);
+}
+.combo-copy h2 {
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+}
+.combo-copy p {
+  font-size: var(--fs-small);
+  color: #3b332b;
+}
+.combo-info s {
+  color: var(--on-cream);
+}
+.combo-info > span b {
+  color: var(--berry-deep);
+}
+/* white on #ef3340 was 4.03:1 — the badge sits on paper so it needs the deep red */
+.combo-badge {
+  background: var(--berry-deep);
+}
+/* the pack spread recentres for any item count (2, 3 or 4) instead of drifting left */
+.combo-products img {
+  transform: translate(
+      calc(-50% + (var(--i) - (var(--total) - 1) / 2) * 105px),
+      calc(-50% + (var(--i) - (var(--total) - 1) / 2) * 22px)
+    )
+    rotate(calc((var(--i) - (var(--total) - 1) / 2) * 8deg));
+}
+@media (max-width: 900px) {
+  .dop-combo {
+    min-height: 0;
+  }
+  .combo-products img {
+    transform: translate(
+        calc(-50% + (var(--i) - (var(--total) - 1) / 2) * 58px),
+        calc(-50% + (var(--i) - (var(--total) - 1) / 2) * 14px)
+      )
+      rotate(calc((var(--i) - (var(--total) - 1) / 2) * 7deg));
+  }
+}

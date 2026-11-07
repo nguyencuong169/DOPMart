@@ -5,7 +5,6 @@ import SectionHeader from "../common/SectionHeader.vue";
 import { useProductStore } from "../../stores/productStore";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
-const emit = defineEmits(["add"]);
 const store = useProductStore();
 const active = ref("all");
 const uid = Math.random().toString(36).slice(2, 7);
@@ -43,11 +42,16 @@ const current = computed(
   () => tabs.value.find((t) => t.slug === active.value) ?? tabs.value[0],
 );
 const shown = computed(() => current.value.items.slice(0, MAX));
-/* the poster head — two stacked display lines BEHIND the pack (image-2
-   composition: line 1 solid in the product colour, line 2 hollow ink), and
-   the pack stands in front biting the lower line's hem. Each card is sized
-   against the condensed display face so its widest line spans ~96% of the
-   card, which keeps short words like SODA as tall as long ones like KHOAI TÂY */
+/* the poster head reads as a shelf slogan, never as the product name: two
+   short ad lines per SHELF (p.category is the shelf slug, image-2 layout) */
+const headWords = {
+  "do-uong": ["NƯỚC MÁT", "GIẢI KHÁT"],
+  "bua-nhanh": ["MÌ NÓNG", "ĂN LIỀN"],
+  "snack-man": ["GIÒN RỤM", "SNACK MẶN"],
+  "do-cay": ["CAY NỒNG", "BỐC KHÓI"],
+  ngot: ["NGỌT NGÀO", "BÁNH KẸO"],
+  healthy: ["HẠT RANG", "LÀNH MẠNH"],
+};
 let headCtx = null;
 const fitTick = ref(0);
 const heads = computed(() => {
@@ -58,14 +62,10 @@ const heads = computed(() => {
     headCtx.font =
       'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
   return shown.value.map((p) => {
-    const words = (
-      Array.isArray(p.ghost)
-        ? p.ghost
-        : String(p.ghost ?? p.name)
-            .toUpperCase()
-            .split(/\s+/)
-    ).filter(Boolean);
-    const lines = [words[0] ?? "", words[1] ?? words[0] ?? ""];
+    const lines = headWords[p.category] ?? [
+      (p.categoryName ?? p.name).toUpperCase(),
+      "",
+    ];
     const widest = Math.max(
       ...lines.map((l) => (headCtx ? headCtx.measureText(l).width : l.length * 46)),
       1,
@@ -92,8 +92,6 @@ const link = computed(() =>
     : `/category/${current.value.slug}`,
 );
 
-const catName = (slug) =>
-  store.categories.find((c) => c.slug === slug)?.name ?? "";
 const badge = (p) => {
   if (p.oldPrice > p.price)
     return `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`;
@@ -162,11 +160,13 @@ const badge = (p) => {
           :id="`${uid}-panel`"
           :aria-labelledby="`${uid}-tab-${current.slug}`"
         >
-          <article
+          <RouterLink
             v-for="(p, i) in shown"
             :key="p.id ?? p.slug"
+            :to="`/product/${p.slug}`"
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
+            :aria-label="p.name + ' — ' + fmt(p.price) + ' ₫'"
           >
             <span
               v-if="badge(p)"
@@ -192,25 +192,11 @@ const badge = (p) => {
                 loading="lazy"
                 decoding="async"
               />
-            </div>
-            <div class="cat-card__info">
-              <span class="cat-card__kick">{{ catName(p.category) }}</span>
-              <RouterLink :to="`/product/${p.slug}`" class="cat-card__name">{{
-                p.name
-              }}</RouterLink>
-              <span class="cat-card__price">
-                <s v-if="p.oldPrice > p.price">{{ fmt(p.oldPrice) }} ₫</s>
-                <b>{{ fmt(p.price) }} ₫</b>
-              </span>
-              <button
-                type="button"
-                class="cat-card__btn"
-                @click="emit('add', p)"
+              <span class="cat-card__tag" aria-hidden="true"
+                ><b>{{ fmt(p.price) }} ₫</b></span
               >
-                Thêm nhanh <ArrowRight :size="16" />
-              </button>
             </div>
-          </article>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -418,9 +404,11 @@ const badge = (p) => {
 .cat-card {
   container-type: inline-size;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: block;
   width: 100%;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   /* no fixed aspect: the height is the stage (86% of the width, deals-style)
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
@@ -430,6 +418,10 @@ const badge = (p) => {
   /* the card itself never moves — every hover effect lives on the pack */
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
+}
+.cat-card:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 6px;
 }
 @keyframes cat-up {
   from {
@@ -485,14 +477,13 @@ const badge = (p) => {
   object-fit: contain;
   /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
      so neighbouring packs echo the V of the diagonals */
-  /* rest pose: the pack leans into the cream side; even cards mirror the tilt.
-     The two transform lists (here and on :hover) must stay structurally
-     identical — the trailing rotate() is what carries the 360° hover lap
-     (matrix fallback would take the shortest arc and cancel the spin). */
+  /* rest pose: the pack leans into the cream side; even cards mirror the
+     tilt. The transform list here and on :hover must stay structurally
+     identical so the lift interpolates cleanly (translateX keeps the anchor). */
   transform: translateX(-50%) translateY(0) rotate(var(--tilt, 4deg)) scale(1)
     rotate(0deg);
   transform-origin: 50% 100%;
-  /* leave: the pack un-spins quickly and settles back onto its lean */
+  /* leave: the pack settles back onto its lean */
   transition:
     transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1),
     filter 0.4s ease-out;
@@ -502,7 +493,6 @@ const badge = (p) => {
 }
 .cat-card:nth-child(even) .cat-card__stage img {
   --tilt: -4deg;
-  --spin: -360deg;
 }
 .cat-card__ground {
   position: absolute;
@@ -520,14 +510,13 @@ const badge = (p) => {
     opacity 0.4s;
 }
 .cat-card:hover .cat-card__stage img,
-.cat-card:focus-within .cat-card__stage img {
-  /* the whole show is on the pack: one full lap (mirrored per side of the V),
-     a gentle lift and a deeper shadow — the card itself never moves */
+.cat-card:focus-visible .cat-card__stage img {
+  /* hover is a nudge: the pack steps up a touch and its shadow deepens */
   transition:
-    transform 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
-    filter 0.3s ease-out;
-  transform: translateX(-50%) translateY(-10px) rotate(var(--tilt, 4deg))
-    scale(1.04) rotate(var(--spin, 360deg));
+    transform 0.4s cubic-bezier(0.3, 1.2, 0.5, 1),
+    filter 0.35s ease-out;
+  transform: translateX(-50%) translateY(-6px) rotate(var(--tilt, 4deg))
+    scale(1.02) rotate(0deg);
   filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
     drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
     drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));
@@ -558,87 +547,51 @@ const badge = (p) => {
   color: var(--ink);
   border-color: var(--ink);
 }
-.cat-card__info {
-  position: relative;
-  z-index: 2;
-  flex: 1;
-  min-height: 0;
-  /* deals-card footer: kick + name take full rows, the price hugs the left and
-     the CTA is pinned to the right corner (on narrow cards margin-left auto
-     wraps it there instead of stacking at the left) */
-  display: flex;
-  flex-wrap: wrap;
-  place-content: end flex-start;
-  align-items: center;
-  gap: 4px 12px;
-  padding: 0 7% 6%;
-}
-.cat-card__name {
-  flex: 1 1 100%;
-}
-.cat-card__kick {
-  flex: 0 0 auto;
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
+/* the price is a tag hooked onto the pack (image-2): eyelet, string, tilt */
+.cat-card__tag {
+  position: absolute;
+  right: 2%;
+  bottom: 26%;
+  z-index: 3;
+  padding: 7px 15px 7px 22px;
+  border: 2.5px solid var(--ink);
+  border-radius: 6px 14px 14px 6px;
   background: var(--c);
   color: var(--on);
-  font-size: clamp(10px, 0.75vw, 12px);
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font: 800 clamp(13px, 4.6cqw, 20px) / 1 var(--fd);
+  white-space: nowrap;
+  box-shadow: 3px 4px 0 var(--ink);
+  transform: rotate(-14deg);
+  transform-origin: 12% -10%;
+  transition: transform 0.4s cubic-bezier(0.3, 1.3, 0.5, 1);
 }
-.cat-card__name {
-  font: 800 clamp(17px, 1.35vw, 26px)/1.15 var(--fd);
-  color: inherit;
-  text-decoration: none;
+/* eyelet + string reaching up-left into the pack, so the tag reads as hung */
+.cat-card__tag::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cream, #fffaf0);
 }
-.cat-card__price {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+.cat-card__tag::after {
+  content: "";
+  position: absolute;
+  left: -17px;
+  bottom: 74%;
+  width: 30px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  transform: rotate(40deg);
+  transform-origin: 100% 100%;
 }
-.cat-card__price s {
-  font-size: 15px;
-  font-weight: 700;
-  opacity: 0.8;
-}
-.cat-card__price b {
-  font: 800 clamp(19px, 1.5vw, 28px) var(--fd);
-  text-decoration: underline;
-  text-underline-offset: 5px;
-  text-decoration-thickness: 2px;
-}
-.cat-card__btn {
-  flex: 0 0 auto;
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #ffc72c;
-  color: var(--ink);
-  border: 2.5px solid var(--ink);
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-weight: 700;
-  font-size: 15px;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-}
-.cat-card__btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
-}
-.cat-card__btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
+.cat-card:hover .cat-card__tag {
+  transform: rotate(-9deg);
 }
 @media (max-width: 980px) {
   .cat-grid {
@@ -656,19 +609,6 @@ const badge = (p) => {
   .cat-card {
     border-radius: 22px;
   }
-  .cat-card__info {
-    padding: 8px 10px 12px;
-  }
-  .cat-card__name {
-    font-size: 15px;
-  }
-  .cat-card__btn {
-    padding: 7px 12px;
-    font-size: 13px;
-  }
-  .cat-card__price s {
-    display: none;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .cat-strip * {
@@ -676,7 +616,8 @@ const badge = (p) => {
     transition: none !important;
   }
   .cat-card:hover .cat-card__stage img {
-    transform: rotate(var(--tilt, 4deg)) !important;
+    transform: translateX(-50%) translateY(0) rotate(var(--tilt, 4deg)) scale(1)
+      rotate(0deg) !important;
   }
 }
 </style>

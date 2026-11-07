@@ -162,17 +162,6 @@ const tintOfFormat = {
   spicy: "#c62f14",
   instant: "#b52a26",
 }
-/* the giant poster head on the category card — two stacked display words per packshot */
-const ghostMeta = {
-  chips: ["KHOAI TÂY", "GIÒN RỤM"],
-  healthy: ["HẠT RANG", "BỔ DƯỠNG"],
-  noodles: ["MÌ LY", "TÔM CAY"],
-  drinks: ["SODA", "MÁT LẠNH"],
-  chocolate: ["CHOCO", "SỮA MỊN"],
-  candy: ["KẸO DẺO", "TRÁI CÂY"],
-  spicy: ["QUE CAY", "CAY XÈ"],
-  instant: ["XÚC XÍCH", "ĂN LIỀN"],
-}
 const seed=[
  [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],
  [2,'hat-hon-hop-rang-moc','Hạt hỗn hợp rang mộc','healthy',15000,4.8,149,0,0,10,9],
@@ -210,8 +199,7 @@ export const products=seed.map(([id,slug,name,format,price,rating,sold,isNew,hot
   hot:Boolean(hot),
   color:shelf.color,
   tint:tintOfFormat[format],
-  ghost:ghostMeta[format],
-  description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
+    description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
   tags:heroMeta[format].tags,
   notes:heroMeta[format].notes,
   stock:{14:s14,20:s20},

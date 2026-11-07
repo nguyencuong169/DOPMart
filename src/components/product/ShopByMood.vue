@@ -56,24 +56,6 @@ const badge = (p) => {
     return `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`;
   return p.isNew ? "MỚI" : "";
 };
-// nghiêng 3D theo con trỏ
-function tilt(e) {
-  if (e.pointerType !== "mouse") return;
-  const el = e.currentTarget,
-    r = el.getBoundingClientRect();
-  el.style.setProperty(
-    "--ry",
-    `${((e.clientX - r.left) / r.width - 0.5) * 10}deg`,
-  );
-  el.style.setProperty(
-    "--rx",
-    `${-((e.clientY - r.top) / r.height - 0.5) * 8}deg`,
-  );
-}
-function untilt(e) {
-  e.currentTarget.style.setProperty("--ry", "0deg");
-  e.currentTarget.style.setProperty("--rx", "0deg");
-}
 </script>
 
 <template>
@@ -142,8 +124,6 @@ function untilt(e) {
             :key="p.id ?? p.slug"
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
-            @pointermove="tilt"
-            @pointerleave="untilt"
           >
             <span class="cat-card__bg" aria-hidden="true"></span>
             <span
@@ -379,7 +359,6 @@ function untilt(e) {
   justify-content: center;
   gap: 24px;
   padding: 88px 0 12px;
-  perspective: 1200px;
 }
 .cat-card {
   position: relative;
@@ -390,10 +369,7 @@ function untilt(e) {
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
   color: var(--on);
-  /* the rectangle shadow is gone with the card top — the wedge carries its own */
-  transform-style: preserve-3d;
-  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* the card itself never moves — every hover effect lives on the pack */
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
 }
@@ -408,31 +384,21 @@ function untilt(e) {
   inset: 0;
   border-radius: inherit;
   overflow: hidden;
-  /* the wedge is the only card left: the pack bursts out of its diagonal top,
-     so the sticker shadow follows the wedge, not the (now invisible) box */
-  filter: drop-shadow(8px 9px 0 var(--ink));
+  /* one quiet colour wedge, no outline: the pack and the strip's cream do the
+     talking, so the row reads airy instead of four boxed stickers */
+  filter: drop-shadow(0 20px 22px rgba(25, 25, 25, 0.16));
 }
 .cat-card__bg:before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--ink);
+  background: var(--c);
   /* the V: odd cards raise the colour line from a left-edge third to ~70% down
      the right edge, even cards mirror it — the line passes behind the pack's
      lower body and stays above the info block so the footer sits on the colour */
   clip-path: polygon(0 36%, 100% 70%, 100% 100%, 0 100%);
 }
 .cat-card:nth-child(even) .cat-card__bg:before {
-  clip-path: polygon(0 70%, 100% 36%, 100% 100%, 0 100%);
-}
-.cat-card__bg:after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background: var(--c);
-  clip-path: polygon(0 36%, 100% 70%, 100% 100%, 0 100%);
-}
-.cat-card:nth-child(even) .cat-card__bg:after {
   clip-path: polygon(0 70%, 100% 36%, 100% 100%, 0 100%);
 }
 .cat-card__stage {
@@ -442,7 +408,6 @@ function untilt(e) {
      poke keep the same proportions at every card size */
   flex: 0 0 auto;
   padding: 86% 0 0;
-  transform: translateZ(50px);
 }
 .cat-card__stage img {
   position: absolute;
@@ -455,16 +420,17 @@ function untilt(e) {
      so neighbouring packs echo the V of the diagonals */
   transform: rotate(var(--tilt, 4deg));
   transform-origin: 50% 100%;
-  /* leave speed: long soft settle; the hover rule re-arms the fast spring */
+  /* leave: the pack un-spins quickly and settles back onto its lean */
   transition:
-    transform 0.4s ease-out,
-    filter 0.4s;
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1),
+    filter 0.4s ease-out;
   filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.22))
     drop-shadow(6px 12px 8px rgba(0, 0, 0, 0.2))
     drop-shadow(14px 28px 20px rgba(0, 0, 0, 0.18));
 }
 .cat-card:nth-child(even) .cat-card__stage img {
   --tilt: -4deg;
+  --spin: -360deg;
 }
 .cat-card__ground {
   position: absolute;
@@ -482,18 +448,19 @@ function untilt(e) {
 }
 .cat-card:hover .cat-card__stage img,
 .cat-card:focus-within .cat-card__stage img {
-  /* two-speed spring: snappy back-out on enter, the base rule settles on leave */
+  /* the whole show is on the pack: one full lap (mirrored per side of the V),
+     a gentle lift and a deeper shadow — the card itself never moves */
   transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    filter 0.3s;
-  transform: translateY(-14px) rotate(calc(var(--tilt, 4deg) * 0.375))
-    scale(1.04);
+    transform 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
+    filter 0.3s ease-out;
+  transform: translateY(-10px)
+    rotate(calc(var(--tilt, 4deg) + var(--spin, 360deg))) scale(1.04);
   filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
     drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
     drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));
 }
 .cat-card:hover .cat-card__ground {
-  transform: translateX(calc(-50% + var(--ry, 0deg) * -1.2)) scale(0.8, 0.85);
+  transform: translateX(-50%) scale(0.85, 0.9);
   opacity: 0.5;
 }
 .cat-card__badge {
@@ -510,7 +477,7 @@ function untilt(e) {
   color: #fff;
   border: 3px solid #fff;
   font: 800 clamp(12px, 0.9vw, 16px) var(--fd);
-  transform: translateZ(70px) rotate(8deg);
+  transform: rotate(8deg);
   box-shadow: 4px 4px 0 var(--ink);
 }
 .cat-card__badge.is-new {
@@ -532,7 +499,6 @@ function untilt(e) {
   align-items: center;
   gap: 4px 12px;
   padding: 0 7% 6%;
-  transform: translateZ(22px);
 }
 .cat-card__kick,
 .cat-card__name {
@@ -628,8 +594,8 @@ function untilt(e) {
     animation: none !important;
     transition: none !important;
   }
-  .cat-card {
-    transform: none !important;
+  .cat-card:hover .cat-card__stage img {
+    transform: rotate(var(--tilt, 4deg)) !important;
   }
 }
 </style>

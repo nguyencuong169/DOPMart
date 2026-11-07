@@ -382,13 +382,12 @@ function untilt(e) {
   perspective: 1200px;
 }
 .cat-card {
-  /* pack pokes ~13.5% of the card width above the border, like the deals card */
-  --pop: 118;
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  aspect-ratio: 456/513;
+  /* no fixed aspect: the height is the stage (86% of the width, deals-style)
+     plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
   color: var(--on);
   box-shadow: 8px 9px 0 var(--ink);
@@ -415,13 +414,15 @@ function untilt(e) {
 .cat-card__bg:before {
   content: "";
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 57%;
+  inset: 0;
   background: var(--cream);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 52%);
+  /* the V: odd cards drop the cream line from a left-edge third to ~70% down the
+     right edge, even cards mirror it — the line passes behind the pack's lower
+     body and stays above the info block so the footer always sits on the colour */
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 0 36%);
 }
 .cat-card:nth-child(even) .cat-card__bg:before {
-  clip-path: polygon(0 0, 100% 0, 100% 52%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 36%, 0 70%);
 }
 .cat-card__bg:after {
   content: "";
@@ -433,19 +434,22 @@ function untilt(e) {
 .cat-card__stage {
   position: relative;
   z-index: 2;
-  flex: 0 0 57%;
+  /* deals-card stage: the height rides on the width (86%), so the pack and its
+     poke keep the same proportions at every card size */
+  flex: 0 0 auto;
+  padding: 86% 0 0;
   transform: translateZ(50px);
 }
 .cat-card__stage img {
   position: absolute;
-  left: 50%;
-  bottom: 3%;
-  height: calc(var(--pop) * 1%);
-  max-width: 96%;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
   object-fit: contain;
   /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
      so neighbouring packs echo the V of the diagonals */
-  transform: translateX(-50%) rotate(var(--tilt, 4deg));
+  transform: rotate(var(--tilt, 4deg));
   transform-origin: 50% 100%;
   /* leave speed: long soft settle; the hover rule re-arms the fast spring */
   transition:
@@ -478,8 +482,8 @@ function untilt(e) {
   transition:
     transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     filter 0.3s;
-  transform: translateX(-50%) translateY(-14px)
-    rotate(calc(var(--tilt, 4deg) * 0.375)) scale(1.04);
+  transform: translateY(-14px) rotate(calc(var(--tilt, 4deg) * 0.375))
+    scale(1.04);
   filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
     drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
     drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));

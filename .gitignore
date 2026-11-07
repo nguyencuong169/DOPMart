@@ -23,3 +23,5 @@ Thumbs.db
 
 # local project snapshots (zip archives, not source)
 backup/
+# before/after review screenshots
+docs/review/

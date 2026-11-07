@@ -43,6 +43,23 @@ const current = computed(
   () => tabs.value.find((t) => t.slug === active.value) ?? tabs.value[0],
 );
 const shown = computed(() => current.value.items.slice(0, MAX));
+/* the vertical poster words flanking the pack — the product's display word
+   split across the two rails ("KHOAI TÂY" → KHOAI | TÂY, single words repeat) */
+const rails = computed(() =>
+  shown.value.map((p) => {
+    const parts = String(p.ghost ?? p.name)
+      .toUpperCase()
+      .split(/\s+/)
+      .filter(Boolean);
+    const a = parts[0] ?? "";
+    const b = parts[1] || a;
+    const v = (w) => ({ "--gw": String(Math.round(150 / Math.max(w.length, 1))) });
+    return [
+      { t: a, v: v(a) },
+      { t: b, v: v(b) },
+    ];
+  }),
+);
 const link = computed(() =>
   current.value.slug === "all"
     ? "/products"
@@ -125,7 +142,6 @@ const badge = (p) => {
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
           >
-            <span class="cat-card__bg" aria-hidden="true"></span>
             <span
               v-if="badge(p)"
               class="cat-card__badge"
@@ -133,6 +149,15 @@ const badge = (p) => {
               >{{ badge(p) }}</span
             >
             <div class="cat-card__stage">
+              <span
+                v-for="(w, r) in rails[i]"
+                :key="r"
+                class="cat-card__rail"
+                :class="r === 0 ? 'cat-card__rail--a' : 'cat-card__rail--b'"
+                aria-hidden="true"
+                :style="w.v"
+                >{{ w.t }}</span
+              >
               <i class="cat-card__ground" aria-hidden="true"></i>
               <img
                 :src="p.image"
@@ -361,6 +386,7 @@ const badge = (p) => {
   padding: 88px 0 12px;
 }
 .cat-card {
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -368,7 +394,9 @@ const badge = (p) => {
   /* no fixed aspect: the height is the stage (86% of the width, deals-style)
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
-  color: var(--on);
+  background: color-mix(in srgb, var(--c) 12%, var(--cream));
+  color: var(--ink);
+  box-shadow: 0 16px 26px rgba(25, 25, 25, 0.16);
   /* the card itself never moves — every hover effect lives on the pack */
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
@@ -379,27 +407,31 @@ const badge = (p) => {
     transform: translateY(26px) scale(0.96);
   }
 }
-.cat-card__bg {
+.cat-card__rail {
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  /* one quiet colour wedge, no outline: the pack and the strip's cream do the
-     talking, so the row reads airy instead of four boxed stickers */
-  filter: drop-shadow(0 20px 22px rgba(25, 25, 25, 0.16));
+  top: 2%;
+  bottom: 2%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 900 clamp(10cqw, calc(var(--gw, 20) * 1cqw), 24cqw) / 1 var(--fd);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: clamp(1px, 0.55cqw, 2.5px)
+    color-mix(in srgb, var(--c) 62%, var(--ink));
+  opacity: 0.55;
+  pointer-events: none;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
 }
-.cat-card__bg:before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--c);
-  /* the V: odd cards raise the colour line from a left-edge third to ~70% down
-     the right edge, even cards mirror it — the line passes behind the pack's
-     lower body and stays above the info block so the footer sits on the colour */
-  clip-path: polygon(0 36%, 100% 70%, 100% 100%, 0 100%);
+.cat-card__rail--a {
+  left: 2%;
 }
-.cat-card:nth-child(even) .cat-card__bg:before {
-  clip-path: polygon(0 70%, 100% 36%, 100% 100%, 0 100%);
+.cat-card__rail--b {
+  right: 2%;
 }
 .cat-card__stage {
   position: relative;
@@ -407,18 +439,23 @@ const badge = (p) => {
   /* deals-card stage: the height rides on the width (86%), so the pack and its
      poke keep the same proportions at every card size */
   flex: 0 0 auto;
-  padding: 86% 0 0;
+  padding: 100% 0 0;
 }
 .cat-card__stage img {
   position: absolute;
-  left: 0;
+  left: 50%;
   bottom: 0;
-  width: 100%;
+  width: 114%;
   height: auto;
   object-fit: contain;
   /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
      so neighbouring packs echo the V of the diagonals */
-  transform: rotate(var(--tilt, 4deg));
+  /* rest pose: the pack leans into the cream side; even cards mirror the tilt.
+     The two transform lists (here and on :hover) must stay structurally
+     identical — the trailing rotate() is what carries the 360° hover lap
+     (matrix fallback would take the shortest arc and cancel the spin). */
+  transform: translateX(-50%) translateY(0) rotate(var(--tilt, 4deg)) scale(1)
+    rotate(0deg);
   transform-origin: 50% 100%;
   /* leave: the pack un-spins quickly and settles back onto its lean */
   transition:
@@ -453,8 +490,8 @@ const badge = (p) => {
   transition:
     transform 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
     filter 0.3s ease-out;
-  transform: translateY(-10px)
-    rotate(calc(var(--tilt, 4deg) + var(--spin, 360deg))) scale(1.04);
+  transform: translateX(-50%) translateY(-10px) rotate(var(--tilt, 4deg))
+    scale(1.04) rotate(var(--spin, 360deg));
   filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
     drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
     drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));
@@ -500,13 +537,21 @@ const badge = (p) => {
   gap: 4px 12px;
   padding: 0 7% 6%;
 }
-.cat-card__kick,
 .cat-card__name {
   flex: 1 1 100%;
 }
 .cat-card__kick {
-  font-size: clamp(11px, 0.8vw, 13px);
-  font-weight: 700;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--c);
+  color: var(--on);
+  font-size: clamp(10px, 0.75vw, 12px);
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }

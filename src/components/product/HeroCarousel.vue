@@ -54,7 +54,31 @@ const fx = computed(() => {
 });
 const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* the accent colour decides which text tokens the whole column uses:
+   sun → dark ink, green/berry → near-black, purple → cream. Measured, not eyeballed. */
+function relLum(hex) {
+  const clean = String(hex || "#ffd338").replace("#", "");
+  const lin = (pair) => {
+    const c = parseInt(pair || "0", 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = [clean.slice(0, 2), clean.slice(2, 4), clean.slice(4, 6)].map(lin);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+/* opening hours: the introduction block is on screen for every slide */
+const clock = ref(new Date());
+const isOpen = computed(() => {
+  const h = clock.value.getHours() + clock.value.getMinutes() / 60;
+  return h >= 8.5 && h < 17.5;
+});
+let clockTimer = null;
+
 const current = ref(0);
+const tone = computed(() => {
+  const L = relLum(slides.value[current.value]?.color);
+  if (L < 0.12) return "tone-deep";
+  return L >= 0.45 ? "tone-sun" : "tone-mid";
+});
 const playing = ref(!prefersReduced);
 const paused = ref(false);
 let timer = null;
@@ -241,6 +265,9 @@ watch(current, () =>
 );
 onMounted(() => {
   runTimer();
+  clockTimer = setInterval(() => {
+    clock.value = new Date();
+  }, 60000);
   /* wipe anything a hot-reloaded previous instance may have left inline */
   clearRingInline();
   playIntro();
@@ -251,6 +278,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTimer();
   clearSteps();
+  if (clockTimer) clearInterval(clockTimer);
   if (rafId) cancelAnimationFrame(rafId);
   document.removeEventListener("visibilitychange", onVisibility);
 });
@@ -258,6 +286,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     class="brand-hero"
+    :class="tone"
     aria-roledescription="carousel"
     aria-label="Sản phẩm nổi bật tại DOP Mart"
     @mousemove="parallax"
@@ -267,9 +296,15 @@ onBeforeUnmount(() => {
     @focusout="onFocusOut"
     :style="{ '--accent': slides[current].color }"
   >
-    <h1 class="sr-only">
-      DOP Mart — mini mart, big happy. Món ngon, ngay trong văn phòng. Snack station tầng 14 và 20.
-    </h1>
+    <div class="hero-intro">
+      <h1 class="hero-intro__title">Món ngon, ngay trong văn phòng</h1>
+      <p class="hero-intro__meta">
+        <span>Tầng 14 &amp; 20 · 08:30–17:30</span>
+        <span class="hero-open" :class="{ closed: !isOpen }">{{
+          isOpen ? "Đang mở" : "Đã đóng"
+        }}</span>
+      </p>
+    </div>
     <div class="hero-side-copy">
       <div class="hero-side-top">
         <span class="hero-kicker">

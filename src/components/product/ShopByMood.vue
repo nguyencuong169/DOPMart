@@ -378,11 +378,12 @@ function untilt(e) {
   grid-template-columns: repeat(4, minmax(0, 456px));
   justify-content: center;
   gap: 24px;
-  padding: 104px 0 12px;
+  padding: 88px 0 12px;
   perspective: 1200px;
 }
 .cat-card {
-  --pop: 125;
+  /* pack pokes ~13.5% of the card width above the border, like the deals card */
+  --pop: 118;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -442,14 +443,20 @@ function untilt(e) {
   height: calc(var(--pop) * 1%);
   max-width: 96%;
   object-fit: contain;
-  transform: translateX(-50%);
+  /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
+     so neighbouring packs echo the V of the diagonals */
+  transform: translateX(-50%) rotate(var(--tilt, 4deg));
   transform-origin: 50% 100%;
+  /* leave speed: long soft settle; the hover rule re-arms the fast spring */
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3),
+    transform 0.4s ease-out,
     filter 0.4s;
   filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.22))
     drop-shadow(6px 12px 8px rgba(0, 0, 0, 0.2))
     drop-shadow(14px 28px 20px rgba(0, 0, 0, 0.18));
+}
+.cat-card:nth-child(even) .cat-card__stage img {
+  --tilt: -4deg;
 }
 .cat-card__ground {
   position: absolute;
@@ -465,8 +472,14 @@ function untilt(e) {
     transform 0.4s,
     opacity 0.4s;
 }
-.cat-card:hover .cat-card__stage img {
-  transform: translateX(-50%) translateY(-14px) rotate(-2.5deg) scale(1.04);
+.cat-card:hover .cat-card__stage img,
+.cat-card:focus-within .cat-card__stage img {
+  /* two-speed spring: snappy back-out on enter, the base rule settles on leave */
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.3s;
+  transform: translateX(-50%) translateY(-14px)
+    rotate(calc(var(--tilt, 4deg) * 0.375)) scale(1.04);
   filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
     drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
     drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));
@@ -490,7 +503,7 @@ function untilt(e) {
   border: 3px solid #fff;
   font: 800 clamp(12px, 0.9vw, 16px) var(--fd);
   transform: translateZ(70px) rotate(8deg);
-  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.28);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 .cat-card__badge.is-new {
   background: #fff;
@@ -502,11 +515,20 @@ function untilt(e) {
   z-index: 2;
   flex: 1;
   min-height: 0;
+  /* deals-card footer: kick + name take full rows, the price hugs the left and
+     the CTA is pinned to the right corner (on narrow cards margin-left auto
+     wraps it there instead of stacking at the left) */
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 14px 7% 6%;
+  flex-wrap: wrap;
+  place-content: end flex-start;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 0 7% 6%;
   transform: translateZ(22px);
+}
+.cat-card__kick,
+.cat-card__name {
+  flex: 1 1 100%;
 }
 .cat-card__kick {
   font-size: clamp(11px, 0.8vw, 13px);
@@ -536,8 +558,8 @@ function untilt(e) {
   text-decoration-thickness: 2px;
 }
 .cat-card__btn {
-  align-self: flex-start;
-  margin-top: auto;
+  flex: 0 0 auto;
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;

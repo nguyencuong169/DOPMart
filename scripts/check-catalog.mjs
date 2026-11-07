@@ -134,7 +134,24 @@ for (const p of products) {
   }
 }
 
-/* --- 3. every shelf has stock --- */
+/* --- 3. one packshot, one product name (P0-01) -----------------------------
+   the shop owns eight photos; if a format carries two different names the shopper
+   sees the same can under two labels. Adding a product therefore requires a new
+   photo, which is the point. */
+const namesByFormat = new Map()
+for (const p of products) {
+  if (!namesByFormat.has(p.format)) namesByFormat.set(p.format, [])
+  namesByFormat.get(p.format).push(p.name)
+}
+for (const [format, names] of namesByFormat) {
+  if (new Set(names.map(deaccent)).size > 1) {
+    errors.push(
+      `ảnh của format "${format}" dùng cho ${names.length} sản phẩm khác tên (${names.join(' · ')}) — mỗi sản phẩm cần ảnh riêng`
+    )
+  }
+}
+
+/* --- 4. every shelf has stock --- */
 for (const s of shelves) {
   if (!shelfStock.get(s.slug)) errors.push(`shelf "${s.slug}" (${s.name}) không có sản phẩm nào`)
 }

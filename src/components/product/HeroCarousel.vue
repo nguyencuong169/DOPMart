@@ -360,6 +360,7 @@ onBeforeUnmount(() => {
       aria-label="Vòng sản phẩm nổi bật"
     >
       <div class="hero-orbit" aria-hidden="true" />
+      <div class="hero-plate" aria-hidden="true" />
       <div class="hero-ground" aria-hidden="true" />
       <div class="hero-ground hero-ground--s1" aria-hidden="true" />
       <div class="hero-ground hero-ground--s2" aria-hidden="true" />

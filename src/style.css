@@ -10292,3 +10292,56 @@ html {
       rotate(calc((var(--i) - (var(--total) - 1) / 2) * 7deg));
   }
 }
+
+/* ===== V55 · P0-05 — the pack stands on a cream plate =====
+   a yellow bag on a yellow slide had nothing to separate it from the panel; the
+   plate is derived from --paper so it works on sun, berry, green and purple. */
+.hero-plate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(64vh, 52vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) translate(2.8vw, 0);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--paper) 97%, var(--accent)) 0 54%,
+    color-mix(in srgb, var(--paper) 78%, transparent) 74%,
+    transparent 93%
+  );
+  box-shadow: 0 24px 60px #19191914;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (max-width: 1100px) {
+  .hero-plate {
+    width: min(58vh, 78vw);
+  }
+}
+@media (max-width: 750px) {
+  .hero-plate {
+    width: min(46vh, 88vw);
+    transform: translate(-50%, -50%) translate(0, -5vh);
+  }
+}
+
+/* ===== V56 · P0-03 — the hero name must not glue words together =====
+   Vue condenses the leading whitespace inside a template span, so the split
+   name rendered "KHOAI TÂY" + "CAY BÙNG" as "KHOAI TÂYCAY". The gap now comes
+   from the element, not from a text node that the compiler can eat. */
+.hero-side-copy .hero-product-name .np-outline,
+.hero-side-copy .hero-product-name .np-accent {
+  margin-left: 0.24em;
+}
+/* display type still needs air between words for stacked Vietnamese diacritics */
+.hero-side-copy .hero-product-name {
+  word-spacing: 0.04em;
+  letter-spacing: var(--tracking-display);
+}
+.story-intro h2,
+.promo-copy h2,
+.combo-copy h2,
+.process-lab-head h2 {
+  word-spacing: 0.03em;
+}

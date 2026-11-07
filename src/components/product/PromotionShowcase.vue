@@ -56,7 +56,9 @@ onBeforeUnmount(() => animation?.revert());
           <span
             ><s>{{ offer.oldPrice.toLocaleString("vi-VN") }} ₫</s
             ><b>{{ offer.price.toLocaleString("vi-VN") }} ₫</b></span
-          ><button @click="cart.add(offer)">Thêm nhanh <ArrowRight /></button>
+          ><button @click="cart.add(offer)" :aria-label="`Thêm ${offer.name} vào giỏ`">
+            Thêm nhanh <ArrowRight /></button
+          >
         </div>
       </article>
     </div>

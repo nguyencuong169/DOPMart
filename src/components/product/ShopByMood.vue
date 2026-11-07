@@ -27,7 +27,7 @@ const shelves = computed(() =>
       kicker="CHỌN NHANH THEO DANH MỤC"
       title="Hôm nay bạn muốn ăn gì?"
       lead="Tám kệ hàng, tám kiểu thèm khác nhau. Chạm một kệ để xem toàn bộ món bên trong."
-      cta="Lục tủ snack"
+      cta="Xem tủ snack"
       to="/products"
     />
     <div class="cat-grid">

@@ -9383,3 +9383,264 @@ p.lead,
     font-size: 19px;
   }
 }
+
+/* ===== V47 · P1.9/8/10 — bestseller, deal cards, category tiles ===== */
+
+/* --- 9. bestseller: shorter champion card, real Top 2–5, text on cream --- */
+.bestseller-story {
+  padding: calc(var(--section-y) - 16px) var(--gutter) var(--section-y);
+}
+.story-intro {
+  min-height: 0;
+  margin-bottom: var(--s3);
+  gap: 4px;
+}
+.story-intro p {
+  color: var(--on-black);
+  font-size: var(--fs-small);
+  max-width: 46ch;
+  margin: 0;
+}
+/* the diagonal stays inside the image half, so the info column is pure paper —
+   that is what fixes the description/rating on the coloured panel */
+.spotlight-panel {
+  min-height: 0;
+  margin-bottom: var(--s4);
+  grid-template-columns: 54% 46%;
+  background: var(--paper);
+}
+.spotlight-stage {
+  padding: 16px 22px;
+  background: linear-gradient(125deg, var(--paper) 0 62%, var(--spot-color) 62.2%);
+}
+.spotlight-product {
+  width: 100%;
+  height: min(42vh, 360px);
+  padding: 6px;
+}
+.spotlight-word {
+  font-size: 7vw;
+  opacity: 0.16;
+}
+.spotlight-info {
+  padding: 32px 34px;
+}
+.spotlight-info > span,
+.spotlight-info p,
+.spotlight-rating small {
+  color: var(--on-cream);
+}
+.spotlight-info p {
+  font-size: var(--fs-small);
+  margin: 0 0 6px;
+}
+.spotlight-info h3 {
+  font-size: clamp(28px, 3.2vw, 52px);
+  margin: 12px 0;
+}
+.spotlight-info > strong {
+  color: var(--berry-deep);
+  font-size: clamp(24px, 2.4vw, 34px);
+  margin: 14px 0;
+}
+.spotlight-buy {
+  min-height: 48px;
+  font-size: 15px;
+}
+.spotlight-info a {
+  font-size: var(--fs-small);
+}
+/* Top 2–5 */
+.top-list {
+  list-style: none;
+  margin: 0 auto var(--s4);
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  max-width: var(--maxw);
+}
+.top-row {
+  display: grid;
+  grid-template-columns: 52px 56px minmax(0, 1fr) auto 48px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--sun);
+}
+.top-rank {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+}
+.top-row img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.top-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.top-name b {
+  font-size: 15px;
+  line-height: 1.25;
+}
+.top-name small {
+  font-size: var(--fs-meta);
+  color: var(--on-cream);
+}
+.top-price {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+}
+.top-add {
+  width: 44px;
+  height: 44px;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--sun);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+.top-add:hover,
+.top-add:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* --- 8. deal cards: nothing clipped, readable price, 44px targets --- */
+.promo-showcase {
+  padding: calc(var(--section-y) - 8px) var(--gutter);
+  grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
+  overflow: visible;
+}
+.promo-copy h2 {
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+}
+.promo-copy p {
+  color: var(--on-black);
+  font-size: var(--fs-small);
+}
+.promo-copy .primary {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.promo-list {
+  align-items: stretch;
+  gap: 16px;
+}
+.promo-card {
+  min-height: 0;
+  padding: 16px 16px 18px;
+  box-shadow: 5px 5px 0 var(--sun);
+}
+/* the 35px stagger pushed the last card out of the section */
+.promo-card:nth-child(2) {
+  transform: none;
+}
+.promo-card img {
+  height: clamp(150px, 16vw, 210px);
+}
+.promo-card h3 {
+  font-size: 18px;
+  line-height: 1.25;
+}
+.promo-card small {
+  font-size: var(--fs-meta);
+}
+.promo-card s {
+  color: var(--on-cream);
+  font-size: var(--fs-meta);
+}
+.promo-card b {
+  color: var(--berry-deep);
+}
+.promo-card button {
+  min-height: 44px;
+  font-size: var(--fs-small);
+}
+.promo-discount {
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  font-size: var(--fs-small);
+}
+
+/* --- 10. category tiles: the photo leads, tints derived from the brand --- */
+.cat-card {
+  grid-template-rows: minmax(132px, 1fr) auto;
+  padding: 14px;
+  background: var(--paper-bright);
+}
+.cat-card:before {
+  background: color-mix(in srgb, var(--cat-color) 12%, var(--paper-bright));
+  opacity: 1;
+}
+.cat-card img {
+  width: 100%;
+  height: 100%;
+  max-height: 170px;
+  padding: 4px 8px;
+}
+.cat-card__copy b {
+  font-size: 19px;
+  line-height: 1.15;
+}
+.cat-card__copy small {
+  font-size: var(--fs-meta);
+  color: var(--on-cream);
+}
+.cat-card:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+@media (max-width: 1100px) {
+  .promo-showcase {
+    grid-template-columns: 1fr;
+  }
+  .spotlight-panel {
+    grid-template-columns: 1fr;
+  }
+  .spotlight-stage {
+    padding: 12px 16px 0;
+    background: linear-gradient(160deg, var(--paper) 0 70%, var(--spotlight-color, var(--paper)) 70%);
+  }
+  .spotlight-info {
+    padding: 22px 20px 26px;
+  }
+  .top-row {
+    grid-template-columns: 44px 48px minmax(0, 1fr) auto 44px;
+    gap: 10px;
+  }
+}
+@media (max-width: 750px) {
+  .promo-list {
+    grid-template-columns: 1fr;
+  }
+  .cat-card {
+    grid-template-rows: minmax(112px, 1fr) auto;
+  }
+  .cat-card__copy b {
+    font-size: 17px;
+  }
+  .top-row {
+    grid-template-columns: 40px 44px minmax(0, 1fr) 44px;
+    padding: 8px 10px;
+  }
+  .top-row .top-price {
+    display: none;
+  }
+}

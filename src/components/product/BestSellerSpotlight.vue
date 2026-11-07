@@ -1,14 +1,105 @@
 <script setup>
-import {ref,onMounted,onBeforeUnmount} from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import gsap from 'gsap'
-import {ScrollTrigger} from 'gsap/ScrollTrigger.js'
-import {ArrowRight,ShoppingBag} from 'lucide-vue-next'
-import {useProductStore} from '../../stores/productStore'
-import {useCartStore} from '../../stores/cartStore'
+import { ScrollTrigger } from 'gsap/ScrollTrigger.js'
+import { ArrowRight, ShoppingBag } from 'lucide-vue-next'
+import { useProductStore } from '../../stores/productStore'
+import { useCartStore } from '../../stores/cartStore'
 gsap.registerPlugin(ScrollTrigger)
-const store=useProductStore(),cart=useCartStore(),root=ref(null),products=store.bestSellers.slice(0,1)
+const store = useProductStore()
+const cart = useCartStore()
+const root = ref(null)
+/* one champion + a compact Top 2-5 instead of a 950px block for a single can */
+const ranked = computed(() => store.bestSellers.slice(0, 5))
+const top = computed(() => ranked.value[0])
+const rest = computed(() => ranked.value.slice(1))
 let ctx
-onMounted(()=>{if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;ctx=gsap.context(()=>{const panels=gsap.utils.toArray('.spotlight-panel');panels.forEach((panel,i)=>{const product=panel.querySelector('.spotlight-product');const info=panel.querySelector('.spotlight-info');gsap.timeline({scrollTrigger:{trigger:panel,start:'top 82%',end:'center 48%',scrub:1}}).fromTo(product,{x:window.innerWidth*.65,rotation:10,scale:.72,opacity:.2},{x:0,rotation:0,scale:1,opacity:1,ease:'none'}).fromTo(info,{x:130,opacity:0},{x:0,opacity:1,ease:'none'},.18);if(i<panels.length-1){gsap.to(panel,{scale:.94,opacity:.3,scrollTrigger:{trigger:panel,start:'center 35%',end:'bottom top',scrub:1}})}})},root.value)})
-onBeforeUnmount(()=>ctx?.revert())
+onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  ctx = gsap.context(() => {
+    const panel = root.value?.querySelector('.spotlight-panel')
+    if (!panel) return
+    const product = panel.querySelector('.spotlight-product')
+    const info = panel.querySelector('.spotlight-info')
+    gsap
+      .timeline({
+        scrollTrigger: { trigger: panel, start: 'top 82%', end: 'center 55%', scrub: 1 },
+      })
+      .fromTo(
+        product,
+        { x: window.innerWidth * 0.45, rotation: 8, scale: 0.78, opacity: 0.2 },
+        { x: 0, rotation: 0, scale: 1, opacity: 1, ease: 'none' }
+      )
+      .fromTo(info, { x: 110, opacity: 0 }, { x: 0, opacity: 1, ease: 'none' }, 0.18)
+    const rows = gsap.utils.toArray('.top-row')
+    if (rows.length) {
+      gsap.from(rows, {
+        y: 26,
+        opacity: 0,
+        stagger: 0.08,
+        scrollTrigger: { trigger: '.top-list', start: 'top 92%', end: 'top 62%', scrub: 1 },
+      })
+    }
+  }, root.value)
+})
+onBeforeUnmount(() => ctx?.revert())
 </script>
-<template><section ref="root" class="bestseller-story"><div class="story-intro"><span>OFFICE FAVORITE · TOP 1</span><h2>Món được<br>săn nhiều nhất.</h2><p>Đúng một món đứng đầu bảng tuần này — kèm tồn kho thật tại tầng bạn nhận.</p></div><article v-for="(product,index) in products" :key="product.id" class="spotlight-panel" :style="{'--spot-color':product.color}"><div class="spotlight-rank"><small>OFFICE FAVORITE</small><b>#{{index+1}}</b></div><div class="spotlight-stage"><div class="spotlight-word">DOP<br>PICK</div><img class="spotlight-product" :src="product.image" :alt="product.name" loading="lazy" decoding="async"/></div><div class="spotlight-info"><span>{{product.categoryName}} · TOP {{index+1}}</span><h3>{{product.name}}</h3><div class="spotlight-rating">★★★★★ <small>{{product.rating}} · {{product.sold}} đã bán</small></div><p>{{product.description}}</p><strong>{{product.price.toLocaleString('vi-VN')}} ₫</strong><div><button class="spotlight-buy" @click="cart.add(product)">Thêm vào giỏ <ShoppingBag/></button><RouterLink :to="`/product/${product.slug}`">Xem chi tiết <ArrowRight/></RouterLink></div></div></article><RouterLink class="spotlight-all" to="/best-sellers">Bảng bán chạy đầy đủ <ArrowRight/></RouterLink></section></template>
+<template>
+  <section ref="root" class="bestseller-story">
+    <div class="story-intro">
+      <span>OFFICE FAVORITE · TOP 1</span>
+      <h2>Món được<br />săn nhiều nhất.</h2>
+      <p>Món đứng đầu bảng tuần này — kèm tồn kho thật tại tầng bạn nhận.</p>
+    </div>
+    <article v-if="top" class="spotlight-panel" :style="{ '--spot-color': top.color }">
+      <div class="spotlight-rank"><small>OFFICE FAVORITE</small><b>#1</b></div>
+      <div class="spotlight-stage">
+        <div class="spotlight-word" aria-hidden="true">DOP<br />PICK</div>
+        <img
+          class="spotlight-product"
+          :src="top.image"
+          :alt="top.name"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="spotlight-info">
+        <span>{{ top.categoryName }} · TOP 1</span>
+        <h3>{{ top.name }}</h3>
+        <div class="spotlight-rating">
+          ★★★★★ <small>{{ top.rating }} · {{ top.sold }} đã bán</small>
+        </div>
+        <p>{{ top.description }}</p>
+        <strong>{{ top.price.toLocaleString('vi-VN') }} ₫</strong>
+        <div>
+          <button class="spotlight-buy" @click="cart.add(top)">
+            Thêm vào giỏ <ShoppingBag />
+          </button>
+          <RouterLink :to="`/product/${top.slug}`">Xem chi tiết <ArrowRight /></RouterLink>
+        </div>
+      </div>
+    </article>
+    <ol v-if="rest.length" class="top-list">
+      <li v-for="(product, i) in rest" :key="product.id" class="top-row">
+        <b class="top-rank">#{{ i + 2 }}</b>
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
+        <span class="top-name">
+          <b>{{ product.name }}</b>
+          <small>{{ product.categoryName }} · {{ product.sold }} đã bán</small>
+        </span>
+        <span class="top-price">{{ product.price.toLocaleString('vi-VN') }} ₫</span>
+        <button
+          type="button"
+          class="top-add"
+          :aria-label="`Thêm ${product.name} vào giỏ`"
+          @click="cart.add(product)"
+        >
+          +
+        </button>
+      </li>
+    </ol>
+    <RouterLink class="spotlight-all" to="/best-sellers">
+      Bảng bán chạy đầy đủ <ArrowRight />
+    </RouterLink>
+  </section>
+</template>

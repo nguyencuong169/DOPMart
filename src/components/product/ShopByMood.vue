@@ -394,9 +394,9 @@ const badge = (p) => {
   /* no fixed aspect: the height is the stage (86% of the width, deals-style)
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
-  background: color-mix(in srgb, var(--c) 12%, var(--cream));
+  /* no panel: the pack and the vertical type float straight on the strip's
+     cream, so the row reads as posters laid out on the page itself */
   color: var(--ink);
-  box-shadow: 0 16px 26px rgba(25, 25, 25, 0.16);
   /* the card itself never moves — every hover effect lives on the pack */
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
@@ -419,9 +419,9 @@ const badge = (p) => {
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: transparent;
-  -webkit-text-stroke: clamp(1px, 0.55cqw, 2.5px)
+  -webkit-text-stroke: clamp(1px, 0.6cqw, 2.5px)
     color-mix(in srgb, var(--c) 62%, var(--ink));
-  opacity: 0.55;
+  opacity: 0.65;
   pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;

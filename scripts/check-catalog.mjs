@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-/* Catalogue guard.
-   The shop reuses one packshot per category, so a product name may only use words
-   the photo can actually show ("Rong biển nướng giòn" on a bag of Mixed Nuts fails).
+/* Catalogue guard — the catalogue has two layers on purpose:
+   · formats  → what the packshot shows (one photo each); a product name may only
+                use words that its own photo can show.
+   · shelves  → what the shopper browses (6 mutually exclusive shelves); every
+                format must sit in exactly one shelf, and every shelf needs stock.
    Run: npm run check:catalog */
 import { readFileSync } from 'node:fs'
 
@@ -15,28 +17,47 @@ const deaccent = (s) =>
     .replace(/đ/gi, 'd')
     .toLowerCase()
 
-/* --- categories: slug, label, photo keywords --- */
-const categories = []
-const catRe = /slug:\s*'([a-z]+)',?\s*[\s\S]{0,220}?name:\s*'([^']+)'[\s\S]{0,220}?keywords:\s*\[([^\]]*)\]/g
+/* --- formats: slug, label, photo keywords --- */
+const formats = []
+const formatRe =
+  /slug:\s*'([a-z-]+)',?\s*[\s\S]{0,120}?name:\s*'([^']+)'[\s\S]{0,200}?image:\s*\w+[\s\S]{0,200}?keywords:\s*\[([^\]]*)\]/g
 let m
-while ((m = catRe.exec(src))) {
-  const keywords = m[3]
-    .split(',')
-    .map((k) => k.trim().replace(/^'|'$/g, '').trim())
-    .filter(Boolean)
-  categories.push({ slug: m[1], name: m[2], keywords })
+while ((m = formatRe.exec(src))) {
+  formats.push({
+    slug: m[1],
+    name: m[2],
+    keywords: m[3]
+      .split(',')
+      .map((k) => k.trim().replace(/^'|'$/g, '').trim())
+      .filter(Boolean),
+  })
 }
 
-/* --- seed rows: [id, slug, name, category, price, rating, sold, isNew, hot, s14, s20] --- */
+/* --- shelves: slug, label, member formats (quote-style agnostic) --- */
+const shelves = []
+const shelfRe =
+  /slug:\s*['"]([a-z-]+)['"],?\s*[\s\S]{0,200}?name:\s*['"]([^'"]+)['"][\s\S]{0,240}?formats:\s*\[([^\]]*)\]/g
+while ((m = shelfRe.exec(src))) {
+  shelves.push({
+    slug: m[1],
+    name: m[2],
+    formats: m[3]
+      .split(',')
+      .map((f) => f.trim().replace(/^['"]|['"]$/g, '').trim())
+      .filter(Boolean),
+  })
+}
+
+/* --- seed rows: [id, slug, name, format, price, rating, sold, isNew, hot, s14, s20] --- */
 const products = []
 const rowRe =
-  /\[\s*(\d+)\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([a-z]+)'\s*,\s*(\d+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([01])\s*,\s*([01])\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/g
+  /\[\s*(\d+)\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([a-z-]+)'\s*,\s*(\d+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([01])\s*,\s*([01])\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/g
 while ((m = rowRe.exec(src))) {
   products.push({
     id: Number(m[1]),
     slug: m[2],
     name: m[3],
-    category: m[4],
+    format: m[4],
     price: Number(m[5]),
     rating: Number(m[6]),
     sold: Number(m[7]),
@@ -45,35 +66,51 @@ while ((m = rowRe.exec(src))) {
   })
 }
 
-/* --- 1. the files are parsed at all --- */
-if (!categories.length) errors.push('Không đọc được categories — kiểm tra src/data/products.js')
-if (!products.length) errors.push('Không đọc được seed sản phẩm — kiểm tra src/data/products.js')
+if (!formats.length) errors.push('không đọc được `formats`')
+if (!shelves.length) errors.push('không đọc được `shelves`')
+if (!products.length) errors.push('không đọc được seed sản phẩm')
 
-/* --- 2. categories + photos --- */
-const catBySlug = new Map(categories.map((c) => [c.slug, c]))
-const seenCat = new Set()
-for (const c of categories) {
-  if (seenCat.has(c.slug)) errors.push(`category "${c.slug}" bị khai báo hai lần`)
-  seenCat.add(c.slug)
-  if (!c.name.trim()) errors.push(`category "${c.slug}" thiếu tên hiển thị`)
-  if (!c.keywords.length) errors.push(`category "${c.slug}" thiếu keywords của ảnh`)
+/* --- 1. formats ↔ shelves: exactly one shelf per format --- */
+const formatBySlug = new Map(formats.map((f) => [f.slug, f]))
+const seenFormat = new Set()
+for (const f of formats) {
+  if (seenFormat.has(f.slug)) errors.push(`format "${f.slug}" khai báo hai lần`)
+  seenFormat.add(f.slug)
+  if (!f.keywords.length) errors.push(`format "${f.slug}" thiếu keywords của ảnh`)
+}
+const seenShelf = new Set()
+const formatOwner = new Map()
+for (const s of shelves) {
+  if (seenShelf.has(s.slug)) errors.push(`shelf "${s.slug}" khai báo hai lần`)
+  seenShelf.add(s.slug)
+  if (!s.formats.length) errors.push(`shelf "${s.slug}" chưa gán format nào`)
+  for (const f of s.formats) {
+    if (!formatBySlug.has(f)) {
+      errors.push(`shelf "${s.slug}" trỏ tới format lạ "${f}"`)
+      continue
+    }
+    if (formatOwner.has(f))
+      errors.push(`format "${f}" nằm ở hai shelf: "${formatOwner.get(f)}" và "${s.slug}"`)
+    formatOwner.set(f, s.slug)
+  }
+}
+for (const f of formats) {
+  if (!formatOwner.has(f.slug)) errors.push(`format "${f.slug}" không thuộc shelf nào`)
 }
 
-/* --- 3. products --- */
+/* --- 2. products --- */
 const ids = new Map()
 const slugs = new Map()
 const names = new Map()
-const used = new Set()
+const shelfStock = new Map()
 
 for (const p of products) {
   if (ids.has(p.id)) errors.push(`id ${p.id} trùng: "${p.name}" và "${ids.get(p.id)}"`)
   ids.set(p.id, p.name)
-
   if (slugs.has(p.slug)) errors.push(`slug "${p.slug}" trùng giữa hai sản phẩm`)
   slugs.set(p.slug, p.name)
-
   const nameKey = deaccent(p.name)
-  if (names.has(nameKey)) errors.push(`hai sản phẩm cùng tên: "${p.name}" (id ${names.get(nameKey)} & ${p.id})`)
+  if (names.has(nameKey)) errors.push(`hai sản phẩm cùng tên: "${p.name}"`)
   names.set(nameKey, p.id)
 
   if (!/^[a-z0-9-]+$/.test(p.slug)) errors.push(`slug "${p.slug}" phải là kebab-case không dấu`)
@@ -82,32 +119,31 @@ for (const p of products) {
   if (p.sold < 0) errors.push(`"${p.name}" có sold âm`)
   if (p.stock14 < 0 || p.stock20 < 0) errors.push(`"${p.name}" có tồn kho âm`)
 
-  const cat = catBySlug.get(p.category)
-  if (!cat) {
-    errors.push(`"${p.name}" dùng category lạ "${p.category}"`)
+  const format = formatBySlug.get(p.format)
+  if (!format) {
+    errors.push(`"${p.name}" dùng format lạ "${p.format}"`)
     continue
   }
-  used.add(p.category)
+  const shelf = formatOwner.get(p.format)
+  shelfStock.set(shelf, (shelfStock.get(shelf) ?? 0) + 1)
 
-  /* the actual P0 rule: the name must describe what the packshot shows */
-  const hit = cat.keywords.some((k) => nameKey.includes(deaccent(k)))
+  /* the P0 rule: the name must describe what the packshot shows */
+  const hit = format.keywords.some((k) => nameKey.includes(deaccent(k)))
   if (!hit) {
-    errors.push(
-      `"${p.name}" không khớp ảnh của ${cat.slug} (ảnh cho thấy: ${cat.photo?.shows ?? cat.keywords.join(', ')})`
-    )
+    errors.push(`"${p.name}" không khớp ảnh của format ${format.slug} (ảnh: ${format.keywords.join(', ')})`)
   }
 }
 
-/* --- 4. coverage: no empty tile, no unused category --- */
-for (const c of categories) {
-  if (!used.has(c.slug)) errors.push(`category "${c.slug}" không có sản phẩm nào`)
+/* --- 3. every shelf has stock --- */
+for (const s of shelves) {
+  if (!shelfStock.get(s.slug)) errors.push(`shelf "${s.slug}" (${s.name}) không có sản phẩm nào`)
 }
 
-/* --- report --- */
-const summary = `${products.length} sản phẩm · ${categories.length} danh mục · 1 ảnh/danh mục`
+const summary = `${products.length} sản phẩm · ${formats.length} format ảnh · ${shelves.length} kệ`
 if (errors.length) {
   console.error(`✗ check:catalog — ${errors.length} lỗi (${summary})\n`)
   for (const e of errors) console.error(`  • ${e}`)
   process.exit(1)
 }
-console.log(`✓ check:catalog — ${summary}, mọi tên sản phẩm khớp ảnh`)
+const counts = shelves.map((s) => `${s.name}:${shelfStock.get(s.slug)}`).join(' · ')
+console.log(`✓ check:catalog — ${summary}\n  ${counts}\n  mọi tên sản phẩm khớp ảnh, mọi format thuộc đúng một kệ`)

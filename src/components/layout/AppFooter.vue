@@ -17,7 +17,7 @@ import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
         <RouterLink to="/products">Tất cả sản phẩm</RouterLink
         ><RouterLink to="/new">Sản phẩm mới</RouterLink
         ><RouterLink to="/best-sellers">Bán chạy</RouterLink
-        ><RouterLink to="/category/chips">Danh mục</RouterLink>
+        ><RouterLink to="/products">Danh mục</RouterLink>
       </div>
       <div class="footer-col">
         <h4>Hỗ trợ</h4>

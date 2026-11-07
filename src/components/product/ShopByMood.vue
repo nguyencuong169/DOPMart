@@ -25,8 +25,8 @@ const shelves = computed(() =>
   <section class="cat-strip">
     <SectionHeader
       kicker="CHỌN NHANH THEO DANH MỤC"
-      title="Hôm nay bạn muốn ăn gì?"
-      lead="Tám kệ hàng, tám kiểu thèm khác nhau. Chạm một kệ để xem toàn bộ món bên trong."
+      title="Hôm nay bạn thèm gì?"
+      lead="Sáu kệ hàng, sáu kiểu thèm khác nhau — từ đồ mặn, đồ cay tới bữa nhanh và soda lạnh. Chạm một kệ để xem toàn bộ món bên trong."
       cta="Xem tủ snack"
       to="/products"
     />
@@ -42,6 +42,7 @@ const shelves = computed(() =>
           <i class="cat-card__dot" aria-hidden="true"></i>
           <b class="cat-card__name">{{ shelf.name }}</b>
           <span class="cat-card__count">{{ shelf.count }} món</span>
+          <em class="cat-card__tag">{{ shelf.tagline }}</em>
         </span>
         <span class="cat-card__stage">
           <img :src="shelf.image" alt="" loading="lazy" decoding="async" />

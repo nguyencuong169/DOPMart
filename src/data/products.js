@@ -7,11 +7,10 @@ import candyImage from '../assets/products/candy.webp'
 import drinksImage from '../assets/products/drinks.webp'
 import healthyImage from '../assets/products/healthy.webp'
 
-/* ONE source of categories: tiles, card labels, nav menu and the catalogue
-   validator all read this list — `name` is the label on every card, so the tile
-   text and the card text can never drift apart again. `photo` records what the
-   packshot really shows; the name of a product may only use those words. */
-export const categories = [
+/* One source of photo formats: each packshot photo belongs to exactly one format,
+   and a product name may only use words that its photo can show.
+   `name` here is the internal format label — the shopper-facing label is the shelf. */
+export const formats = [
   {
     slug: 'chips',
     name: 'Bim bim',
@@ -87,12 +86,69 @@ export const categories = [
   },
 ]
 
+/* --- the shelf taxonomy the shopper actually browses -----------------------
+   formats = what the packshot shows (one photo each, enforced by check:catalog).
+   shelves = the six things a person looks for in a five-minute break.
+   One axis, mutually exclusive — no "Mì & đồ ăn liền" sitting next to "Ăn liền",
+   no "Chocolate" next to "Kẹo", no taste axis crossing the food-type axis. */
+export const shelves = [
+  {
+    slug: "snack-man",
+    name: "Snack mặn",
+    tagline: "Giòn, mặn, mở là ăn",
+    icon: "🍟",
+    color: "#ffb82e",
+    formats: ["chips"],
+  },
+  {
+    slug: "do-cay",
+    name: "Đồ cay",
+    tagline: "Cay từ từ rồi bùng",
+    icon: "🌶️",
+    color: "#ff5a1f",
+    formats: ["spicy"],
+  },
+  {
+    slug: "ngot",
+    name: "Ngọt & bánh",
+    tagline: "Tráng miệng trong 5 phút",
+    icon: "🍫",
+    color: "#ef5b9a",
+    formats: ["chocolate", "candy"],
+  },
+  {
+    slug: "healthy",
+    name: "Healthy",
+    tagline: "Hạt & granola rang mộc",
+    icon: "🌿",
+    color: "#137c58",
+    formats: ["healthy"],
+  },
+  {
+    slug: "bua-nhanh",
+    name: "Bữa nhanh",
+    tagline: "Mì, cháo, xúc xích — 3 phút",
+    icon: "🍜",
+    color: "#ef3340",
+    formats: ["noodles", "instant"],
+  },
+  {
+    slug: "do-uong",
+    name: "Đồ uống",
+    tagline: "Soda lạnh 4°C, uống ngay",
+    icon: "🥤",
+    color: "#7a32a8",
+    formats: ["drinks"],
+  },
+]
+/* the UI browses shelves; this alias keeps one name for "what the shopper picks" */
+export const categories = shelves
+
 export const photoSubjects = Object.fromEntries(
-  categories.map((c) => [c.slug, { file: `${c.slug}.webp`, ...c.photo }])
+  formats.map((f) => [f.slug, { file: `${f.slug}.webp`, ...f.photo }])
 )
-const img = Object.fromEntries(categories.map((c) => [c.slug, c.image]))
-const catName = Object.fromEntries(categories.map((c) => [c.slug, c.name]))
-const colors = Object.fromEntries(categories.map((c) => [c.slug, c.color]))
+const imageOfFormat = Object.fromEntries(formats.map((f) => [f.slug, f.image]))
+const shelfOfFormat = Object.fromEntries(shelves.flatMap((s) => s.formats.map((f) => [f, s])))
 const seed=[
  [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],
  [2,'hat-hon-hop-rang-moc','Hạt hỗn hợp rang mộc','healthy',15000,4.8,149,1,0,10,9],
@@ -139,10 +195,23 @@ const heroMeta={
   spicy:{tags:['Cay 3 lớp','Ăn liền'],notes:[['Ớt khô 3 loại','Cay từ từ rồi bùng'],['Ăn liền','Không cần chế biến'],['Gói 40g','Đủ một lần ăn']]},
 }
 
-export const products=seed.map(([id,slug,name,category,price,rating,sold,isNew,hot,s14,s20])=>({
- id,slug,name,category,categoryName:catName[category],price,rating,sold,image:img[category],isNew:Boolean(isNew),hot:Boolean(hot),color:colors[category],
- description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
- tags:heroMeta[category].tags,
- notes:heroMeta[category].notes,
- stock:{14:s14,20:s20}
-}))
+/* seed rows keep the photo format; the product exposes both layers:
+   `format` → image + hero tags, `category`/`categoryName` → the shelf the shopper sees */
+export const products=seed.map(([id,slug,name,format,price,rating,sold,isNew,hot,s14,s20])=>{
+ const shelf=shelfOfFormat[format]
+ return{
+  id,slug,name,
+  format,
+  category:shelf.slug,
+  categoryName:shelf.name,
+  price,rating,sold,
+  image:imageOfFormat[format],
+  isNew:Boolean(isNew),
+  hot:Boolean(hot),
+  color:shelf.color,
+  description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
+  tags:heroMeta[format].tags,
+  notes:heroMeta[format].notes,
+  stock:{14:s14,20:s20},
+ }
+})

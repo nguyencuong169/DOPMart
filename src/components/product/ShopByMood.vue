@@ -38,12 +38,19 @@ const shelves = computed(() =>
         class="cat-card"
         :style="{ '--cat-color': shelf.color }"
       >
-        <span class="cat-card__copy">
-          <b>{{ shelf.name }}</b>
-          <small>{{ shelf.count }} món · từ {{ shelf.from.toLocaleString("vi-VN") }} ₫</small>
+        <span class="cat-card__head">
+          <i class="cat-card__dot" aria-hidden="true"></i>
+          <b class="cat-card__name">{{ shelf.name }}</b>
+          <span class="cat-card__count">{{ shelf.count }} món</span>
         </span>
-        <ArrowUpRight class="cat-card__arrow" :size="16" />
-        <img :src="shelf.image" alt="" loading="lazy" decoding="async" />
+        <span class="cat-card__stage">
+          <img :src="shelf.image" alt="" loading="lazy" decoding="async" />
+          <i class="cat-card__rail" aria-hidden="true"></i>
+        </span>
+        <span class="cat-card__foot">
+          <span class="cat-card__from">từ {{ shelf.from.toLocaleString("vi-VN") }} ₫</span>
+          <span class="cat-card__go">Xem <ArrowUpRight :size="15" /></span>
+        </span>
       </RouterLink>
     </div>
   </section>

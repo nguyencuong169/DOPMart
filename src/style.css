@@ -10003,3 +10003,187 @@ html {
     font-size: clamp(40px, 12vw, 64px);
   }
 }
+
+/* ===== V51 · category strip — "shelf tile" pattern =====
+   food needs the packshot to be the hero: the photo now owns the middle ~60% of the
+   tile and stands on a hard ink shelf, so the section reads as eight real shelves
+   instead of eight pale boxes with a sticker in the corner. */
+.cat-strip {
+  padding: calc(var(--section-y) - 24px) var(--gutter) var(--section-y);
+}
+.cat-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: var(--s3);
+}
+.cat-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(170px, 1fr) auto;
+  gap: 8px;
+  padding: 14px 14px 12px;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-lg);
+  background: var(--paper-bright);
+  box-shadow: 4px 4px 0 var(--ink);
+  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+/* the tint stays behind the pack only — a washed-out tile kills the appetite cue */
+.cat-card::before {
+  content: "";
+  position: absolute;
+  inset: 42px 0 0;
+  opacity: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 95% at 50% 100%,
+    color-mix(in srgb, var(--cat-color) 26%, transparent) 0%,
+    color-mix(in srgb, var(--cat-color) 9%, transparent) 46%,
+    transparent 72%
+  );
+}
+.cat-card__head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cat-card__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cat-color);
+}
+.cat-card__name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.cat-card__count {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--r-pill);
+  background: #fff;
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.cat-card__stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: end center;
+  min-height: 0;
+}
+.cat-card__stage img {
+  width: 100%;
+  height: 100%;
+  max-height: 210px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 12px #19191926);
+  transition: transform 0.22s ease;
+}
+/* the shelf: hard ink rail with a colour echo — same language as the hero ground */
+.cat-card__rail {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 4px;
+  z-index: 1;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--cat-color) 72%, var(--ink));
+}
+.cat-card__foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1.5px dashed #19191933;
+}
+.cat-card__from {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--on-cream);
+}
+.cat-card__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-meta);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.cat-card__go svg {
+  transition: transform 0.18s ease;
+}
+.cat-card:hover,
+.cat-card:focus-visible {
+  transform: translate(-3px, -3px);
+  box-shadow: 7px 7px 0 var(--ink);
+}
+.cat-card:hover .cat-card__stage img,
+.cat-card:focus-visible .cat-card__stage img {
+  transform: translateY(-7px) scale(1.04);
+}
+.cat-card:hover .cat-card__go svg,
+.cat-card:focus-visible .cat-card__go svg {
+  transform: translate(2px, -2px);
+}
+.cat-card:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+@media (max-width: 1100px) {
+  .cat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cat-card {
+    grid-template-rows: auto minmax(150px, 1fr) auto;
+  }
+}
+@media (max-width: 750px) {
+  .cat-grid {
+    gap: 12px;
+  }
+  .cat-card {
+    grid-template-rows: auto minmax(120px, 1fr) auto;
+    padding: 12px 12px 10px;
+  }
+  .cat-card__name {
+    font-size: 16px;
+  }
+  .cat-card__stage img {
+    max-height: 150px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-card,
+  .cat-card__stage img,
+  .cat-card__go svg {
+    transition: none;
+  }
+  .cat-card:hover {
+    transform: none;
+  }
+  .cat-card:hover .cat-card__stage img {
+    transform: none;
+  }
+}

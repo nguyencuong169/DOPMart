@@ -6,10 +6,12 @@ import SearchBox from "../common/SearchBox.vue";
 import FloorSelector from "../common/FloorSelector.vue";
 import { useCartStore } from "../../stores/cartStore";
 import { useFloorStore } from "../../stores/floorStore";
+import { useProductStore } from "../../stores/productStore";
 
 const route = useRoute();
 const cart = useCartStore();
 const floor = useFloorStore();
+const catalog = useProductStore();
 
 const scrolled = ref(false);
 const atTop = ref(true);
@@ -53,6 +55,25 @@ const panelLinks = [...primaryLinks, ...moreLinks];
 
 const moreOpen = ref(false);
 const moreEl = ref(null);
+/* the 8 categories live behind "Sản phẩm" — one source: productStore.categories */
+const catOpen = ref(false);
+const catEl = ref(null);
+function toggleCats() {
+  catOpen.value = !catOpen.value;
+  moreOpen.value = false;
+}
+/* cart badge: cap the number and bounce for <= 200ms on change */
+const bump = ref(false);
+let bumpTimer = null;
+watch(
+  () => cart.count,
+  () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    bump.value = true;
+    clearTimeout(bumpTimer);
+    bumpTimer = setTimeout(() => (bump.value = false), 200);
+  }
+);
 const navEl = ref(null);
 const indicator = ref({ x: 0, width: 0, ready: false, animate: false });
 
@@ -76,6 +97,7 @@ function toggleMore() {
 }
 function onDocPointerDown(event) {
   if (moreOpen.value && !moreEl.value?.contains(event.target)) moreOpen.value = false;
+  if (catOpen.value && !catEl.value?.contains(event.target)) catOpen.value = false;
 }
 function syncIndicator() {
   const nav = navEl.value;
@@ -141,6 +163,10 @@ function onKeydown(event) {
       moreOpen.value = false;
       return;
     }
+    if (catOpen.value) {
+      catOpen.value = false;
+      return;
+    }
   }
   if (!menuOpen.value) return;
   if (event.key !== "Tab") return;
@@ -170,6 +196,7 @@ watch(
   () => {
     closeMenu();
     moreOpen.value = false;
+    catOpen.value = false;
     nextTick(syncIndicator);
   }
 );
@@ -202,6 +229,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("keydown", onKeydown);
   document.removeEventListener("pointerdown", onDocPointerDown);
   navObserver?.disconnect();
+  clearTimeout(bumpTimer);
   document.body.classList.remove("dop-menu-locked");
 });
 </script>
@@ -227,8 +255,40 @@ onBeforeUnmount(() => {
         :style="{ width: `${indicator.width}px`, transform: `translateX(${indicator.x}px)` }"
         aria-hidden="true"
       />
+      <div ref="catEl" class="dop-nav-cats" :class="{ open: catOpen }">
+        <RouterLink
+          to="/products"
+          class="dop-nav__link"
+          :class="{ 'is-current': isCurrent(primaryLinks[0]) }"
+          :aria-current="isCurrent(primaryLinks[0]) ? 'page' : undefined"
+          >Sản phẩm</RouterLink
+        ><button
+          type="button"
+          class="dop-nav-cats__toggle"
+          :aria-expanded="catOpen"
+          aria-haspopup="true"
+          aria-controls="dop-cats-panel"
+          :aria-label="catOpen ? 'Đóng 8 danh mục' : 'Mở 8 danh mục'"
+          @click="toggleCats"
+        >
+          <ChevronDown :size="13" /></button
+        ><Transition name="dop-more">
+          <div v-if="catOpen" id="dop-cats-panel" class="dop-nav-cats__panel">
+            <RouterLink
+              v-for="c in catalog.categories"
+              :key="c.slug"
+              :to="`/category/${c.slug}`"
+              class="dop-nav-cats__item"
+              @click="catOpen = false"
+            >
+              <span aria-hidden="true">{{ c.icon }}</span>
+              {{ c.name }}
+            </RouterLink>
+          </div>
+        </Transition>
+      </div>
       <RouterLink
-        v-for="link in primaryLinks"
+        v-for="link in primaryLinks.slice(1)"
         :key="link.to"
         :to="link.to"
         class="dop-nav__link"
@@ -236,36 +296,13 @@ onBeforeUnmount(() => {
         :aria-current="isCurrent(link) ? 'page' : undefined"
         >{{ link.label }}</RouterLink
       >
-      <div ref="moreEl" class="dop-nav-more" :class="{ open: moreOpen }">
-        <button
-          type="button"
-          class="dop-nav__link dop-nav-more__trigger"
-          :class="{ 'is-current': moreActive }"
-          :aria-expanded="moreOpen"
-          aria-haspopup="true"
-          aria-controls="dop-more-panel"
-          @click="toggleMore"
-        >
-          Khám phá
-          <ChevronDown class="dop-nav-more__chev" :size="13" />
-        </button>
-        <Transition name="dop-more">
-          <div v-if="moreOpen" id="dop-more-panel" class="dop-nav-more__panel">
-            <RouterLink
-              v-for="link in moreLinks"
-              :key="link.to"
-              :to="link.to"
-              class="dop-nav-more__item"
-              :class="{ 'is-current': isCurrent(link) }"
-              @click="moreOpen = false"
-            >
-              <component :is="link.icon" :size="16" />
-              <span><b>{{ link.label }}</b><small>{{ link.note }}</small></span>
-              <ArrowUpRight class="dop-nav-more__arrow" :size="14" />
-            </RouterLink>
-          </div>
-        </Transition>
-      </div>
+      <RouterLink
+        to="/how-it-works"
+        class="dop-nav__link"
+        :class="{ 'is-current': route.path === '/how-it-works' }"
+        :aria-current="route.path === '/how-it-works' ? 'page' : undefined"
+        >Cách đặt hàng</RouterLink
+      >
     </nav>
     <div class="dop-nav-actions">
       <div class="nav-search"><SearchBox /></div>
@@ -277,7 +314,13 @@ onBeforeUnmount(() => {
         @click="openCart"
       >
         <ShoppingBag />
-        <span v-if="cart.count" aria-hidden="true">{{ cart.count }}</span>
+        <span
+          v-if="cart.count"
+          class="cart-count"
+          :class="{ 'is-bump': bump }"
+          aria-hidden="true"
+          >{{ cart.count > 99 ? "99+" : cart.count }}</span
+        >
       </button>
       <button
         ref="toggleEl"

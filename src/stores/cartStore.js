@@ -15,7 +15,11 @@ export const useCartStore = defineStore("cart", {
   },
   actions: {
     persist() {
-      localStorage.setItem(KEY, JSON.stringify(this.items));
+      try {
+        localStorage.setItem(KEY, JSON.stringify(this.items));
+      } catch {
+        /* private mode / quota — the cart still works for this session */
+      }
     },
     add(p, qty = 1) {
       const i = this.items.find((x) => x.id === p.id);

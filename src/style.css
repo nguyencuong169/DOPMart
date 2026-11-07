@@ -9644,3 +9644,179 @@ p.lead,
     display: none;
   }
 }
+
+/* ===== V48 · P1.7 — app bar: readable nav, category menu, focus, cart badge ===== */
+/* nav text is 14px now (was 12.5–13px) */
+.dop-nav__link,
+.dop-nav-cats__toggle {
+  font-size: 14px;
+}
+.dop-header .dop-nav__link.is-current,
+.dop-nav-more__item.is-current b {
+  font-weight: 800;
+}
+/* focus ring that works on yellow, red and purple alike: ink line + paper halo */
+.dop-header a:focus-visible,
+.dop-header button:focus-visible,
+.dop-nav-cats__item:focus-visible,
+.mobile-nav a:focus-visible,
+.mobile-nav button:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--paper);
+  border-radius: var(--r-pill);
+}
+
+/* --- the 8 categories behind "Sản phẩm" --- */
+.dop-nav-cats {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.dop-nav-cats__toggle {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: -4px;
+  border: var(--bw) solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink);
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+.dop-nav-cats__toggle:hover {
+  background: #1919190d;
+}
+.dop-nav-cats.open .dop-nav-cats__toggle {
+  transform: rotate(180deg);
+}
+.dop-nav-cats__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -8px;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 4px;
+  min-width: 340px;
+  padding: 10px;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  box-shadow: var(--e2);
+}
+.dop-nav-cats__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: var(--r-xs);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-decoration: none;
+}
+.dop-nav-cats__item span {
+  font-size: 15px;
+}
+.dop-nav-cats__item:hover {
+  background: color-mix(in srgb, var(--sun) 38%, var(--paper));
+}
+
+/* --- floor selector + opening-state chip --- */
+.floor-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.floor-state {
+  margin: 0;
+  padding: 3px 9px;
+  border: var(--bw) solid #1919193d;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--on-cream);
+  white-space: nowrap;
+}
+.floor-state::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--leaf);
+}
+.floor-state.closed {
+  border-style: dashed;
+}
+.floor-state.closed::before {
+  background: var(--berry-deep);
+}
+@media (max-width: 1240px) {
+  .floor-state {
+    display: none;
+  }
+}
+
+/* --- cart badge: 99+ and a 200ms bounce --- */
+.dop-header .cart-count {
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+}
+.dop-header .cart-count.is-bump {
+  animation: cart-bump 0.2s ease-out;
+}
+@keyframes cart-bump {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.32);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dop-header .cart-count.is-bump {
+    animation: none;
+  }
+}
+
+/* --- search field keeps 14px text and a 40px target --- */
+.dop-nav-actions .search {
+  min-height: 40px;
+}
+.dop-nav-actions .search input {
+  font-size: 14px;
+}
+
+/* --- mobile: every bottom-nav target >= 44px, current page marked --- */
+.mobile-nav a {
+  min-height: 44px;
+}
+.mobile-nav a.router-link-active {
+  font-weight: 800;
+  color: var(--ink);
+}
+.dop-menu__links a {
+  min-height: 48px;
+}
+
+/* anchors land below the pinned pill bar */
+html {
+  scroll-padding-top: 96px;
+}
+@media (max-width: 760px) {
+  html {
+    scroll-padding-top: 80px;
+  }
+}

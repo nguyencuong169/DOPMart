@@ -1,11 +1,24 @@
 import { defineStore } from "pinia";
-const saved = Number(localStorage.getItem("dopmart-floor"));
+/* localStorage throws in private mode / when quota is full — never let that break the app */
+const KEY = "dopmart-floor";
+function readFloor() {
+  try {
+    const saved = Number(localStorage.getItem(KEY));
+    return [14, 20].includes(saved) ? saved : 20;
+  } catch {
+    return 20;
+  }
+}
 export const useFloorStore = defineStore("floor", {
-  state: () => ({ floor: [14, 20].includes(saved) ? saved : 20 }),
+  state: () => ({ floor: readFloor() }),
   actions: {
     setFloor(v) {
       this.floor = Number(v);
-      localStorage.setItem("dopmart-floor", String(this.floor));
+      try {
+        localStorage.setItem(KEY, String(this.floor));
+      } catch {
+        /* ignore — the choice just won't survive a reload */
+      }
     },
   },
 });

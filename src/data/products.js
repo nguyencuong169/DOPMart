@@ -184,7 +184,7 @@ const seed=[
  [8,'xuc-xich-an-lien','Xúc xích ăn liền','instant',10000,4.8,211,1,0,4,10]
 ]
 
-const heroMeta={
+export const heroMeta={
   chips:{tags:['Giòn rụm','Đậm vị'],notes:[['Giòn 2 lớp','Chiên giòn rồi rắc phô mai'],['Phô mai thật','Không bột bắp pha'],['Túi 50g','Vừa một giờ nghỉ']]},
   healthy:{tags:['Rang mộc','Giàu đạm'],notes:[['Rang không dầu','Giữ nguyên vị hạt'],['Đạm thực vật','No lâu hơn bánh ngọt'],['Túi 150g','Chia được 3 lần ăn']]},
   noodles:{tags:['Cay bùng vị','3 phút'],notes:[['Sa tế tôm','Nước dùng nêm sẵn'],['3 phút','Chỉ cần nước sôi'],['Ly 65g','Có topping sấy']]},

@@ -5,7 +5,7 @@ import SectionHeader from "../common/SectionHeader.vue";
 import QuantitySelector from "./QuantitySelector.vue";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
-import { headWords } from "../../data/products";
+import { headWords, heroMeta } from "../../data/products";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
 const store = useProductStore();
@@ -95,10 +95,17 @@ const link = computed(() =>
     : `/category/${current.value.slug}`,
 );
 
-const badge = (p) => {
+const productTags = (p) => {
+  const t = [];
+  const c = p.color;
+  const on = onColor(c);
   if (p.oldPrice > p.price)
-    return `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`;
-  return p.isNew ? "MỚI" : "";
+    t.push({ text: `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`, type: 'save', bg: c, fg: on });
+  if (p.isNew) t.push({ text: 'MớI', type: 'new', bg: c, fg: on });
+  if (p.hot) t.push({ text: 'NờI BẶT', type: 'hot', bg: '#c8202f', fg: '#ffffff' });
+  for (const x of (heroMeta[p.format]?.tags ?? []).slice(0, 2))
+    t.push({ text: x, type: 'format', bg: '#fff', fg: 'var(--ink)' });
+  return t;
 };
 </script>
 
@@ -169,11 +176,14 @@ const badge = (p) => {
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
           >
-            <span
-              v-if="badge(p)"
-              class="cat-card__badge"
-              :class="{ 'is-new': badge(p) === 'MỚI' }"
-              >{{ badge(p) }}</span
+            <div class="cat-card__tags" aria-label="Nhận sản phẩm">
+              <span
+                v-for="(t, k) in productTags(p)"
+                :key="k"
+                class="cat-card__pill"
+                :style="`background:${t.bg};color:${t.fg};border-color:${t.fg}`"
+              >{{ t.text }}</span
+            ></div>
             >
             <div class="cat-card__stage">
               <div
@@ -526,6 +536,11 @@ const badge = (p) => {
   display: block;
   width: 100%;
   height: auto;
+  animation: cat-float 5s ease-in-out infinite;
+}
+@keyframes cat-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 .cat-card__shot:focus-visible {
   outline: 3px solid var(--ink);
@@ -565,28 +580,31 @@ const badge = (p) => {
   transform: translateX(-50%) scale(0.9, 0.86);
   opacity: 0.8;
 }
-.cat-card__badge {
+.cat-card__tags {
   position: absolute;
-  z-index: 3;
-  top: 16px;
-  right: 16px;
-  width: clamp(46px, 3.4vw, 64px);
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #c8202f;
-  color: #fff;
-  border: 3px solid #fff;
-  font: 800 clamp(12px, 0.9vw, 16px) var(--fd);
-  transform: rotate(8deg);
-  box-shadow: 4px 4px 0 var(--ink);
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
 }
-.cat-card__badge.is-new {
+.cat-card__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2.5px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
   background: #fff;
   color: var(--ink);
-  border-color: var(--ink);
+  font: 800 9px/1 var(--fd);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ink);
 }
+
 /* the price is a tag hooked on the pack (image-2): eyelet, string, tilt.
    it stays out of sight until hover so the tile is calm at rest */
 .cat-card__tag {
@@ -656,12 +674,10 @@ const badge = (p) => {
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   opacity: 0;
   transform: translateY(10px);
-  transition:
-    opacity 0.3s ease-out,
-    transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
+  transition: opacity 0.3s ease-out, transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
 .cat-card:hover .cat-card__buy,
 .cat-card:focus-within .cat-card__buy {
@@ -669,32 +685,44 @@ const badge = (p) => {
   transform: translateY(0);
 }
 .cat-card__buy .quantity {
-  margin: 0;
-  gap: 6px;
-  padding: 4px 6px;
-  border: 2.5px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 2px solid var(--ink);
   border-radius: 999px;
   background: #fff;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 .cat-card__buy .quantity button {
-  width: 22px;
-  height: 22px;
-  border: 0;
-  background: none;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font: 800 13px/1 var(--fd);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
 }
+.cat-card__buy .quantity button:hover { background: #f3f3f3; }
 .cat-card__buy .quantity span {
-  min-width: 18px;
+  min-width: 20px;
   text-align: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 15px;
+  color: var(--ink);
 }
 .cat-card__add {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 9px 10px;
+  padding: 10px 12px;
   border: 2.5px solid var(--ink);
   border-radius: 999px;
   background: #ffc72c;
@@ -702,18 +730,11 @@ const badge = (p) => {
   font: 700 clamp(12px, 3.6cqw, 15px) / 1 var(--fd);
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.cat-card__add:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
-}
-.cat-card__add:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
-}
+.cat-card__add:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.cat-card__add:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
 @media (max-width: 980px) {
   .cat-grid {
     grid-template-columns: repeat(2, minmax(0, 456px));

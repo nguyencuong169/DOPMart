@@ -10498,6 +10498,98 @@ html {
   }
   .promo-card:hover .promo-media img,
   .promo-card:focus-within .promo-media img {
-    transform: translate(-4%, -15%) rotate(-7deg);
+    transform: translate(-2%, -9%) rotate(-5deg);
+  }
+}
+
+/* ===== V58 · deal card v2 — smaller pack, colour from the packshot, no dead space =====
+   v1 grew the pack to 122% and it covered its neighbours and its own badge, and the
+   info block carried ~180px of empty colour. Now: 100% pack that only peeks past the
+   top edge, sits directly on the diagonal, and the card colour is the product's own
+   dominant colour (offer.tint) with the text tone chosen from its luminance. */
+.promo-card {
+  grid-template-rows: minmax(150px, auto) 1fr;
+  background: linear-gradient(158deg, var(--paper-bright) 0 46%, var(--promo-color) 46.2% 100%);
+}
+.promo-media {
+  place-items: end center;
+  min-height: 150px;
+  padding: 0;
+  overflow: visible;
+}
+.promo-card .promo-media img {
+  width: 100%;
+  max-width: 100%;
+  transform: translate(0, -10%) rotate(-5deg);
+  filter: drop-shadow(0 16px 18px #19191940);
+}
+.promo-card:hover .promo-media img,
+.promo-card:focus-within .promo-media img {
+  transform: translate(0, -14%) rotate(-2.5deg) scale(1.03);
+}
+/* text sits on the product colour now — the tone class decides light or dark ink */
+.promo-card.is-dark {
+  --on-promo: #fff9ee;
+  --on-promo-soft: #f6efe6;
+}
+.promo-card.is-light {
+  --on-promo: #101010;
+  --on-promo-soft: #17120f;
+}
+.promo-card.is-dark .promo-price s,
+.promo-card.is-light .promo-price s {
+  color: var(--on-promo-soft);
+}
+.promo-body {
+  align-content: end;
+  gap: 3px;
+  padding: 10px 18px 16px;
+}
+.promo-body small {
+  letter-spacing: 0.12em;
+}
+.promo-price {
+  margin: 0 0 6px;
+}
+/* the badge must stay on top of the pack, not under it */
+.promo-discount {
+  z-index: 6;
+  top: 12px;
+  right: 12px;
+  width: 50px;
+  height: 50px;
+  box-shadow: 0 3px 0 #19191933;
+}
+.promo-card.is-dark .promo-body button,
+.promo-card.is-light .promo-body button {
+  background: var(--sun);
+  color: var(--ink);
+}
+@media (max-width: 1100px) {
+  .promo-card {
+    grid-template-rows: minmax(136px, auto) 1fr;
+  }
+  .promo-media {
+    min-height: 136px;
+  }
+  .promo-card .promo-media img {
+    width: 96%;
+    transform: translate(0, -8%) rotate(-4deg);
+  }
+}
+@media (max-width: 750px) {
+  .promo-card {
+    grid-template-rows: minmax(124px, auto) 1fr;
+    background: linear-gradient(158deg, var(--paper-bright) 0 44%, var(--promo-color) 44.2% 100%);
+  }
+  .promo-media {
+    min-height: 124px;
+  }
+  .promo-card .promo-media img {
+    width: 88%;
+    transform: rotate(-4deg);
+  }
+  .promo-body {
+    padding: 8px 14px 14px;
   }
 }

@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger.js";
 import { ArrowRight, Clock3, Tag } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
+import { surfaceTone } from "../../utils/color";
 gsap.registerPlugin(ScrollTrigger);
 const products = useProductStore(),
   cart = useCartStore(),
@@ -46,7 +47,8 @@ onBeforeUnmount(() => animation?.revert());
         v-for="offer in offers"
         :key="offer.id"
         class="promo-card"
-        :style="{ '--promo-color': offer.color }"
+        :class="surfaceTone(offer.tint || offer.color)"
+        :style="{ '--promo-color': offer.tint || offer.color }"
       >
         <div class="promo-media">
           <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" />

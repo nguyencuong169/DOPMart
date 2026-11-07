@@ -7,7 +7,7 @@ export const useProductStore=defineStore('products',{
   newProducts:s=>s.products.filter(p=>p.isNew),
   bestSellers:s=>[...s.products].sort((a,b)=>b.sold-a.sold),
   offers:s=>[
-   {id:5,discount:20},{id:7,discount:15},{id:8,discount:10}
+   {id:1,discount:20},{id:6,discount:15},{id:4,discount:10}
   ].map(({id,discount})=>{
    const p=s.products.find(x=>x.id===id)
    if(!p) return null

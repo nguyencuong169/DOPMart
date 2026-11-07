@@ -1,5 +1,7 @@
 /* P0-02 evidence: WCAG contrast for every secondary-text token pair in use.
    No browser needed — the ratios are computed from the same hex values the CSS uses. */
+import { readFileSync } from 'node:fs'
+
 const hex = (h) => {
   const c = h.replace('#', '')
   return [0, 2, 4].map((i) => parseInt(c.slice(i, i + 2), 16) / 255)
@@ -46,5 +48,29 @@ for (const [name, fg, bg, note] of pairs) {
     `${name.padEnd(18)} ${fg} ${bg} ${r.toFixed(2).padStart(6)}  ${ok ? 'pass' : 'FAIL'}  ${note}`
   )
 }
-lines.push(fails ? `\n${fails} token pair(s) below 4.5:1` : '\nall tokens in use pass AA (4.5:1)')
+
+/* deal cards: the surface is the product's own dominant colour, so every tint in
+   products.js must clear 4.5:1 with whichever text token surfaceTone() picks */
+const src = readFileSync(new URL('../src/data/products.js', import.meta.url), 'utf8')
+const tints = [...src.matchAll(/^\s{2}([a-z]+):\s*['"](#[0-9a-f]{6})['"],?$/gim)].map((m) => [m[1], m[2]])
+const INK = '#101010'
+const CREAM = '#fff9ee'
+lines.push('\ndeal-card tints (text colour is picked by the higher ratio):')
+if (!tints.length) {
+  fails++
+  lines.push('  no tintOfFormat entries parsed')
+}
+for (const [format, hex] of tints) {
+  const withCream = ratio(CREAM, hex)
+  const withInk = ratio(INK, hex)
+  const dark = withCream > withInk
+  const best = Math.max(withCream, withInk)
+  const ok = best >= 4.5
+  if (!ok) fails++
+  lines.push(
+    `  ${format.padEnd(11)} ${hex} ${(dark ? 'cream' : 'ink #101010').padEnd(10)} ${best.toFixed(2)}  ${ok ? 'pass' : 'FAIL'}`
+  )
+}
+
+lines.push(fails ? `\n${fails} contrast problem(s)` : '\nall tokens in use pass AA (4.5:1)')
 console.log(lines.join('\n'))

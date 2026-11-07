@@ -149,6 +149,19 @@ export const photoSubjects = Object.fromEntries(
 )
 const imageOfFormat = Object.fromEntries(formats.map((f) => [f.slug, f.image]))
 const shelfOfFormat = Object.fromEntries(shelves.flatMap((s) => s.formats.map((f) => [f, s])))
+
+/* the dominant colour of each packshot — used by the deal card so the info block
+   matches the product in front of it instead of the shelf it sits on */
+const tintOfFormat = {
+  chips: "#f5a623",
+  healthy: "#2f6b31",
+  noodles: "#d13a1f",
+  drinks: "#6d2a9b",
+  chocolate: "#5e3323",
+  candy: "#e0457b",
+  spicy: "#c62f14",
+  instant: "#b52a26",
+}
 const seed=[
  [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],
  [2,'hat-hon-hop-rang-moc','Hạt hỗn hợp rang mộc','healthy',15000,4.8,149,0,0,10,9],
@@ -185,6 +198,7 @@ export const products=seed.map(([id,slug,name,format,price,rating,sold,isNew,hot
   isNew:Boolean(isNew),
   hot:Boolean(hot),
   color:shelf.color,
+  tint:tintOfFormat[format],
   description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
   tags:heroMeta[format].tags,
   notes:heroMeta[format].notes,

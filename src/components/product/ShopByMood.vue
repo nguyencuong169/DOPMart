@@ -1,13 +1,25 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ArrowRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
+import QuantitySelector from "./QuantitySelector.vue";
 import { useProductStore } from "../../stores/productStore";
+import { useCartStore } from "../../stores/cartStore";
+import { headWords } from "../../data/products";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
 const store = useProductStore();
+const cart = useCartStore();
 const active = ref("all");
 const uid = Math.random().toString(36).slice(2, 7);
+
+/* per-card quantity for the hover quick-add (defaults to 1, resets after add) */
+const qty = reactive({});
+const qtyOf = (p) => qty[p.id] ?? 1;
+const addToCart = (p) => {
+  cart.add(p, qtyOf(p));
+  qty[p.id] = 1;
+};
 
 const fmt = (n) => n.toLocaleString("vi-VN");
 const bySold = (arr) => [...arr].sort((a, b) => b.sold - a.sold);
@@ -42,16 +54,6 @@ const current = computed(
   () => tabs.value.find((t) => t.slug === active.value) ?? tabs.value[0],
 );
 const shown = computed(() => current.value.items.slice(0, MAX));
-/* the poster head reads as a shelf slogan, never as the product name: two
-   short ad lines per SHELF (p.category is the shelf slug, image-2 layout) */
-const headWords = {
-  "do-uong": ["NƯỚC MÁT", "GIẢI KHÁT"],
-  "bua-nhanh": ["MÌ NÓNG", "ĂN LIỀN"],
-  "snack-man": ["GIÒN RỤM", "SNACK MẶN"],
-  "do-cay": ["CAY NỒNG", "BỐC KHÓI"],
-  ngot: ["NGỌT NGÀO", "BÁNH KẸO"],
-  healthy: ["HẠT RANG", "LÀNH MẠNH"],
-};
 let headCtx = null;
 const fitTick = ref(0);
 const heads = computed(() => {
@@ -71,8 +73,9 @@ const heads = computed(() => {
       1,
     );
     /* 100cqw = card width, so a line that spans 96cqw needs font-size 9600/widest
-       (widest measured at a 100px reference size); clamped for one-letter words */
-    const size = Math.min(34, Math.max(13, 9600 / widest));
+       (widest measured at a 100px reference size); the 26 cap keeps the two
+       lines inside the poster tile's air above and below the pack */
+    const size = Math.min(26, Math.max(12, 9600 / widest));
     return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
   });
 });
@@ -160,13 +163,11 @@ const badge = (p) => {
           :id="`${uid}-panel`"
           :aria-labelledby="`${uid}-tab-${current.slug}`"
         >
-          <RouterLink
+          <article
             v-for="(p, i) in shown"
             :key="p.id ?? p.slug"
-            :to="`/product/${p.slug}`"
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
-            :aria-label="p.name + ' — ' + fmt(p.price) + ' ₫'"
           >
             <span
               v-if="badge(p)"
@@ -186,17 +187,37 @@ const badge = (p) => {
                 }}</span>
               </div>
               <i class="cat-card__ground" aria-hidden="true"></i>
-              <img
-                :src="p.image"
-                :alt="p.name"
-                loading="lazy"
-                decoding="async"
-              />
+              <button
+                type="button"
+                class="cat-card__shot"
+                :aria-label="`Xem nhanh ${p.name}`"
+                @click="store.openQuick(p)"
+              >
+                <img
+                  :src="p.image"
+                  :alt="p.name"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </button>
               <span class="cat-card__tag" aria-hidden="true"
                 ><b>{{ fmt(p.price) }} ₫</b></span
               >
+              <div class="cat-card__buy">
+                <QuantitySelector
+                  :model-value="qtyOf(p)"
+                  @update:model-value="(v) => (qty[p.id] = v)"
+                />
+                <button
+                  type="button"
+                  class="cat-card__add"
+                  @click="addToCart(p)"
+                >
+                  Thêm vào giỏ
+                </button>
+              </div>
             </div>
-          </RouterLink>
+          </article>
         </div>
       </div>
     </div>
@@ -406,9 +427,6 @@ const badge = (p) => {
   position: relative;
   display: block;
   width: 100%;
-  text-decoration: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   /* no fixed aspect: the height is the stage (86% of the width, deals-style)
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
@@ -419,27 +437,22 @@ const badge = (p) => {
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
 }
-.cat-card:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 6px;
-}
 @keyframes cat-up {
   from {
     opacity: 0;
     transform: translateY(26px) scale(0.96);
   }
 }
-/* the poster head: two stacked display lines behind the pack. Line 1 is the
-   solid colour block, line 2 is hollow ink — the pack in front bites its hem */
+/* the poster head: two display lines that hide behind the pack and, on hover,
+   split apart — the top line floats up, the bottom line drops down, so the
+   packshot is revealed whole (image-2 idea, revealed only on hover) */
 .cat-card__head {
   position: absolute;
-  inset: 3% 0 auto;
+  inset: 0;
   z-index: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   pointer-events: none;
   user-select: none;
+  opacity: 0;
   font-family: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Impact,
     sans-serif;
   font-weight: 900;
@@ -450,80 +463,107 @@ const badge = (p) => {
   letter-spacing: -0.005em;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: opacity 0.35s ease-out;
 }
 .cat-card__line {
-  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  transition: transform 0.55s cubic-bezier(0.3, 1.15, 0.5, 1);
+}
+/* rest: both lines tucked at the pack's yoke, out of sight */
+.cat-card__line:first-child {
+  top: 2cqw;
+  transform: translateY(26cqw);
   color: color-mix(in srgb, var(--c) 86%, var(--ink));
 }
-.cat-card__line--hollow {
+.cat-card__line:last-child {
+  top: 99cqw;
+  transform: translateY(-26cqw);
   color: transparent;
   -webkit-text-stroke: clamp(1.5px, 0.5cqw, 3.5px) var(--ink);
+}
+.cat-card:hover .cat-card__head,
+.cat-card:focus-within .cat-card__head {
+  opacity: 1;
+}
+.cat-card:hover .cat-card__line,
+.cat-card:focus-within .cat-card__line {
+  transform: translateY(0);
 }
 .cat-card__stage {
   position: relative;
   z-index: 2;
-  /* poster tile: tall enough for the two display lines to stand over the pack,
-     and still rides on the width so proportions hold at every card size */
+  /* poster tile: air above the pack for the head, air below for the tag and the
+     quick-add row — and it still rides on the width at every card size */
   flex: 0 0 auto;
-  padding: 136% 0 0;
+  padding: 150% 0 0;
 }
-.cat-card__stage img {
+/* the packshot: 75% of the card wide, dropped ~19% from the top, so the head
+   can stand above it and the shadow has room to breathe below (image-2 art) */
+.cat-card__shot {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  top: 19cqw;
   z-index: 2;
-  width: 102%;
-  height: auto;
-  object-fit: contain;
-  /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
-     so neighbouring packs echo the V of the diagonals */
-  /* rest pose: the pack leans into the cream side; even cards mirror the
-     tilt. The transform list here and on :hover must stay structurally
-     identical so the lift interpolates cleanly (translateX keeps the anchor). */
-  transform: translateX(-50%) translateY(0) rotate(var(--tilt, 4deg)) scale(1)
-    rotate(0deg);
-  transform-origin: 50% 100%;
-  /* leave: the pack settles back onto its lean */
+  width: 75%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateX(-50%) translateY(0) rotate(var(--tilt, 3deg)) scale(1);
+  transform-origin: 50% 90%;
   transition:
-    transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1),
+    transform 0.5s cubic-bezier(0.3, 1.15, 0.5, 1),
     filter 0.4s ease-out;
-  filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.22))
-    drop-shadow(6px 12px 8px rgba(0, 0, 0, 0.2))
-    drop-shadow(14px 28px 20px rgba(0, 0, 0, 0.18));
+  filter:
+    drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
+    drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
 }
-.cat-card:nth-child(even) .cat-card__stage img {
-  --tilt: -4deg;
+.cat-card__shot img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
+.cat-card__shot:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 8px;
+  border-radius: 12px;
+}
+.cat-card:nth-child(even) .cat-card__shot {
+  --tilt: -3deg;
+}
+/* the pool of shade the pack floats over */
 .cat-card__ground {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  top: 96cqw;
   z-index: 1;
-  width: 70%;
-  height: 7%;
-  transform: translateX(calc(-50% + var(--ry, 0deg) * -1.2));
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
-  filter: blur(6px);
+  width: 58%;
+  height: 8cqw;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.4), transparent);
+  filter: blur(7px);
   mix-blend-mode: multiply;
   transition:
-    transform 0.4s,
-    opacity 0.4s;
+    transform 0.45s,
+    opacity 0.45s;
 }
-.cat-card:hover .cat-card__stage img,
-.cat-card:focus-visible .cat-card__stage img {
-  /* hover is a nudge: the pack steps up a touch and its shadow deepens */
-  transition:
-    transform 0.4s cubic-bezier(0.3, 1.2, 0.5, 1),
-    filter 0.35s ease-out;
-  transform: translateX(-50%) translateY(-6px) rotate(var(--tilt, 4deg))
-    scale(1.02) rotate(0deg);
-  filter: drop-shadow(2px 4px 2px rgba(0, 0, 0, 0.16))
-    drop-shadow(10px 22px 14px rgba(0, 0, 0, 0.16))
-    drop-shadow(20px 42px 30px rgba(0, 0, 0, 0.14));
+.cat-card:hover .cat-card__shot,
+.cat-card:focus-within .cat-card__shot {
+  /* a nudge, never a spin: the pack lifts and leans a touch */
+  transform: translateX(-50%) translateY(-7px) rotate(var(--tilt, 3deg))
+    scale(1.03);
+  filter:
+    drop-shadow(2px 8px 4px rgba(0, 0, 0, 0.16))
+    drop-shadow(14px 32px 24px rgba(0, 0, 0, 0.18));
 }
-.cat-card:hover .cat-card__ground {
-  transform: translateX(-50%) scale(0.85, 0.9);
-  opacity: 0.5;
+.cat-card:hover .cat-card__ground,
+.cat-card:focus-within .cat-card__ground {
+  transform: translateX(-50%) scale(0.9, 0.86);
+  opacity: 0.8;
 }
 .cat-card__badge {
   position: absolute;
@@ -547,33 +587,38 @@ const badge = (p) => {
   color: var(--ink);
   border-color: var(--ink);
 }
-/* the price is a tag hooked onto the pack (image-2): eyelet, string, tilt */
+/* the price is a tag hooked on the pack (image-2): eyelet, string, tilt.
+   it stays out of sight until hover so the tile is calm at rest */
 .cat-card__tag {
   position: absolute;
-  right: 2%;
-  bottom: 26%;
-  z-index: 3;
-  padding: 7px 15px 7px 22px;
+  right: 1%;
+  top: 60cqw;
+  z-index: 4;
+  padding: 7px 14px 7px 22px;
   border: 2.5px solid var(--ink);
   border-radius: 6px 14px 14px 6px;
   background: var(--c);
   color: var(--on);
-  font: 800 clamp(13px, 4.6cqw, 20px) / 1 var(--fd);
+  font: 800 clamp(13px, 4.4cqw, 19px) / 1 var(--fd);
   white-space: nowrap;
   box-shadow: 3px 4px 0 var(--ink);
-  transform: rotate(-14deg);
-  transform-origin: 12% -10%;
-  transition: transform 0.4s cubic-bezier(0.3, 1.3, 0.5, 1);
+  opacity: 0;
+  transform: rotate(-14deg) translateY(3cqw) scale(0.86);
+  transform-origin: 16% 30%;
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
-/* eyelet + string reaching up-left into the pack, so the tag reads as hung */
+/* eyelet on the tag's left edge; the string starts exactly at the eyelet's
+   centre and swings around it, so the two can never come apart */
 .cat-card__tag::before {
   content: "";
   position: absolute;
   left: 6px;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  margin-top: -4px;
+  width: 9px;
+  height: 9px;
+  margin-top: -6.5px; /* (9 + 2 x 2 border) / 2 */
   border: 2px solid var(--ink);
   border-radius: 50%;
   background: var(--cream, #fffaf0);
@@ -581,17 +626,93 @@ const badge = (p) => {
 .cat-card__tag::after {
   content: "";
   position: absolute;
-  left: -17px;
-  bottom: 74%;
-  width: 30px;
-  height: 2px;
+  left: 13px; /* eyelet centre: 6 + (9 + 4) / 2 */
+  top: calc(50% - 1.25px);
+  width: 26px;
+  height: 2.5px;
   border-radius: 2px;
   background: var(--ink);
-  transform: rotate(40deg);
-  transform-origin: 100% 100%;
+  transform-origin: 0 50%;
+  transform: rotate(-152deg);
 }
-.cat-card:hover .cat-card__tag {
-  transform: rotate(-9deg);
+.cat-card:hover .cat-card__tag,
+.cat-card:focus-within .cat-card__tag {
+  opacity: 1;
+  transform: rotate(-14deg) translateY(0) scale(1);
+}
+/* touch screens have no hover: the price must still be readable there */
+@media (hover: none) {
+  .cat-card__tag {
+    opacity: 1;
+    transform: rotate(-14deg);
+  }
+}
+/* quick add sits right under the pack, shown on hover / focus */
+.cat-card__buy {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  bottom: 2cqw;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+.cat-card:hover .cat-card__buy,
+.cat-card:focus-within .cat-card__buy {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cat-card__buy .quantity {
+  margin: 0;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.cat-card__buy .quantity button {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  background: none;
+}
+.cat-card__buy .quantity span {
+  min-width: 18px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+.cat-card__add {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 10px;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  background: #ffc72c;
+  color: var(--ink);
+  font: 700 clamp(12px, 3.6cqw, 15px) / 1 var(--fd);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.cat-card__add:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.cat-card__add:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 @media (max-width: 980px) {
   .cat-grid {
@@ -615,9 +736,8 @@ const badge = (p) => {
     animation: none !important;
     transition: none !important;
   }
-  .cat-card:hover .cat-card__stage img {
-    transform: translateX(-50%) translateY(0) rotate(var(--tilt, 4deg)) scale(1)
-      rotate(0deg) !important;
+  .cat-card__shot {
+    transform: translateX(-50%) rotate(var(--tilt, 3deg)) !important;
   }
 }
 </style>

@@ -1,14 +1,27 @@
 <script setup>
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { X, ShoppingBag, MapPin, ArrowUpRight } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
 import { useFloorStore } from "../../stores/floorStore";
 import QuantitySelector from "./QuantitySelector.vue";
+import { headWords } from "../../data/products";
 const products = useProductStore(),
   cart = useCartStore(),
   floor = useFloorStore(),
   qty = ref(1);
+/* the poster lines behind the pack read as a shelf slogan, never the name */
+const lines = computed(() => {
+  const p = products.quickProduct;
+  return headWords[p?.category] ?? [(p?.categoryName ?? "").toUpperCase(), ""];
+});
+/* same luminance rule as the shelf cards: the tag keeps AA on any colour */
+const onColor = (hex) => {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const l =
+    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return l > 0.62 ? "#191919" : "#ffffff";
+};
 watch(
   () => products.quickProduct,
   () => (qty.value = 1)
@@ -32,12 +45,31 @@ function add() {
         >
           <button class="quick-close" aria-label="Đóng xem nhanh" @click="products.closeQuick()"><X /></button>
           <section class="quick-visual">
-            <div class="quick-brand">DOP<br />MART</div>
-            <div class="quick-orbit"></div>
+            <div class="quick-head" aria-hidden="true">
+              <span class="quick-head__line">{{ lines[0] }}</span>
+              <span class="quick-head__line quick-head__line--hollow">{{
+                lines[1]
+              }}</span>
+            </div>
             <img
               :src="products.quickProduct.image"
               :alt="products.quickProduct.name"
-            /><span class="quick-index"
+            />
+            <span
+              class="quick-tag"
+              aria-hidden="true"
+              :style="{
+                background: products.quickProduct.color,
+                color: onColor(products.quickProduct.color),
+              }"
+              ><b
+                >{{
+                  products.quickProduct.price.toLocaleString("vi-VN")
+                }}
+                ₫</b
+              ></span
+            >
+            <span class="quick-index"
               >DOP SELECT · {{ products.quickProduct.categoryName }}</span
             >
           </section>

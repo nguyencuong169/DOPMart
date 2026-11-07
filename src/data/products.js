@@ -144,6 +144,17 @@ export const shelves = [
 /* the UI browses shelves; this alias keeps one name for "what the shopper picks" */
 export const categories = shelves
 
+/* the poster head reads as a shelf slogan, never as the product name:
+   two short ad lines, line 1 solid in the shelf colour, line 2 hollow ink */
+export const headWords = {
+  "do-uong": ["NƯỚC MÁT", "GIẢI KHÁT"],
+  "bua-nhanh": ["MÌ NÓNG", "ĂN LIỀN"],
+  "snack-man": ["GIÒN RỤM", "SNACK MẶN"],
+  "do-cay": ["CAY NỒNG", "BỐC KHÓI"],
+  ngot: ["NGỌT NGÀO", "BÁNH KẸO"],
+  healthy: ["HẠT RANG", "LÀNH MẠNH"],
+};
+
 export const photoSubjects = Object.fromEntries(
   formats.map((f) => [f.slug, { file: `${f.slug}.webp`, ...f.photo }])
 )

@@ -2211,40 +2211,92 @@ header nav a.router-link-active {
   position: relative;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, #ffd338 0 48%, var(--product-color) 48%);
+  container-type: inline-size;
+  background: #fff9ee;
   overflow: hidden;
   border-right: 3px solid #191919;
 }
 .quick-visual img {
-  width: 88%;
-  height: 88%;
+  position: relative;
+  width: 80%;
+  height: 80%;
   object-fit: contain;
   z-index: 3;
-  filter: drop-shadow(0 30px 20px #0005);
+  filter:
+    drop-shadow(3px 10px 5px #0003)
+    drop-shadow(14px 34px 24px #0002);
 }
-.quick-brand {
+/* poster head: the shelf slogan stands behind the packshot (line 1 solid,
+   line 2 hollow ink), exactly like the category tiles */
+.quick-head {
   position: absolute;
-  left: 4%;
-  top: 5%;
-  font-size: clamp(80px, 10vw, 150px);
-  font-weight: 900;
-  line-height: 0.68;
-  letter-spacing: -0.1em;
-  color: #fff5dc;
-  text-shadow:
-    3px 3px 0 #191919,
-    8px 8px 0 #ff5a1f;
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 21cqw;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-.quick-orbit {
+.quick-head__line {
   position: absolute;
-  width: 420px;
-  height: 420px;
-  border: 2px solid #fff8;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+.quick-head__line:first-child {
+  top: 3cqw;
+  color: color-mix(in srgb, var(--product-color) 86%, #191919);
+}
+.quick-head__line:last-child {
+  top: 61cqw;
+  color: transparent;
+  -webkit-text-stroke: 0.5cqw #191919;
+}
+/* the price hangs off the pack on a string, eyelet welded to it */
+.quick-tag {
+  position: absolute;
+  right: 5%;
+  bottom: 12%;
+  z-index: 4;
+  padding: 10px 20px 10px 30px;
+  border: 3px solid #191919;
+  border-radius: 8px 20px 20px 8px;
+  font: 800 clamp(16px, 2.4vw, 26px) / 1
+    var(--font-display, "Bricolage Grotesque", system-ui, sans-serif);
+  white-space: nowrap;
+  box-shadow: 4px 5px 0 #191919;
+  transform: rotate(-12deg);
+  transform-origin: 12% 10%;
+}
+.quick-tag::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-top: -9px; /* (12 + 2 x 3 border) / 2 */
+  border: 3px solid #191919;
   border-radius: 50%;
-  box-shadow:
-    0 0 0 50px #fff1,
-    0 0 0 100px #fff1;
+  background: #fff9ee;
+}
+.quick-tag::after {
+  content: "";
+  position: absolute;
+  left: 18px; /* eyelet centre: 9 + (12 + 6) / 2 */
+  top: calc(50% - 1.5px);
+  width: 40px;
+  height: 3px;
+  border-radius: 3px;
+  background: #191919;
+  transform-origin: 0 50%;
+  transform: rotate(-150deg);
 }
 .quick-index {
   position: absolute;

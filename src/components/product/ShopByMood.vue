@@ -390,7 +390,7 @@ function untilt(e) {
      plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
   color: var(--on);
-  box-shadow: 8px 9px 0 var(--ink);
+  /* the rectangle shadow is gone with the card top — the wedge carries its own */
   transform-style: preserve-3d;
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -408,28 +408,32 @@ function untilt(e) {
   inset: 0;
   border-radius: inherit;
   overflow: hidden;
-  border: 3px solid var(--ink);
-  background: var(--c);
+  /* the wedge is the only card left: the pack bursts out of its diagonal top,
+     so the sticker shadow follows the wedge, not the (now invisible) box */
+  filter: drop-shadow(8px 9px 0 var(--ink));
 }
 .cat-card__bg:before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--cream);
-  /* the V: odd cards drop the cream line from a left-edge third to ~70% down the
-     right edge, even cards mirror it — the line passes behind the pack's lower
-     body and stays above the info block so the footer always sits on the colour */
-  clip-path: polygon(0 0, 100% 0, 100% 70%, 0 36%);
+  background: var(--ink);
+  /* the V: odd cards raise the colour line from a left-edge third to ~70% down
+     the right edge, even cards mirror it — the line passes behind the pack's
+     lower body and stays above the info block so the footer sits on the colour */
+  clip-path: polygon(0 36%, 100% 70%, 100% 100%, 0 100%);
 }
 .cat-card:nth-child(even) .cat-card__bg:before {
-  clip-path: polygon(0 0, 100% 0, 100% 36%, 0 70%);
+  clip-path: polygon(0 70%, 100% 36%, 100% 100%, 0 100%);
 }
 .cat-card__bg:after {
   content: "";
   position: absolute;
-  inset: 0;
-  border: 3px solid rgba(255, 255, 255, 0.92);
-  border-radius: inherit;
+  inset: 3px;
+  background: var(--c);
+  clip-path: polygon(0 36%, 100% 70%, 100% 100%, 0 100%);
+}
+.cat-card:nth-child(even) .cat-card__bg:after {
+  clip-path: polygon(0 70%, 100% 36%, 100% 100%, 0 100%);
 }
 .cat-card__stage {
   position: relative;
@@ -604,7 +608,6 @@ function untilt(e) {
   }
   .cat-card {
     border-radius: 22px;
-    box-shadow: 5px 6px 0 var(--ink);
   }
   .cat-card__info {
     padding: 8px 10px 12px;

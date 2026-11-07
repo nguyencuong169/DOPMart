@@ -162,16 +162,16 @@ const tintOfFormat = {
   spicy: "#c62f14",
   instant: "#b52a26",
 }
-/* the giant side typography on the category card — one display word per packshot */
+/* the giant poster head on the category card — two stacked display words per packshot */
 const ghostMeta = {
-  chips: "KHOAI TÂY",
-  healthy: "HẠT RANG",
-  noodles: "MÌ LY",
-  drinks: "SODA",
-  chocolate: "CHOCO SỮA",
-  candy: "KẸO DẺO",
-  spicy: "QUE CAY",
-  instant: "XÚC XÍCH",
+  chips: ["KHOAI TÂY", "GIÒN RỤM"],
+  healthy: ["HẠT RANG", "BỔ DƯỠNG"],
+  noodles: ["MÌ LY", "TÔM CAY"],
+  drinks: ["SODA", "MÁT LẠNH"],
+  chocolate: ["CHOCO", "SỮA MỊN"],
+  candy: ["KẸO DẺO", "TRÁI CÂY"],
+  spicy: ["QUE CAY", "CAY XÈ"],
+  instant: ["XÚC XÍCH", "ĂN LIỀN"],
 }
 const seed=[
  [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { ArrowRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
 import { useProductStore } from "../../stores/productStore";
@@ -43,23 +43,49 @@ const current = computed(
   () => tabs.value.find((t) => t.slug === active.value) ?? tabs.value[0],
 );
 const shown = computed(() => current.value.items.slice(0, MAX));
-/* the vertical poster words flanking the pack — the product's display word
-   split across the two rails ("KHOAI TÂY" → KHOAI | TÂY, single words repeat) */
-const rails = computed(() =>
-  shown.value.map((p) => {
-    const parts = String(p.ghost ?? p.name)
-      .toUpperCase()
-      .split(/\s+/)
-      .filter(Boolean);
-    const a = parts[0] ?? "";
-    const b = parts[1] || a;
-    const v = (w) => ({ "--gw": String(Math.round(150 / Math.max(w.length, 1))) });
-    return [
-      { t: a, v: v(a) },
-      { t: b, v: v(b) },
-    ];
-  }),
-);
+/* the poster head — two stacked display lines BEHIND the pack (image-2
+   composition: line 1 solid in the product colour, line 2 hollow ink), and
+   the pack stands in front biting the lower line's hem. Each card is sized
+   against the condensed display face so its widest line spans ~96% of the
+   card, which keeps short words like SODA as tall as long ones like KHOAI TÂY */
+let headCtx = null;
+const fitTick = ref(0);
+const heads = computed(() => {
+  fitTick.value; // recount once the display face has actually landed
+  if (typeof document !== "undefined" && !headCtx)
+    headCtx = document.createElement("canvas").getContext("2d");
+  if (headCtx)
+    headCtx.font =
+      'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
+  return shown.value.map((p) => {
+    const words = (
+      Array.isArray(p.ghost)
+        ? p.ghost
+        : String(p.ghost ?? p.name)
+            .toUpperCase()
+            .split(/\s+/)
+    ).filter(Boolean);
+    const lines = [words[0] ?? "", words[1] ?? words[0] ?? ""];
+    const widest = Math.max(
+      ...lines.map((l) => (headCtx ? headCtx.measureText(l).width : l.length * 46)),
+      1,
+    );
+    /* 100cqw = card width, so a line that spans 96cqw needs font-size 9600/widest
+       (widest measured at a 100px reference size); clamped for one-letter words */
+    const size = Math.min(34, Math.max(13, 9600 / widest));
+    return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
+  });
+});
+onMounted(async () => {
+  /* measure with the face that renders: wait for the condensed webfont, then
+     recount (offline, the system condensed stack is measured instead) */
+  try {
+    await document.fonts.load('italic 900 100px "Barlow Condensed"');
+  } catch {
+    /* no font loading support: the fallback metrics already work */
+  }
+  fitTick.value++;
+});
 const link = computed(() =>
   current.value.slug === "all"
     ? "/products"
@@ -149,15 +175,16 @@ const badge = (p) => {
               >{{ badge(p) }}</span
             >
             <div class="cat-card__stage">
-              <span
-                v-for="(w, r) in rails[i]"
-                :key="r"
-                class="cat-card__rail"
-                :class="r === 0 ? 'cat-card__rail--a' : 'cat-card__rail--b'"
+              <div
+                class="cat-card__head"
                 aria-hidden="true"
-                :style="w.v"
-                >{{ w.t }}</span
+                :style="heads[i].style"
               >
+                <span class="cat-card__line">{{ heads[i].lines[0] }}</span>
+                <span class="cat-card__line cat-card__line--hollow">{{
+                  heads[i].lines[1]
+                }}</span>
+              </div>
               <i class="cat-card__ground" aria-hidden="true"></i>
               <img
                 :src="p.image"
@@ -191,6 +218,9 @@ const badge = (p) => {
 </template>
 
 <style scoped>
+/* the poster face for the category head — self-contained so the card never
+   depends on a page-level font link (system condensed stack as the fallback) */
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&display=swap");
 /* Full-bleed: nếu layout cha đã full-width thì bỏ 2 dòng width/margin-left; nếu bị thanh cuộn ngang thì thêm html{overflow-x:clip} */
 .cat-strip {
   --ink: #1a1a1a;
@@ -407,45 +437,50 @@ const badge = (p) => {
     transform: translateY(26px) scale(0.96);
   }
 }
-.cat-card__rail {
+/* the poster head: two stacked display lines behind the pack. Line 1 is the
+   solid colour block, line 2 is hollow ink — the pack in front bites its hem */
+.cat-card__head {
   position: absolute;
-  top: 2%;
-  bottom: 2%;
-  z-index: 1;
+  inset: 3% 0 auto;
+  z-index: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font: 900 clamp(10cqw, calc(var(--gw, 20) * 1cqw), 24cqw) / 1 var(--fd);
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: clamp(1px, 0.6cqw, 2.5px)
-    color-mix(in srgb, var(--c) 62%, var(--ink));
-  opacity: 0.65;
   pointer-events: none;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  user-select: none;
+  font-family: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Impact,
+    sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  /* --hs comes from the measured fit (widest line = ~96% of the card width) */
+  font-size: var(--hs, 22cqw);
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.cat-card__rail--a {
-  left: 2%;
+.cat-card__line {
+  display: block;
+  color: color-mix(in srgb, var(--c) 86%, var(--ink));
 }
-.cat-card__rail--b {
-  right: 2%;
+.cat-card__line--hollow {
+  color: transparent;
+  -webkit-text-stroke: clamp(1.5px, 0.5cqw, 3.5px) var(--ink);
 }
 .cat-card__stage {
   position: relative;
   z-index: 2;
-  /* deals-card stage: the height rides on the width (86%), so the pack and its
-     poke keep the same proportions at every card size */
+  /* poster tile: tall enough for the two display lines to stand over the pack,
+     and still rides on the width so proportions hold at every card size */
   flex: 0 0 auto;
-  padding: 100% 0 0;
+  padding: 136% 0 0;
 }
 .cat-card__stage img {
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 114%;
+  z-index: 2;
+  width: 102%;
   height: auto;
   object-fit: contain;
   /* rest pose: the pack leans into the cream side; even cards mirror the tilt,
@@ -473,6 +508,7 @@ const badge = (p) => {
   position: absolute;
   left: 50%;
   bottom: 0;
+  z-index: 1;
   width: 70%;
   height: 7%;
   transform: translateX(calc(-50% + var(--ry, 0deg) * -1.2));

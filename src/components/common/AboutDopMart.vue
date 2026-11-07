@@ -10,7 +10,7 @@ import { Zap, Users, HeartHandshake, MapPin, ArrowRight } from "lucide-vue-next"
       <div class="about-pill p1"><Zap /> Nhanh</div>
       <div class="about-pill p2"><Users /> Trẻ trung</div>
       <div class="about-pill p3"><HeartHandshake /> Thấu hiểu</div>
-      <div class="about-floor"><MapPin /> 14F ↔ 20F</div>
+      <div class="about-floor"><MapPin /> Tầng 14 ↔ Tầng 20</div>
     </div>
     <div class="about-copy">
       <span class="kicker">WHY DOP MART EXISTS</span>

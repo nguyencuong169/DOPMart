@@ -9820,3 +9820,111 @@ html {
     scroll-padding-top: 80px;
   }
 }
+
+/* ===== V49 · P1.11/12 — how it works + product card states ===== */
+
+/* --- 11. how it works: less air, readable copy, the dashed path never crosses text --- */
+.process-lab {
+  padding: 74px var(--gutter);
+}
+.process-lab-head h2 {
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+}
+.process-lab-head > p {
+  font-size: var(--fs-small);
+  max-width: 52ch;
+}
+.process-lab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: var(--fs-small);
+}
+.process-path {
+  height: 360px;
+}
+/* the label gets a sun-coloured mask so the dotted guide stops at the edge of the word */
+.process-node h3 {
+  display: inline-block;
+  margin: 16px 0 6px;
+  padding: 2px 10px;
+  background: var(--sun);
+  box-shadow: 0 0 0 8px var(--sun);
+  border-radius: var(--r-xs);
+  font-size: 21px;
+}
+.process-node p {
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  max-width: 24ch;
+  margin-inline: auto;
+}
+.process-final {
+  min-height: 48px;
+  font-size: 15px;
+}
+@media (max-width: 1000px) {
+  /* stacked list: the absolute nodes overlapped each other on phones */
+  .process-path {
+    height: auto;
+    display: grid;
+    gap: 22px;
+    margin-top: 22px;
+  }
+  .process-node {
+    position: static;
+    width: auto;
+  }
+  .process-path svg {
+    display: none;
+  }
+}
+
+/* --- 12. product card: stock states, 44px targets, readable price --- */
+.card-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+}
+.card-stock.low {
+  color: #8a4b00;
+}
+.card-stock.out {
+  color: var(--berry-deep);
+}
+.price-row strong {
+  color: var(--berry-deep);
+}
+.price-row .add,
+.card-heart {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+}
+.price-row .add {
+  font-size: 20px;
+}
+.price-row .add:disabled {
+  background: #19191914;
+  color: #19191973;
+  border-color: #1919193d;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+.product-card.is-sold-out .card-media img {
+  filter: grayscale(0.45);
+}
+.product-card .card-quick:focus-visible,
+.product-card .add:focus-visible,
+.product-card .card-heart:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}

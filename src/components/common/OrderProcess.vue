@@ -4,26 +4,26 @@ const steps = [
   {
     n: "01",
     icon: Search,
-    title: "Pick your happy",
+    title: "Chọn món",
     text: "Chọn món theo mood hoặc tầng nhận.",
   },
   {
     n: "02",
     icon: ShoppingBag,
-    title: "Drop in cart",
+    title: "Thêm vào giỏ",
     text: "Thêm nhanh, chỉnh số lượng trong một chạm.",
   },
   {
     n: "03",
     icon: QrCode,
-    title: "Scan & done",
+    title: "Quét QR",
     text: "Quét QR và xác nhận thanh toán.",
   },
   {
     n: "04",
     icon: PackageCheck,
-    title: "Grab the joy",
-    text: "Nhận món tại 14F hoặc 20F.",
+    title: "Nhận hàng",
+    text: "Nhận món tại Tầng 14 hoặc Tầng 20.",
   },
 ];
 </script>

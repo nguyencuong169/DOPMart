@@ -26,7 +26,7 @@ const saving = computed(() => offers.value.reduce((n, o) => n + (o.oldPrice - o.
         </p>
         <div class="view-hero__meta">
           <span><Clock3 :size="14" /> Cập nhật mỗi thứ Hai</span>
-          <span><MapPin :size="14" /> Nhận tại 14F / 20F</span>
+          <span><MapPin :size="14" /> Nhận tại Tầng 14 / Tầng 20</span>
         </div>
       </div>
       <div class="deals-score">

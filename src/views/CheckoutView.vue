@@ -27,7 +27,7 @@ const cart = useCartStore(),
         </button>
       </div>
       <label v-if="method === 'desk'"
-        >Khu vực / Seat<input placeholder="20F - A123"
+        >Khu vực / chỗ ngồi<input placeholder="A123 · Tầng 20"
       /></label>
     </div>
     <aside class="order-summary">

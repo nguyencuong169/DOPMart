@@ -185,7 +185,7 @@ function untilt(e) {
   </section>
 </template>
 
-<style>
+<style scoped>
 /* Full-bleed: nếu layout cha đã full-width thì bỏ 2 dòng width/margin-left; nếu bị thanh cuộn ngang thì thêm html{overflow-x:clip} */
 .cat-strip {
   --ink: #1a1a1a;

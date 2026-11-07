@@ -48,18 +48,25 @@ onBeforeUnmount(() => animation?.revert());
         class="promo-card"
         :style="{ '--promo-color': offer.color }"
       >
-        <div class="promo-discount">-{{ offer.discount }}%</div>
-        <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" />
-        <div>
+        <div class="promo-media">
+          <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" />
+        </div>
+        <div class="promo-body">
           <small>{{ offer.categoryName }}</small>
           <h3>{{ offer.name }}</h3>
-          <span
+          <span class="promo-price"
             ><s>{{ offer.oldPrice.toLocaleString("vi-VN") }} ₫</s
             ><b>{{ offer.price.toLocaleString("vi-VN") }} ₫</b></span
-          ><button @click="cart.add(offer)" :aria-label="`Thêm ${offer.name} vào giỏ`">
-            Thêm nhanh <ArrowRight /></button
           >
+          <button
+            type="button"
+            :aria-label="`Thêm ${offer.name} vào giỏ`"
+            @click="cart.add(offer)"
+          >
+            Thêm nhanh <ArrowRight />
+          </button>
         </div>
+        <div class="promo-discount">-{{ offer.discount }}%</div>
       </article>
     </div>
   </section>

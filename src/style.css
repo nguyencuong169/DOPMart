@@ -63,6 +63,9 @@
   --on-red: #fff9ee;
   --on-purple: #f4e7ff;
   --on-black: #f3ece0;
+  /* text that sits on a saturated promo colour (pink / orange / red cards) */
+  --on-promo: #101010;
+  --on-promo-soft: #17120f;
   --berry-deep: #b81f2b;
 
   font-family: var(--font-ui);
@@ -10344,4 +10347,157 @@ html {
 .combo-copy h2,
 .process-lab-head h2 {
   word-spacing: 0.03em;
+}
+
+/* ===== V57 · HAPPY DEALS card — photo in the cream half, everything else on the colour =====
+   before: the packshot, the name, the price and the CTA all crowded the cream area and the
+   coloured diagonal was an empty block. Now the diagonal does the layout work: the photo
+   lives top-left in cream and breaks out of the card for depth, the text block sits
+   bottom-right on the colour with its own contrast tokens. */
+.promo-card {
+  display: grid;
+  grid-template-rows: minmax(168px, 1fr) auto;
+  padding: 0;
+  border: 2px solid var(--paper-bright);
+  border-radius: var(--r-lg);
+  background: linear-gradient(
+    158deg,
+    var(--paper-bright) 0 50%,
+    var(--promo-color) 50.2% 100%
+  );
+  overflow: visible;
+  isolation: isolate;
+}
+.promo-media {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-height: 168px;
+  padding: 4px 0 0 6px;
+}
+/* the 3D pop: the pack grows past the card edges and keeps a hard soft shadow */
+.promo-card .promo-media img {
+  width: 122%;
+  max-width: none;
+  height: auto;
+  transform: translate(-4%, -15%) rotate(-7deg);
+  filter: drop-shadow(0 20px 22px #1919194d);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.promo-card:hover .promo-media img,
+.promo-card:focus-within .promo-media img {
+  transform: translate(-4%, -19%) rotate(-4deg) scale(1.05);
+}
+.promo-card:hover {
+  box-shadow: 7px 7px 0 var(--sun);
+}
+.promo-body {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 6px;
+  padding: 6px 18px 18px;
+  color: var(--on-promo);
+}
+.promo-body small {
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-promo-soft);
+}
+.promo-body h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--on-promo);
+}
+.promo-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0 4px;
+}
+.promo-price s {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--on-promo-soft);
+}
+.promo-price b {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--on-promo);
+}
+.promo-body button {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--sun);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 900;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.promo-body button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+/* white on #ef3340 was 4.02:1 */
+.promo-discount {
+  top: 14px;
+  right: 14px;
+  width: 54px;
+  height: 54px;
+  border-width: 2px;
+  background: var(--berry-deep);
+  color: var(--paper);
+  font-size: var(--fs-small);
+  font-weight: 900;
+  z-index: 4;
+}
+@media (max-width: 1100px) {
+  .promo-card {
+    grid-template-rows: minmax(150px, 1fr) auto;
+  }
+  .promo-card .promo-media img {
+    width: 112%;
+    transform: translate(-3%, -12%) rotate(-6deg);
+  }
+}
+@media (max-width: 750px) {
+  /* one column: the pack must not spill sideways and create a scrollbar */
+  .promo-card {
+    grid-template-rows: minmax(132px, 1fr) auto;
+  }
+  .promo-media {
+    min-height: 132px;
+  }
+  .promo-card .promo-media img {
+    width: 92%;
+    transform: rotate(-5deg);
+  }
+  .promo-card:hover .promo-media img,
+  .promo-card:focus-within .promo-media img {
+    transform: rotate(-2deg) scale(1.03);
+  }
+  .promo-body h3 {
+    font-size: 19px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .promo-card,
+  .promo-card .promo-media img,
+  .promo-body button {
+    transition: none;
+  }
+  .promo-card:hover .promo-media img,
+  .promo-card:focus-within .promo-media img {
+    transform: translate(-4%, -15%) rotate(-7deg);
+  }
 }

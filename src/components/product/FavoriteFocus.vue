@@ -44,7 +44,7 @@ function move(d) {
       <article class="favorite-main" :style="{ '--favorite-color': current.color }">
         <div class="favorite-image">
           <div class="favorite-giant">LOVE IT</div>
-          <img :src="current.image" :alt="current.name" />
+          <img :src="current.image" :alt="current.name" loading="lazy" decoding="async" />
         </div>
         <div class="favorite-copy">
           <span>{{ current.categoryName }}</span>
@@ -64,17 +64,21 @@ function move(d) {
         </div>
       </article>
       <button v-if="next" class="favorite-peek" @click="move(1)">
-        <small>TIẾP THEO</small><img :src="next.image" :alt="next.name" /><b>{{
+        <small>TIẾP THEO</small
+        ><img :src="next.image" :alt="next.name" loading="lazy" decoding="async" /><b>{{
           next.name
         }}</b
         ><span>{{ next.price.toLocaleString("vi-VN") }} ₫</span>
       </button>
       <div v-if="items.length > 1" class="favorite-controls">
-        <button @click="move(-1)"><ChevronLeft /></button
+        <button type="button" aria-label="Món yêu thích trước" @click="move(-1)">
+          <ChevronLeft /></button
         ><span
           >{{ String(index + 1).padStart(2, "0") }} /
           {{ String(items.length).padStart(2, "0") }}</span
-        ><button @click="move(1)"><ChevronRight /></button>
+        ><button type="button" aria-label="Món yêu thích tiếp theo" @click="move(1)">
+          <ChevronRight />
+        </button>
       </div>
     </div>
     <div v-else class="favorite-empty">

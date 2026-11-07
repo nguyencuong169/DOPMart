@@ -35,6 +35,9 @@ const steps = [
       <p>
         Không form dài. Không địa chỉ giao hàng phức tạp. Chỉ bốn nhịp đúng với văn phòng.
       </p>
+      <RouterLink to="/how-it-works" class="process-lab-link">
+        Bốn nhịp đặt hàng <ArrowRight :size="15" />
+      </RouterLink>
     </div>
     <div class="process-path">
       <svg viewBox="0 0 1200 260" preserveAspectRatio="none" aria-hidden="true">

@@ -30,7 +30,7 @@ function add() {
           class="quick-dialog"
           :style="{ '--product-color': products.quickProduct.color }"
         >
-          <button class="quick-close" @click="products.closeQuick()"><X /></button>
+          <button class="quick-close" aria-label="Đóng xem nhanh" @click="products.closeQuick()"><X /></button>
           <section class="quick-visual">
             <div class="quick-brand">DOP<br />MART</div>
             <div class="quick-orbit"></div>

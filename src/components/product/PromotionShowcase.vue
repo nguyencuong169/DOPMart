@@ -9,17 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 const products = useProductStore(),
   cart = useCartStore(),
   root = ref();
-const offers = computed(() =>
-  products.products
-    .filter((p) => [1, 13, 22].includes(p.id))
-    .map((p, i) => ({
-      ...p,
-      discount: [20, 15, 10][i],
-      oldPrice: Math.round(p.price / (1 - [0.2, 0.15, 0.1][i]) / 1000) * 1000,
-    }))
-);
+const offers = computed(() => products.offers.slice(0, 3));
 let animation;
 onMounted(() => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   animation = gsap.context(() => {
     gsap
       .timeline({
@@ -46,7 +39,7 @@ onBeforeUnmount(() => animation?.revert());
         kho tại tầng nhận hàng.
       </p>
       <div class="promo-time"><Clock3 /> Ưu đãi trong tuần này</div>
-      <RouterLink to="/products" class="primary">Săn deal ngay <ArrowRight /></RouterLink>
+      <RouterLink to="/deals" class="primary">Săn deal ngay <ArrowRight /></RouterLink>
     </div>
     <div class="promo-list">
       <article
@@ -56,7 +49,7 @@ onBeforeUnmount(() => animation?.revert());
         :style="{ '--promo-color': offer.color }"
       >
         <div class="promo-discount">-{{ offer.discount }}%</div>
-        <img :src="offer.image" :alt="offer.name" />
+        <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" />
         <div>
           <small>{{ offer.categoryName }}</small>
           <h3>{{ offer.name }}</h3>

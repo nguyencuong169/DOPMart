@@ -17,3 +17,9 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# local dev server log
+.dev.log
+
+# local project snapshots (zip archives, not source)
+backup/

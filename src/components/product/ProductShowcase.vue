@@ -10,6 +10,7 @@ const store = useProductStore();
 const root = ref();
 let ctx;
 onMounted(() => {
+  if (!root.value) return;
   ctx = gsap.context(() => {
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -43,7 +44,7 @@ onMounted(() => {
 onBeforeUnmount(() => ctx?.revert());
 </script>
 <template>
-  <section ref="root" class="story-showcase">
+  <section v-if="product" ref="root" class="story-showcase">
     <div class="story-bg-text">FRESH DROP</div>
     <div class="story-copy">
       <span class="kicker">SCROLL TO DISCOVER · JUST DROPPED</span>
@@ -58,7 +59,13 @@ onBeforeUnmount(() => ctx?.revert());
     </div>
     <div class="story-scene">
       <div class="story-sun"></div>
-      <img class="story-product" :src="product.image" :alt="product.name" /><span
+      <img
+        class="story-product"
+        :src="product.image"
+        :alt="product.name"
+        loading="lazy"
+        decoding="async"
+      /><span
         class="story-pill p1"
         >HIGH FIBER</span
       ><span class="story-pill p2">LOW FAT</span><span class="story-pill p3">NO MSG</span>

@@ -1,6 +1,18 @@
 <script setup>
-import {ArrowRight,Sparkles} from 'lucide-vue-next'
-import ProductGrid from './ProductGrid.vue'
-defineProps({products:Array})
+import SectionHeader from "../common/SectionHeader.vue";
+import ProductGrid from "./ProductGrid.vue";
+defineProps({ products: Array });
 </script>
-<template><section class="section new-products-section"><div class="new-products-banner"><div><span><Sparkles/> NEW THIS WEEK</span><h2>Mới lên kệ,<br>thử trước đồng nghiệp.</h2></div><RouterLink to="/products?filter=new" class="primary">Xem món mới <ArrowRight/></RouterLink></div><ProductGrid :products="products.slice(0,4)"/></section></template>
+<template>
+  <section class="new-strip">
+    <SectionHeader
+      kicker="FRESH DROP · MỚI LÊN KỆ"
+      title="Thử trước đồng nghiệp"
+      lead="Những món vừa cập bến kệ DOP Mart trong tuần này — số lượng còn ít."
+      cta="Bắt món mới"
+      to="/new"
+    />
+    <ProductGrid :products="products.slice(0, 4)" />
+  </section>
+</template>
+

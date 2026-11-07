@@ -1,11 +1,11 @@
-import chipsImage from '../assets/products/chips.png'
-import spicyImage from '../assets/products/spicy.png'
-import noodlesImage from '../assets/products/noodles.png'
-import instantImage from '../assets/products/instant.png'
-import chocolateImage from '../assets/products/chocolate.png'
-import candyImage from '../assets/products/candy.png'
-import drinksImage from '../assets/products/drinks.png'
-import healthyImage from '../assets/products/healthy.png'
+import chipsImage from '../assets/products/chips.webp'
+import spicyImage from '../assets/products/spicy.webp'
+import noodlesImage from '../assets/products/noodles.webp'
+import instantImage from '../assets/products/instant.webp'
+import chocolateImage from '../assets/products/chocolate.webp'
+import candyImage from '../assets/products/candy.webp'
+import drinksImage from '../assets/products/drinks.webp'
+import healthyImage from '../assets/products/healthy.webp'
 
 export const categories=[
  {slug:'chips',name:'Bim bim',icon:'🍟'}, {slug:'noodles',name:'Mì ly',icon:'🍜'},
@@ -52,8 +52,21 @@ const seed=[
  [32,'tra-dao-co-ga','Trà đào có ga','drinks',16000,4.6,104,1,0,14,11]
 ]
 
+const heroMeta={
+  chips:{tags:['Giòn rụm','Đậm vị'],notes:[['Giòn 2 lớp','Chiên giòn rồi rắc phô mai'],['Phô mai thật','Không bột bắp pha'],['Túi 50g','Vừa một giờ nghỉ']]},
+  healthy:{tags:['Rang mộc','Giàu đạm'],notes:[['Rang không dầu','Giữ nguyên vị hạt'],['Đạm thực vật','No lâu hơn bánh ngọt'],['Túi 150g','Chia được 3 lần ăn']]},
+  noodles:{tags:['Cay bùng vị','3 phút'],notes:[['Sa tế tôm','Nước dùng nêm sẵn'],['3 phút','Chỉ cần nước sôi'],['Ly 65g','Có topping sấy']]},
+  drinks:{tags:['Lạnh 4°C','Trái cây thật'],notes:[['Lấy từ tủ mát','Uống ngay tại tầng'],['Không phẩm màu','Vị trái cây tự nhiên'],['Lon 330ml','Vừa một buổi chiều']]},
+  instant:{tags:['Mở là ăn','Đạm cao'],notes:[['Không cần hâm','Xé gói là dùng'],['Từ thịt thật','Không bột nhão'],['Gói tiện','Bỏ túi áo được']]},
+  chocolate:{tags:['Ca cao 55%','Tan trong miệng'],notes:[['Ca cao 55%','Đắng dịu, hậu ngọt'],['Không dầu cọ','Chỉ bơ ca cao'],['Viên nhỏ','Chia nhiều lần']]},
+  candy:{tags:['Ngọt thanh','Không ngấy'],notes:[['Ngọt thanh','Không gắt cổ'],['Túi zip','Giữ thơm lâu'],['Chia sẻ','Gói 20 viên']]},
+  spicy:{tags:['Cay 3 lớp','Ăn liền'],notes:[['Ớt khô 3 loại','Cay từ từ rồi bùng'],['Ăn liền','Không cần chế biến'],['Gói 40g','Đủ một lần ăn']]},
+}
+
 export const products=seed.map(([id,slug,name,category,price,rating,sold,isNew,hot,s14,s20])=>({
  id,slug,name,category,categoryName:catName[category],price,rating,sold,image:img[category],isNew:Boolean(isNew),hot:Boolean(hot),color:colors[category],
  description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
+ tags:heroMeta[category].tags,
+ notes:heroMeta[category].notes,
  stock:{14:s14,20:s20}
 }))

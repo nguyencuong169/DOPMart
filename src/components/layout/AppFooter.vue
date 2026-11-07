@@ -15,14 +15,16 @@ import { Instagram, Facebook, Mail, MapPin, Clock, ArrowUpRight } from "lucide-v
       <div class="footer-col">
         <h4>Khám phá</h4>
         <RouterLink to="/products">Tất cả sản phẩm</RouterLink
-        ><RouterLink to="/products?filter=new">Sản phẩm mới</RouterLink
-        ><RouterLink to="/products?sort=best">Bán chạy</RouterLink
+        ><RouterLink to="/new">Sản phẩm mới</RouterLink
+        ><RouterLink to="/best-sellers">Bán chạy</RouterLink
         ><RouterLink to="/category/chips">Danh mục</RouterLink>
       </div>
       <div class="footer-col">
         <h4>Hỗ trợ</h4>
-        <a href="#">Cách đặt hàng</a><a href="#">Thanh toán QR</a
-        ><a href="#">Chính sách đổi trả</a><a href="#">Liên hệ DOP Mart</a>
+        <RouterLink to="/how-it-works">Cách đặt hàng</RouterLink
+        ><RouterLink to="/how-it-works">Thanh toán QR</RouterLink
+        ><a href="#">Chính sách đổi trả</a
+        ><RouterLink to="/about">Liên hệ DOP Mart</RouterLink>
       </div>
       <div class="footer-col footer-contact">
         <h4>Snack station</h4>

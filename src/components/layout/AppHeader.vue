@@ -1,23 +1,340 @@
 <script setup>
-import {computed,ref,onMounted,onBeforeUnmount} from 'vue'
-import {useRoute} from 'vue-router'
-import {ShoppingBag,Menu,X} from 'lucide-vue-next'
-import SearchBox from '../common/SearchBox.vue'
-import FloorSelector from '../common/FloorSelector.vue'
-import {useCartStore} from '../../stores/cartStore'
-const route=useRoute(),cart=useCartStore(),scrolled=ref(false),mobileOpen=ref(false),inHero=ref(false),menuOpen=ref(false)
-const exactProducts=computed(()=>route.path==='/products'&&!route.query.filter&&!route.query.sort)
-const exactNew=computed(()=>route.path==='/products'&&route.query.filter==='new')
-const exactBest=computed(()=>route.path==='/products'&&route.query.sort==='best')
-function update(){scrolled.value=window.scrollY>54}
-function close(){mobileOpen.value=false}
-function closeMenu(){menuOpen.value=false}
-function onMouseEnter(){inHero.value=true}
-function onMouseLeave(){inHero.value=false}
-function toggleMenu(){const isMobile=window.innerWidth<=760;if(isMobile){mobileOpen.value=!mobileOpen.value}else{menuOpen.value=!menuOpen.value}}
-const isOpen=computed(()=>mobileOpen.value||menuOpen.value)
-onMounted(()=>{update();window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',syncMenuMode)})
-onBeforeUnmount(()=>{window.removeEventListener('scroll',update);window.removeEventListener('resize',syncMenuMode)})
-function syncMenuMode(){const isMobile=window.innerWidth<=760;if(isMobile){if(menuOpen.value){mobileOpen.value=true;menuOpen.value=false}}else{if(mobileOpen.value){menuOpen.value=true;mobileOpen.value=false}}}
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { ArrowUpRight, ChevronDown, MapPin, QrCode, ShoppingBag, Store } from "lucide-vue-next";
+import SearchBox from "../common/SearchBox.vue";
+import FloorSelector from "../common/FloorSelector.vue";
+import { useCartStore } from "../../stores/cartStore";
+import { useFloorStore } from "../../stores/floorStore";
+
+const route = useRoute();
+const cart = useCartStore();
+const floor = useFloorStore();
+
+const scrolled = ref(false);
+const atTop = ref(true);
+const hidden = ref(false);
+const menuOpen = ref(false);
+const toggleEl = ref(null);
+const panelEl = ref(null);
+let compactMode = null;
+let lastY = 0;
+
+const onHero = computed(() => route.path === "/");
+
+const primaryLinks = [
+  {
+    label: "Sản phẩm",
+    to: "/products",
+    match: (path) =>
+      path === "/products" || path.startsWith("/category/") || path.startsWith("/product/"),
+  },
+  { label: "Mới", to: "/new", match: (path) => path === "/new" },
+  { label: "Bán chạy", to: "/best-sellers", match: (path) => path === "/best-sellers" },
+  { label: "Khuyến mãi", to: "/deals", match: (path) => path === "/deals" },
+];
+const moreLinks = [
+  {
+    label: "Về DOP Mart",
+    note: "Câu chuyện & giá trị",
+    to: "/about",
+    icon: Store,
+    match: (path) => path === "/about",
+  },
+  {
+    label: "Cách đặt hàng",
+    note: "4 nhịp: chọn → quét → nhận",
+    to: "/how-it-works",
+    icon: QrCode,
+    match: (path) => path === "/how-it-works",
+  },
+];
+const panelLinks = [...primaryLinks, ...moreLinks];
+
+const moreOpen = ref(false);
+const moreEl = ref(null);
+const navEl = ref(null);
+const indicator = ref({ x: 0, width: 0, ready: false, animate: false });
+
+const isCurrent = (link) => link.match(route.path);
+const moreActive = computed(() => moreLinks.some((link) => link.match(route.path)));
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value;
+}
+function closeMenu(restoreFocus = false) {
+  if (!menuOpen.value) return;
+  menuOpen.value = false;
+  if (restoreFocus) nextTick(() => toggleEl.value?.focus());
+}
+function openCart() {
+  closeMenu();
+  moreOpen.value = false;
+  cart.open = true;
+}
+function toggleMore() {
+  moreOpen.value = !moreOpen.value;
+}
+function onDocPointerDown(event) {
+  if (moreOpen.value && !moreEl.value?.contains(event.target)) moreOpen.value = false;
+}
+function syncIndicator() {
+  const nav = navEl.value;
+  if (!nav) return;
+  const animate = indicator.value.ready || indicator.value.animate;
+  const item = nav.querySelector(".is-current");
+  if (!item || !item.offsetWidth) {
+    indicator.value = { x: 0, width: 0, ready: false, animate };
+    return;
+  }
+  const navBox = nav.getBoundingClientRect();
+  const itemBox = item.getBoundingClientRect();
+  indicator.value = {
+    x: itemBox.left - navBox.left,
+    width: itemBox.width,
+    ready: true,
+    animate,
+  };
+}
+function onScroll() {
+  const y = window.scrollY;
+  const delta = y - lastY;
+  scrolled.value = y > 54;
+  atTop.value = y < 24;
+  if (menuOpen.value || moreOpen.value) {
+    hidden.value = false;
+    lastY = y;
+    return;
+  }
+  if (y < 140) hidden.value = false;
+  else if (Math.abs(delta) > 6) hidden.value = delta > 0;
+  lastY = y;
+}
+function reveal() {
+  hidden.value = false;
+}
+function onResize() {
+  onScroll();
+  const compact = window.innerWidth <= 1023;
+  if (compact !== compactMode) {
+    compactMode = compact;
+    closeMenu();
+    moreOpen.value = false;
+  }
+  syncIndicator();
+}
+function focusables() {
+  if (!panelEl.value) return [];
+  return Array.from(
+    panelEl.value.querySelectorAll(
+      'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((node) => node.offsetParent !== null);
+}
+function onKeydown(event) {
+  if (event.key === "Escape") {
+    if (menuOpen.value) {
+      event.preventDefault();
+      closeMenu(true);
+      return;
+    }
+    if (moreOpen.value) {
+      moreOpen.value = false;
+      return;
+    }
+  }
+  if (!menuOpen.value) return;
+  if (event.key !== "Tab") return;
+  const list = focusables();
+  if (!list.length) return;
+  const first = list[0];
+  const last = list[list.length - 1];
+  const inside = panelEl.value?.contains(document.activeElement);
+  if (event.shiftKey && (document.activeElement === first || !inside)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+watch(menuOpen, async (open) => {
+  document.body.classList.toggle("dop-menu-locked", open && window.innerWidth <= 760);
+  if (!open) return;
+  moreOpen.value = false;
+  await nextTick();
+  focusables()[0]?.focus({ preventScroll: true });
+});
+watch(
+  () => route.fullPath,
+  () => {
+    closeMenu();
+    moreOpen.value = false;
+    nextTick(syncIndicator);
+  }
+);
+watch(
+  () => cart.open,
+  (open) => {
+    if (open) closeMenu();
+  }
+);
+
+let navObserver = null;
+onMounted(() => {
+  lastY = window.scrollY;
+  onScroll();
+  compactMode = window.innerWidth <= 1023;
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onResize);
+  window.addEventListener("keydown", onKeydown);
+  document.addEventListener("pointerdown", onDocPointerDown);
+  nextTick(syncIndicator);
+  if (document.fonts?.ready) document.fonts.ready.then(syncIndicator);
+  if (window.ResizeObserver && navEl.value) {
+    navObserver = new ResizeObserver(syncIndicator);
+    navObserver.observe(navEl.value);
+  }
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("resize", onResize);
+  window.removeEventListener("keydown", onKeydown);
+  document.removeEventListener("pointerdown", onDocPointerDown);
+  navObserver?.disconnect();
+  document.body.classList.remove("dop-menu-locked");
+});
 </script>
-<template><header class="dop-header" :class="{scrolled,'on-hero':route.path==='/'&&!scrolled,'in-hero':inHero,'menu-open':menuOpen}" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"><RouterLink to="/" class="dop-nav-logo"><span>DOP</span><b>mart</b><small>Mini mart · Big happy</small></RouterLink><nav class="dop-nav" :class="{open:mobileOpen}"><RouterLink to="/products" :class="{active:exactProducts}" @click="close">Sản phẩm</RouterLink><RouterLink to="/products?filter=new" :class="{active:exactNew}" @click="close">Mới</RouterLink><RouterLink to="/products?sort=best" :class="{active:exactBest}" @click="close">Bán chạy</RouterLink><a href="/#deals" @click="close">Khuyến mãi</a><a href="/#about" @click="close">About us</a><a href="/#how-it-works" @click="close">Cách đặt</a></nav><div class="dop-nav-actions"><div class="nav-search"><SearchBox/></div><FloorSelector/><button class="cart-button" @click="cart.open=true"><ShoppingBag/><span>{{cart.count}}</span></button><button class="nav-toggle" @click="toggleMenu" :aria-label="isOpen?'Đóng menu':'Mở menu'"><X v-if="isOpen"/><Menu v-else/></button></div><div class="dop-desktop-menu" :class="{open:menuOpen}"><div class="dop-desktop-menu__inner"><nav class="dop-nav"><RouterLink to="/products" :class="{active:exactProducts}" @click="closeMenu">Sản phẩm</RouterLink><RouterLink to="/products?filter=new" :class="{active:exactNew}" @click="closeMenu">Mới</RouterLink><RouterLink to="/products?sort=best" :class="{active:exactBest}" @click="closeMenu">Bán nhanh</RouterLink><a href="/#deals" @click="closeMenu">Khuyến mãi</a><a href="/#about" @click="closeMenu">About us</a><a href="/#how-it-works" @click="closeMenu">Cách đặt</a></nav><div class="dop-desktop-menu__actions"><div class="nav-search"><SearchBox/></div><FloorSelector/><button class="cart-button" @click="cart.open=true"><ShoppingBag/><span>{{cart.count}}</span></button></div></div></div></header></template>
+<template>
+  <header
+    class="dop-header"
+    :class="{
+      scrolled,
+      'at-top': atTop && !menuOpen,
+      'on-hero': onHero,
+      'is-hidden': hidden,
+      'is-menu-open': menuOpen,
+    }"
+    @focusin="reveal"
+  >
+    <RouterLink to="/" class="dop-nav-logo" @click="closeMenu()">
+      <span>DOP</span><b>mart</b><small>Mini mart · Big happy</small>
+    </RouterLink>
+    <nav ref="navEl" class="dop-nav" aria-label="Điều hướng chính">
+      <span
+        class="dop-nav__indicator"
+        :class="{ 'is-ready': indicator.ready, 'is-animated': indicator.animate }"
+        :style="{ width: `${indicator.width}px`, transform: `translateX(${indicator.x}px)` }"
+        aria-hidden="true"
+      />
+      <RouterLink
+        v-for="link in primaryLinks"
+        :key="link.to"
+        :to="link.to"
+        class="dop-nav__link"
+        :class="{ 'is-current': isCurrent(link) }"
+        :aria-current="isCurrent(link) ? 'page' : undefined"
+        >{{ link.label }}</RouterLink
+      >
+      <div ref="moreEl" class="dop-nav-more" :class="{ open: moreOpen }">
+        <button
+          type="button"
+          class="dop-nav__link dop-nav-more__trigger"
+          :class="{ 'is-current': moreActive }"
+          :aria-expanded="moreOpen"
+          aria-haspopup="true"
+          aria-controls="dop-more-panel"
+          @click="toggleMore"
+        >
+          Khám phá
+          <ChevronDown class="dop-nav-more__chev" :size="13" />
+        </button>
+        <Transition name="dop-more">
+          <div v-if="moreOpen" id="dop-more-panel" class="dop-nav-more__panel">
+            <RouterLink
+              v-for="link in moreLinks"
+              :key="link.to"
+              :to="link.to"
+              class="dop-nav-more__item"
+              :class="{ 'is-current': isCurrent(link) }"
+              @click="moreOpen = false"
+            >
+              <component :is="link.icon" :size="16" />
+              <span><b>{{ link.label }}</b><small>{{ link.note }}</small></span>
+              <ArrowUpRight class="dop-nav-more__arrow" :size="14" />
+            </RouterLink>
+          </div>
+        </Transition>
+      </div>
+    </nav>
+    <div class="dop-nav-actions">
+      <div class="nav-search"><SearchBox /></div>
+      <FloorSelector />
+      <button
+        type="button"
+        class="cart-button"
+        :aria-label="`Mở giỏ hàng, ${cart.count} món`"
+        @click="openCart"
+      >
+        <ShoppingBag />
+        <span v-if="cart.count" aria-hidden="true">{{ cart.count }}</span>
+      </button>
+      <button
+        ref="toggleEl"
+        type="button"
+        class="nav-toggle"
+        :class="{ 'is-open': menuOpen }"
+        :aria-expanded="menuOpen"
+        aria-controls="dop-menu-panel"
+        :aria-label="menuOpen ? 'Đóng menu' : 'Mở menu'"
+        @click="toggleMenu"
+      >
+        <span class="nav-toggle__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+    <Teleport to="body">
+      <Transition name="dop-scrim">
+        <div v-if="menuOpen" class="dop-menu-scrim" @click="closeMenu(true)" />
+      </Transition>
+    </Teleport>
+    <Transition name="dop-panel">
+      <div
+        v-if="menuOpen"
+        id="dop-menu-panel"
+        ref="panelEl"
+        class="dop-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu chính"
+      >
+        <div class="dop-menu__head">
+          <span class="dop-menu__kicker">DOP MART · MENU</span>
+          <span class="dop-menu__pickup"><MapPin :size="13" /> Tầng {{ floor.floor }}</span>
+        </div>
+        <nav class="dop-menu__links" aria-label="Điều hướng chính">
+          <RouterLink
+            v-for="(link, index) in panelLinks"
+            :key="link.to"
+            :to="link.to"
+            :style="{ '--i': index }"
+            :class="{ 'is-current': isCurrent(link) }"
+            :aria-current="isCurrent(link) ? 'page' : undefined"
+            @click="closeMenu()"
+          >
+            <span class="dop-menu__index">{{ String(index + 1).padStart(2, "0") }}</span>
+            <span class="dop-menu__label">{{ link.label }}</span>
+            <ArrowUpRight class="dop-menu__arrow" :size="16" />
+          </RouterLink>
+        </nav>
+        <div class="dop-menu__tools">
+          <div class="nav-search"><SearchBox /></div>
+          <FloorSelector />
+        </div>
+        <button type="button" class="dop-menu__cart" @click="openCart">
+          <ShoppingBag :size="18" /><span>Giỏ hàng</span><b>{{ cart.count }} món</b>
+        </button>
+      </div>
+    </Transition>
+  </header>
+</template>
+

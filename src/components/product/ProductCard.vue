@@ -13,8 +13,8 @@ const cart = useCartStore(),
 <template>
   <article class="product-card polished-card">
     <div class="card-media">
-      <button class="card-quick" @click="products.openQuick(product)">
-        <img :src="product.image" :alt="product.name" loading="lazy" />
+      <button class="card-quick" :aria-label="`Xem nhanh ${product.name}`" @click="products.openQuick(product)">
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
       <div class="card-top-left">
         <span v-if="rank" class="compact-rank">#{{ rank }}</span
@@ -24,6 +24,8 @@ const cart = useCartStore(),
       <button
         class="heart card-heart"
         :class="{ liked: fav.has(product.id) }"
+        :aria-label="fav.has(product.id) ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`"
+        :aria-pressed="fav.has(product.id)"
         @click="fav.toggle(product.id)"
       >
         <Heart :size="19" />
@@ -48,7 +50,13 @@ const cart = useCartStore(),
       </div>
       <div class="price-row">
         <strong>{{ product.price.toLocaleString("vi-VN") }} ₫</strong
-        ><button class="add" @click="cart.add(product)"><Plus :size="20" /></button>
+        ><button
+          class="add"
+          :aria-label="`Thêm ${product.name} vào giỏ`"
+          @click="cart.add(product)"
+        >
+          <Plus :size="20" />
+        </button>
       </div>
     </div>
   </article>

@@ -14,7 +14,7 @@ const cart = useCartStore(),
         <small>YOUR HAPPY CART</small>
         <h2>Giỏ hàng 🛒</h2>
       </div>
-      <button @click="cart.open = false"><X /></button>
+      <button aria-label="Đóng giỏ hàng" @click="cart.open = false"><X /></button>
     </div>
     <div class="cart-items">
       <CartItem v-for="i in cart.items" :key="i.id" :item="i" />

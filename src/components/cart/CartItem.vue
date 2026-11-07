@@ -6,7 +6,7 @@ const cart = useCartStore();
 </script>
 <template>
   <div class="cart-item">
-    <img :src="item.image" />
+    <img :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
     <div>
       <b>{{ item.name }}</b
       ><small>{{ item.price.toLocaleString("vi-VN") }} ₫</small>

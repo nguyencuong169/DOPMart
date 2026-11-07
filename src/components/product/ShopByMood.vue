@@ -1,49 +1,50 @@
 <script setup>
 import { computed } from "vue";
-import { ArrowRight } from "lucide-vue-next";
+import { ArrowUpRight } from "lucide-vue-next";
+import SectionHeader from "../common/SectionHeader.vue";
 import { useProductStore } from "../../stores/productStore";
 const store = useProductStore();
-const moods = computed(() =>
+const shelves = computed(() =>
   store.categories
-    .map((category, index) => ({
-      category,
-      product: store.products
-        .filter((p) => p.category === category.slug)
-        .sort((a, b) => b.sold - a.sold)[0],
-      index,
-    }))
-    .filter((x) => x.product)
+    .map((category) => {
+      const items = store.products.filter((p) => p.category === category.slug);
+      if (!items.length) return null;
+      const top = [...items].sort((a, b) => b.sold - a.sold)[0];
+      return {
+        ...category,
+        count: items.length,
+        from: Math.min(...items.map((p) => p.price)),
+        image: top.image,
+        color: top.color,
+      };
+    })
+    .filter(Boolean)
 );
 </script>
 <template>
-  <section class="mood-section">
-    <div class="mood-heading">
-      <div>
-        <span class="kicker">SHOP BY MOOD</span>
-        <h2>Hôm nay bạn muốn ăn gì?</h2>
-      </div>
-      <RouterLink to="/products">Xem toàn bộ catalog <ArrowRight /></RouterLink>
-    </div>
-    <div class="mood-grid">
-      <article
-        v-for="m in moods"
-        :key="m.category.slug"
-        class="mood-card"
-        :style="{ '--mood-color': m.product.color }"
+  <section class="cat-strip">
+    <SectionHeader
+      kicker="CHỌN NHANH THEO DANH MỤC"
+      title="Hôm nay bạn muốn ăn gì?"
+      lead="Tám kệ hàng, tám kiểu thèm khác nhau. Chạm một kệ để xem toàn bộ món bên trong."
+      cta="Lục tủ snack"
+      to="/products"
+    />
+    <div class="cat-grid">
+      <RouterLink
+        v-for="shelf in shelves"
+        :key="shelf.slug"
+        :to="`/category/${shelf.slug}`"
+        class="cat-card"
+        :style="{ '--cat-color': shelf.color }"
       >
-        <div class="mood-index">0{{ m.index + 1 }}</div>
-        <div class="mood-product">
-          <img :src="m.product.image" :alt="m.product.name" />
-        </div>
-        <div class="mood-info">
-          <span>{{ m.category.icon }} {{ m.category.name }}</span>
-          <h3>{{ m.product.name }}</h3>
-          <b>{{ m.product.price.toLocaleString("vi-VN") }} ₫</b
-          ><RouterLink :to="`/category/${m.category.slug}`"
-            >Xem tất cả {{ m.category.name }} <ArrowRight
-          /></RouterLink>
-        </div>
-      </article>
+        <span class="cat-card__copy">
+          <b>{{ shelf.name }}</b>
+          <small>{{ shelf.count }} món · từ {{ shelf.from.toLocaleString("vi-VN") }} ₫</small>
+        </span>
+        <ArrowUpRight class="cat-card__arrow" :size="16" />
+        <img :src="shelf.image" alt="" loading="lazy" decoding="async" />
+      </RouterLink>
     </div>
   </section>
 </template>

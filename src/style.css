@@ -450,7 +450,8 @@ nav a {
 }
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* the column count lives in one place — see "the catalogue grid" at the end of the
+     file, so a stale breakpoint deeper in the sheet cannot win by accident */
   gap: 18px;
 }
 .product-card {
@@ -10874,4 +10875,28 @@ html {
   }
 }
 
+
+
+/* ===== V64 · the catalogue grid: four, three, two =========================
+   every surface that renders product tiles (fresh drop, products, category, search)
+   shares one column rule, declared once here so no earlier breakpoint can win.
+   the tiles are standard cards now, so the gap is the only other dial. */
+.product-grid,
+.catalog-page .product-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+@media (max-width: 1199px) {
+  .product-grid,
+  .catalog-page .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .product-grid,
+  .catalog-page .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-2);
+  }
+}
 

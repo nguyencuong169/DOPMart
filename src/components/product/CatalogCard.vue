@@ -1,5 +1,6 @@
 ﻿<script setup>
 import { computed, onMounted, ref } from "vue";
+import { Heart, Plus } from "lucide-vue-next";
 import QuantitySelector from "./QuantitySelector.vue";
 import { headWords, heroMeta } from "../../data/products";
 
@@ -12,8 +13,27 @@ const props = defineProps({
   product: { type: Object, required: true },
   index: { type: Number, default: 0 },
   quantity: { type: Number, default: 1 },
+  /* "shelf" = the hover shelf, "grid" = same pack plus an always-readable plate */
+  variant: { type: String, default: "shelf" },
+  /* grid only: the plate is complete when the parent passes floor + stock */
+  favorited: { type: Boolean, default: false },
+  stock: { type: Number, default: null },
+  floor: { type: [Number, String], default: "" },
 });
-const emit = defineEmits(["add", "quick", "update:quantity"]);
+const emit = defineEmits(["add", "quick", "update:quantity", "toggle-favorite"]);
+
+const isGrid = computed(() => props.variant === "grid");
+const soldOut = computed(() => props.stock !== null && props.stock <= 0);
+const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3);
+/* stock is per floor and reads as a sentence, never as colour alone */
+const stockLabel = computed(() => {
+  if (props.stock === null) return "";
+  const at = props.floor === "" ? "" : `Tầng ${props.floor}`;
+  const tail = at ? ` · ${at}` : "";
+  if (soldOut.value) return `Hết hàng${tail}`;
+  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`;
+  return `Còn ${props.stock}${tail}`;
+});
 
 const fmt = (n) => n.toLocaleString("vi-VN");
 /* black or white type on the product's own colour, by perceived lightness */
@@ -77,6 +97,7 @@ onMounted(async () => {
 <template>
   <article
     class="cat-card"
+    :class="{ 'cat-card--grid': isGrid, 'is-sold-out': isGrid && soldOut }"
     :style="{ '--c': product.color, '--on': onColor(product.color), '--i': index }"
   >
     <div class="cat-card__stage">
@@ -106,6 +127,18 @@ onMounted(async () => {
 
       <span class="cat-card__tag" aria-hidden="true"><b>{{ fmt(product.price) }} 竄ｫ</b></span>
 
+      <button
+        v-if="isGrid"
+        type="button"
+        class="cat-card__fav"
+        :class="{ liked: favorited }"
+        :aria-label="favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`"
+        :aria-pressed="favorited"
+        @click="emit('toggle-favorite')"
+      >
+        <Heart :size="18" />
+      </button>
+
       <div class="cat-card__buy">
         <QuantitySelector
           :model-value="quantity"
@@ -113,6 +146,38 @@ onMounted(async () => {
         />
         <button type="button" class="cat-card__add" @click="emit('add')">
           Thﾃｪm vﾃo gi盻・
+        </button>
+      </div>
+    </div>
+
+    <!-- grid variant: the plate that is always readable -->
+    <div v-if="isGrid" class="cat-card__info">
+      <span class="cat-card__cat">{{ product.categoryName }}</span>
+      <button type="button" class="cat-card__name-btn" @click="emit('quick')">
+        <h3 class="cat-card__name">{{ product.name }}</h3>
+      </button>
+      <p class="cat-card__meta">
+        <span>★ {{ product.rating }}</span><span>{{ product.sold }} đã bán</span>
+      </p>
+      <p
+        v-if="stockLabel"
+        class="cat-card__stock"
+        :class="{ low: lowStock, out: soldOut }"
+      >
+        {{ stockLabel }}
+      </p>
+      <div class="cat-card__price-row">
+        <strong class="cat-card__price">{{ fmt(product.price) }} ₫</strong>
+        <button
+          type="button"
+          class="cat-card__plus"
+          :disabled="soldOut"
+          :aria-label="
+            soldOut ? `${product.name} đã hết hàng` : `Thêm ${product.name} vào giỏ`
+          "
+          @click="emit('add')"
+        >
+          <Plus :size="20" />
         </button>
       </div>
     </div>
@@ -444,6 +509,175 @@ onMounted(async () => {
 .cat-card__add:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* ==== grid variant ==== the same pack and reveal, with a plate underneath that is
+   readable without hovering: category, name, rating/sold, stock, price, add */
+.cat-card--grid .cat-card__stage {
+  padding: 122% 0 0;
+}
+.cat-card--grid .cat-card__shot {
+  top: 15cqw;
+  width: 72%;
+}
+.cat-card--grid .cat-card__ground {
+  top: 92cqw;
+}
+/* the hanging tag stops hanging: at rest it sits in the top-left corner, readable */
+.cat-card--grid .cat-card__hanging-tag {
+  left: 3%;
+  right: auto;
+  top: 3%;
+  opacity: 1;
+  transform: rotate(-6deg);
+}
+.cat-card--grid .cat-card__hanging-tag + .cat-card__hanging-tag {
+  top: 15%;
+}
+.cat-card--grid .cat-card__tag,
+.cat-card--grid .cat-card__buy {
+  display: none;
+}
+.cat-card__fav {
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.2s;
+}
+.cat-card__fav:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.cat-card__fav.liked {
+  background: var(--red-ink);
+  color: var(--cream);
+}
+.cat-card__fav:focus-visible,
+.cat-card__plus:focus-visible,
+.cat-card__name-btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+.cat-card__info {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-1) 2px 0;
+}
+.cat-card__cat {
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--on-cream);
+}
+.cat-card__name-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+.cat-card__name {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: var(--tracking-display);
+}
+.cat-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--on-cream);
+}
+.cat-card__stock {
+  margin: 4px 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--on-cream);
+}
+.cat-card__stock.low {
+  color: #8a4b00;
+}
+.cat-card__stock.out {
+  color: var(--red-ink);
+}
+.cat-card__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-1);
+  border-top: var(--bw) dashed color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.cat-card__price {
+  font-size: var(--fs-lg);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--red-ink);
+}
+.cat-card__plus {
+  flex: none;
+  width: var(--touch);
+  height: var(--touch);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.cat-card__plus:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.cat-card__plus:disabled {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 24%, transparent);
+  color: color-mix(in srgb, var(--ink) 45%, transparent);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.cat-card--grid.is-sold-out .cat-card__shot img {
+  filter: grayscale(0.45);
+}
+.cat-card--grid.is-sold-out .cat-card__shot {
+  cursor: not-allowed;
+}
+@media (max-width: 767px) {
+  /* the plate under the pack keeps the phone tile readable */
+  .cat-card--grid .cat-card__name {
+    font-size: var(--fs-md);
+  }
 }
 @media (max-width: 520px) {
   .cat-card {

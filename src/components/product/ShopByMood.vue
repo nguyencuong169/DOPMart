@@ -69,19 +69,16 @@ const heads = computed(() => {
       "",
     ];
     const widest = Math.max(
-      ...lines.map((l) => (headCtx ? headCtx.measureText(l).width : l.length * 46)),
+      ...lines.map((l) =>
+        headCtx ? headCtx.measureText(l).width : l.length * 46,
+      ),
       1,
     );
-    /* 100cqw = card width, so a line that spans 96cqw needs font-size 9600/widest
-       (widest measured at a 100px reference size); the 26 cap keeps the two
-       lines inside the poster tile's air above and below the pack */
     const size = Math.min(26, Math.max(12, 9600 / widest));
     return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
   });
 });
 onMounted(async () => {
-  /* measure with the face that renders: wait for the condensed webfont, then
-     recount (offline, the system condensed stack is measured instead) */
   try {
     await document.fonts.load('italic 900 100px "Barlow Condensed"');
   } catch {
@@ -100,11 +97,20 @@ const productTags = (p) => {
   const c = p.color;
   const on = onColor(c);
   if (p.oldPrice > p.price)
-    t.push({ text: `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`, type: 'save', bg: c, fg: on });
-  if (p.isNew) t.push({ text: 'MớI', type: 'new', bg: c, fg: on });
-  if (p.hot) t.push({ text: 'NờI BẶT', type: 'hot', bg: '#c8202f', fg: '#ffffff' });
+    t.push({
+      text: `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`,
+      type: "save",
+      bg: c,
+      fg: on,
+    });
+
+  // Chuyển Hot và New thành type 'hanging' để dùng style tag treo giống tag giá
+  if (p.isNew) t.push({ text: "MỚI", type: "hanging", bg: c, fg: on });
+  if (p.hot)
+    t.push({ text: "NÓNG", type: "hanging", bg: "#c8202f", fg: "#ffffff" });
+
   for (const x of (heroMeta[p.format]?.tags ?? []).slice(0, 2))
-    t.push({ text: x, type: 'format', bg: '#fff', fg: 'var(--ink)' });
+    t.push({ text: x, type: "format", bg: "#fff", fg: "var(--ink)" });
   return t;
 };
 </script>
@@ -141,7 +147,6 @@ const productTags = (p) => {
       </div>
     </div>
 
-    <!-- dải danh sách: nhận màu của tab đang chọn (--ac) -->
     <div class="cat-stage" :style="{ '--ac': current.color }">
       <div class="cat-inner">
         <div class="cat-bar">
@@ -176,15 +181,6 @@ const productTags = (p) => {
             class="cat-card"
             :style="{ '--c': p.color, '--on': onColor(p.color), '--i': i }"
           >
-            <div class="cat-card__tags" aria-label="Nhận sản phẩm">
-              <span
-                v-for="(t, k) in productTags(p)"
-                :key="k"
-                class="cat-card__pill"
-                :style="`background:${t.bg};color:${t.fg};border-color:${t.fg}`"
-              >{{ t.text }}</span
-            ></div>
-            >
             <div class="cat-card__stage">
               <div
                 class="cat-card__head"
@@ -210,9 +206,21 @@ const productTags = (p) => {
                   decoding="async"
                 />
               </button>
-              <span class="cat-card__tag" aria-hidden="true"
-                ><b>{{ fmt(p.price) }} ₫</b></span
-              >
+
+              <!-- Hiển thị các tag dạng treo (Hot/New) -->
+              <template v-for="(t, k) in productTags(p)" :key="'hanging-' + k">
+                <div
+                  v-if="t.type === 'hanging'"
+                  class="cat-card__hanging-tag"
+                  :style="`background:${t.bg};color:${t.fg};border-color:${t.fg}`"
+                >
+                  {{ t.text }}
+                </div>
+              </template>
+
+              <span class="cat-card__tag" aria-hidden="true">
+                <b>{{ fmt(p.price) }} ₫</b>
+              </span>
               <div class="cat-card__buy">
                 <QuantitySelector
                   :model-value="qtyOf(p)"
@@ -235,10 +243,8 @@ const productTags = (p) => {
 </template>
 
 <style scoped>
-/* the poster face for the category head — self-contained so the card never
-   depends on a page-level font link (system condensed stack as the fallback) */
 @import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&display=swap");
-/* Full-bleed: nếu layout cha đã full-width thì bỏ 2 dòng width/margin-left; nếu bị thanh cuộn ngang thì thêm html{overflow-x:clip} */
+
 .cat-strip {
   --ink: #1a1a1a;
   --cream: #fffaf0;
@@ -252,7 +258,6 @@ const productTags = (p) => {
   margin: 0 auto;
   padding: 0 12px;
 }
-/* ---------- Tabs: panel 3D pop-out ---------- */
 .cat-tabs {
   display: flex;
   gap: 24px;
@@ -305,7 +310,6 @@ const productTags = (p) => {
     0 13px 0 3px var(--cd),
     0 24px 26px -8px rgba(0, 0, 0, 0.4);
 }
-/* mũi tên nối tab đang chọn xuống dải danh sách */
 .cat-tab[aria-selected="true"]:after {
   content: "";
   position: absolute;
@@ -377,11 +381,11 @@ const productTags = (p) => {
   z-index: 1;
   transform: rotate(-16deg);
 }
-/* ---------- Dải danh sách: tô theo màu tab đang chọn ---------- */
 .cat-stage {
   --ac: #ffc72c;
   background: color-mix(in srgb, var(--ac) 13%, var(--cream));
   border-top: 6px solid var(--ac);
+  /* ... tiếp nối phần CSS ở trên ... */
   padding: 22px 0 88px;
   transition:
     background 0.45s,
@@ -424,7 +428,6 @@ const productTags = (p) => {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--ink);
 }
-/* ---------- Card 456×513, gap 24, đường chéo chữ V ---------- */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 456px));
@@ -437,13 +440,8 @@ const productTags = (p) => {
   position: relative;
   display: block;
   width: 100%;
-  /* no fixed aspect: the height is the stage (86% of the width, deals-style)
-     plus the footer's own content, so the pack keeps the deals proportions */
   border-radius: 32px;
-  /* no panel: the pack and the vertical type float straight on the strip's
-     cream, so the row reads as posters laid out on the page itself */
   color: var(--ink);
-  /* the card itself never moves — every hover effect lives on the pack */
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
 }
@@ -453,9 +451,6 @@ const productTags = (p) => {
     transform: translateY(26px) scale(0.96);
   }
 }
-/* the poster head: two display lines that hide behind the pack and, on hover,
-   split apart — the top line floats up, the bottom line drops down, so the
-   packshot is revealed whole (image-2 idea, revealed only on hover) */
 .cat-card__head {
   position: absolute;
   inset: 0;
@@ -463,11 +458,10 @@ const productTags = (p) => {
   pointer-events: none;
   user-select: none;
   opacity: 0;
-  font-family: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Impact,
-    sans-serif;
+  font-family:
+    "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
-  /* --hs comes from the measured fit (widest line = ~96% of the card width) */
   font-size: var(--hs, 22cqw);
   line-height: 0.86;
   letter-spacing: -0.005em;
@@ -482,7 +476,6 @@ const productTags = (p) => {
   text-align: center;
   transition: transform 0.55s cubic-bezier(0.3, 1.15, 0.5, 1);
 }
-/* rest: both lines tucked at the pack's yoke, out of sight */
 .cat-card__line:first-child {
   top: 2cqw;
   transform: translateY(26cqw);
@@ -505,13 +498,9 @@ const productTags = (p) => {
 .cat-card__stage {
   position: relative;
   z-index: 2;
-  /* poster tile: air above the pack for the head, air below for the tag and the
-     quick-add row — and it still rides on the width at every card size */
   flex: 0 0 auto;
   padding: 150% 0 0;
 }
-/* the packshot: 75% of the card wide, dropped ~19% from the top, so the head
-   can stand above it and the shadow has room to breathe below (image-2 art) */
 .cat-card__shot {
   position: absolute;
   left: 50%;
@@ -528,8 +517,7 @@ const productTags = (p) => {
   transition:
     transform 0.5s cubic-bezier(0.3, 1.15, 0.5, 1),
     filter 0.4s ease-out;
-  filter:
-    drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
+  filter: drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
     drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
 }
 .cat-card__shot img {
@@ -539,8 +527,13 @@ const productTags = (p) => {
   animation: cat-float 5s ease-in-out infinite;
 }
 @keyframes cat-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 .cat-card__shot:focus-visible {
   outline: 3px solid var(--ink);
@@ -550,7 +543,6 @@ const productTags = (p) => {
 .cat-card:nth-child(even) .cat-card__shot {
   --tilt: -3deg;
 }
-/* the pool of shade the pack floats over */
 .cat-card__ground {
   position: absolute;
   left: 50%;
@@ -568,11 +560,9 @@ const productTags = (p) => {
 }
 .cat-card:hover .cat-card__shot,
 .cat-card:focus-within .cat-card__shot {
-  /* a nudge, never a spin: the pack lifts and leans a touch */
   transform: translateX(-50%) translateY(-7px) rotate(var(--tilt, 3deg))
     scale(1.03);
-  filter:
-    drop-shadow(2px 8px 4px rgba(0, 0, 0, 0.16))
+  filter: drop-shadow(2px 8px 4px rgba(0, 0, 0, 0.16))
     drop-shadow(14px 32px 24px rgba(0, 0, 0, 0.18));
 }
 .cat-card:hover .cat-card__ground,
@@ -581,32 +571,62 @@ const productTags = (p) => {
   opacity: 0.8;
 }
 .cat-card__tags {
+  display: none; /* Đã ẩn các tag cũ */
+}
+/* Style cho các tag dạng treo (Hot/New) - Thiết kế giống hệt tag giá */
+.cat-card__hanging-tag {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  pointer-events: none;
-}
-.cat-card__pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2.5px 8px;
-  border: 1.5px solid var(--ink);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font: 800 9px/1 var(--fd);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  right: 5%;
+  top: 45cqw;
+  z-index: 4;
+  padding: 5px 12px 5px 18px;
+  border: 2.5px solid var(--ink);
+  border-radius: 6px 14px 14px 6px;
+  font: 800 clamp(12px, 3.5cqw, 16px) / 1 var(--fd);
   white-space: nowrap;
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 3px 4px 0 var(--ink);
+  opacity: 0;
+  transform: rotate(-14deg) translateY(3cqw) scale(0.86);
+  transform-origin: 16% 30%;
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
-
-/* the price is a tag hooked on the pack (image-2): eyelet, string, tilt.
-   it stays out of sight until hover so the tile is calm at rest */
+.cat-card__hanging-tag::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cream, #fffaf0);
+}
+.cat-card__hanging-tag::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: calc(50% - 1.25px);
+  width: 26px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--ink);
+  transform-origin: 0 50%;
+  transform: rotate(-152deg);
+}
+.cat-card:hover .cat-card__hanging-tag,
+.cat-card:focus-within .cat-card__hanging-tag {
+  opacity: 1;
+  transform: rotate(-14deg) translateY(0) scale(1);
+}
+@media (hover: none) {
+  .cat-card__hanging-tag {
+    opacity: 1;
+    transform: rotate(-14deg);
+  }
+}
 .cat-card__tag {
   position: absolute;
   right: 1%;
@@ -627,8 +647,6 @@ const productTags = (p) => {
     opacity 0.28s ease-out,
     transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
-/* eyelet on the tag's left edge; the string starts exactly at the eyelet's
-   centre and swings around it, so the two can never come apart */
 .cat-card__tag::before {
   content: "";
   position: absolute;
@@ -636,7 +654,7 @@ const productTags = (p) => {
   top: 50%;
   width: 9px;
   height: 9px;
-  margin-top: -6.5px; /* (9 + 2 x 2 border) / 2 */
+  margin-top: -6.5px;
   border: 2px solid var(--ink);
   border-radius: 50%;
   background: var(--cream, #fffaf0);
@@ -644,7 +662,7 @@ const productTags = (p) => {
 .cat-card__tag::after {
   content: "";
   position: absolute;
-  left: 13px; /* eyelet centre: 6 + (9 + 4) / 2 */
+  left: 13px;
   top: calc(50% - 1.25px);
   width: 26px;
   height: 2.5px;
@@ -658,14 +676,12 @@ const productTags = (p) => {
   opacity: 1;
   transform: rotate(-14deg) translateY(0) scale(1);
 }
-/* touch screens have no hover: the price must still be readable there */
 @media (hover: none) {
   .cat-card__tag {
     opacity: 1;
     transform: rotate(-14deg);
   }
 }
-/* quick add sits right under the pack, shown on hover / focus */
 .cat-card__buy {
   position: absolute;
   left: 3%;
@@ -677,7 +693,9 @@ const productTags = (p) => {
   gap: 8px;
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.3s ease-out, transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
 .cat-card:hover .cat-card__buy,
 .cat-card:focus-within .cat-card__buy {
@@ -709,7 +727,9 @@ const productTags = (p) => {
   padding: 0;
   line-height: 1;
 }
-.cat-card__buy .quantity button:hover { background: #f3f3f3; }
+.cat-card__buy .quantity button:hover {
+  background: #f3f3f3;
+}
 .cat-card__buy .quantity span {
   min-width: 20px;
   text-align: center;
@@ -730,10 +750,18 @@ const productTags = (p) => {
   font: 700 clamp(12px, 3.6cqw, 15px) / 1 var(--fd);
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
-.cat-card__add:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
-.cat-card__add:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.cat-card__add:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.cat-card__add:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
 
 @media (max-width: 980px) {
   .cat-grid {

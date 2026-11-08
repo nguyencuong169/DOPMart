@@ -72,5 +72,55 @@ for (const [format, hex] of tints) {
   )
 }
 
+/* the hero carousel paints the copy straight onto the product's shelf colour, so every
+   shelf the carousel can show has to clear AA with the token pair the component derives
+   (surfaceTone for the copy, tintOn for the secondary line and the accent word). */
+const shelvesSrc = src.split("export const shelves = [")[1]?.split("/* the UI browses")[0] ?? ""
+const shelfColours = [...shelvesSrc.matchAll(/slug:\s*"([a-z-]+)",[\s\S]*?color:\s*"(#[0-9a-f]{6})"/g)].map(
+  (m) => [m[1], m[2]]
+)
+lines.push("\nhero planes (copy sits on the product colour):")
+if (!shelfColours.length) {
+  fails++
+  lines.push("  no shelf colours parsed")
+}
+const CREAM_TOKEN = "#fff9ee"
+const INK_TOKEN = "#101010"
+const mix = (from, to, t) => {
+  const ch = (hex, i) => parseInt(hex.replace("#", "").slice(i, i + 2), 16)
+  const out = [0, 2, 4].map((i) =>
+    Math.round(ch(from, i) * (1 - t) + ch(to, i) * t)
+      .toString(16)
+      .padStart(2, "0")
+  )
+  return `#${out.join("")}`
+}
+const tintOn = (surface, min) => {
+  const toward = ratio(CREAM_TOKEN, surface) > ratio(INK_TOKEN, surface) ? CREAM_TOKEN : INK_TOKEN
+  for (let step = 0; step <= 20; step++) {
+    const tint = mix(surface, toward, step / 20)
+    if (ratio(tint, surface) >= min) return tint
+  }
+  return toward
+}
+for (const [slug, hex] of shelfColours) {
+  const cream = ratio(CREAM_TOKEN, hex) > ratio(INK_TOKEN, hex)
+  const primary = cream ? CREAM_TOKEN : INK_TOKEN
+  const soft = tintOn(hex, 4.5)
+  const accent = tintOn(hex, 3)
+  const primaryRatio = ratio(primary, hex)
+  const softRatio = ratio(soft, hex)
+  const accentRatio = ratio(accent, hex)
+  const ok = primaryRatio >= 4.5 && softRatio >= 4.5 && accentRatio >= 3
+  if (!ok) fails++
+  lines.push(
+    `  ${slug.padEnd(11)} ${hex} ${(cream ? "cream" : "ink").padEnd(6)} copy ${primaryRatio
+      .toFixed(2)
+      .padStart(5)}  soft ${softRatio.toFixed(2).padStart(5)}  name ${accentRatio.toFixed(2).padStart(5)}  ${
+      ok ? "pass" : "FAIL"
+    }`
+  )
+}
+
 lines.push(fails ? `\n${fails} contrast problem(s)` : '\nall tokens in use pass AA (4.5:1)')
 console.log(lines.join('\n'))

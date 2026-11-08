@@ -13,6 +13,7 @@ import {
 } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
+import { relativeLuminance, surfaceTone, tintOn } from "../../utils/color";
 
 const store = useProductStore();
 const cart = useCartStore();
@@ -54,17 +55,26 @@ const fx = computed(() => {
 });
 const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* the accent colour decides which text tokens the whole column uses:
-   sun → dark ink, green/berry → near-black, purple → cream. Measured, not eyeballed. */
-function relLum(hex) {
-  const clean = String(hex || "#ffd338").replace("#", "");
-  const lin = (pair) => {
-    const c = parseInt(pair || "0", 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  const [r, g, b] = [clean.slice(0, 2), clean.slice(2, 4), clean.slice(4, 6)].map(lin);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
+const current = ref(0);
+/* the plane the copy stands on is the current product's colour, so the tokens are
+   derived from that exact value — the same one that paints the left diagonal */
+const accent = computed(() => slides.value[current.value]?.color || "#ffd338");
+/* the right diagonal previews what is coming next: the ring order is the queue */
+const accentNext = computed(() => {
+  const list = slides.value;
+  if (!list.length) return accent.value;
+  return list[(current.value + 1) % list.length].color;
+});
+/* three tones, but the deep/mid split is measured (cream vs ink, whichever wins):
+   green and purple are "cream" planes, sun/orange/berry stay "ink" planes */
+const tone = computed(() => {
+  if (surfaceTone(accent.value) === "is-dark") return "tone-deep";
+  return relativeLuminance(accent.value) >= 0.45 ? "tone-sun" : "tone-mid";
+});
+/* secondary copy and the accent word keep the product hue, but only as far as the
+   contrast floor allows: 4.5:1 for 14px copy, 3:1 for the 84px name (WCAG large text) */
+const softInk = computed(() => tintOn(accent.value, accent.value, 4.5));
+const nameAccent = computed(() => tintOn(accent.value, accent.value, 3));
 /* opening hours: the introduction block is on screen for every slide */
 const clock = ref(new Date());
 const isOpen = computed(() => {
@@ -73,12 +83,6 @@ const isOpen = computed(() => {
 });
 let clockTimer = null;
 
-const current = ref(0);
-const tone = computed(() => {
-  const L = relLum(slides.value[current.value]?.color);
-  if (L < 0.12) return "tone-deep";
-  return L >= 0.45 ? "tone-sun" : "tone-mid";
-});
 const playing = ref(!prefersReduced);
 const paused = ref(false);
 let timer = null;
@@ -294,7 +298,12 @@ onBeforeUnmount(() => {
     @mouseleave="resume(); resetParallax()"
     @focusin="pause"
     @focusout="onFocusOut"
-    :style="{ '--accent': slides[current].color }"
+    :style="{
+      '--accent': accent,
+      '--accent-next': accentNext,
+      '--hero-text-soft': softInk,
+      '--hero-name-accent': nameAccent,
+    }"
   >
     <div class="hero-intro">
       <h1 class="hero-intro__title">Món ngon, ngay trong văn phòng</h1>
@@ -386,10 +395,6 @@ onBeforeUnmount(() => {
           decoding="async"
         />
       </button>
-    </div>
-    <div class="hero-stickers" aria-hidden="true">
-      <span class="hs1">{{ slides[current].tags[0] }}</span>
-      <span class="hs2">{{ slides[current].tags[1] }}</span>
     </div>
     <div class="hero-product-zone">
       <div class="hero-halo"></div>

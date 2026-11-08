@@ -10383,3 +10383,249 @@ html {
     transform: rotate(-2deg) scale(1.03);
   }
 }
+
+/* ===== V59 · hero planes: the product owns the left diagonal, the next pack the right =====
+   before: the diagonal painted the *current* product on the right, so the copy stood on a
+   fixed sun plane while the tone tokens were derived from the product colour — the soda slide
+   set cream text on yellow. Now the plane under the copy IS the product colour and the right
+   wedge is the dominant colour of the pack queued next (soda tím → khoai tây cam), so the two
+   halves read "now / next" and every line of copy sits on the surface it was measured against. */
+.brand-hero {
+  /* the V21 gradient shorthand is still in the stack: the base plane has to be flat */
+  background-color: var(--accent);
+  background-image: none;
+  transition: background-color 0.65s ease;
+}
+.brand-hero::before {
+  background-color: var(--accent-next, var(--accent));
+}
+@media (max-width: 750px) {
+  /* phones stack the whole hero: the copy is pinned to the bottom of the plate and the
+     intro to the top, so a second colour would cut through the type. The queued pack is
+     not rendered at this width either (.slot-1 is hidden), so the plate stays one colour. */
+  .brand-hero::before {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-hero,
+  .brand-hero::before {
+    transition: none;
+  }
+}
+
+/* ===== V60 · hero type: one voice per role, every colour measured on the new planes =====
+   --hero-text / --hero-text-soft / --hero-name-accent arrive from the component (the tint
+   maths lives in utils/color.js); the tone classes stay for the surface decisions below. */
+/* the ink hard-codes that were safe on sun: name, price, kicker, intro */
+.hero-intro__title,
+.hero-side-copy .hero-kicker,
+.hero-side-copy .hero-product-name a,
+.hero-side-copy .hero-product-name .np-fill,
+.hero-side-copy .hero-price {
+  color: var(--hero-text);
+}
+.hero-side-copy .hero-desc,
+.hero-side-copy .hero-specs,
+.hero-intro__meta {
+  color: var(--hero-text-soft);
+}
+/* the last word is a tint of the same product colour, walked back until it clears 3:1
+   on that panel — a brand accent, not a contrast accident */
+.hero-side-copy .hero-product-name .np-accent {
+  color: var(--hero-name-accent, var(--hero-text));
+}
+/* depth for the display line: a faint ink offset on light planes, a real one on dark */
+.brand-hero {
+  --hero-type-shadow: 3px 3px 0 #1919191a;
+}
+.brand-hero.tone-deep {
+  --hero-type-shadow: 4px 4px 0 #1919194d;
+}
+.hero-side-copy .hero-product-name a,
+.hero-side-copy .hero-product-name a:hover {
+  text-shadow: var(--hero-type-shadow);
+}
+/* the name: 1.14 is the floor for the stacked Vietnamese diacritics (Ệ, Ậ) and the
+   word gap has to come from the box, not from a text node */
+.hero-side-copy .hero-product-name {
+  line-height: 1.14;
+  word-spacing: 0.05em;
+  text-wrap: balance;
+}
+.hero-intro__title {
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.hero-intro__meta {
+  letter-spacing: 0.01em;
+}
+.hero-side-copy .hero-kicker {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+.hero-side-copy .hero-desc {
+  max-width: 34ch;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  line-height: 1.62;
+}
+/* 750–1100: the pack is wider than the column and the blurb used to run under it */
+@media (max-width: 1100px) {
+  .hero-side-copy .hero-desc {
+    max-width: 30ch;
+  }
+}
+.hero-side-copy .hero-specs {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.hero-side-copy .hero-price {
+  font-size: clamp(26px, 2.1vw, 34px);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+/* a black pill needs an edge on a dark plane, or it melts into the panel */
+.brand-hero.tone-deep .hero-add {
+  border-color: var(--paper);
+  box-shadow: 4px 4px 0 #19191959;
+}
+.brand-hero.tone-deep .hero-add:hover {
+  box-shadow: 6px 6px 0 #19191970;
+}
+/* secondary CTA: ink on sun was a hard-code; it follows the layer under it now */
+.hero-deal,
+.hero-deal:hover {
+  color: var(--hero-text);
+  border-bottom-color: currentColor;
+}
+.hero-deal:hover {
+  border-bottom-color: var(--accent-next, currentColor);
+}
+/* the counter sits at the foot of the copy column, on the accent plane: it carries its
+   own cream chip so no product colour can wash it out, and it matches the arrow pills */
+.hero-controls .hero-count {
+  padding: 4px 9px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: #fffdf7;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.hero-controls .hero-count,
+.hero-controls .hero-count b {
+  color: var(--ink);
+}
+/* the tokens swap the instant the slide changes while the planes morph over 0.65s, so
+   without this the intro block flashed cream-on-orange for a beat on every change */
+.hero-intro__title,
+.hero-intro__meta,
+.hero-open,
+.hero-side-copy .hero-kicker,
+.hero-side-copy .hero-product-name a,
+.hero-side-copy .hero-product-name .np-fill,
+.hero-side-copy .hero-product-name .np-accent,
+.hero-side-copy .hero-desc,
+.hero-side-copy .hero-specs,
+.hero-side-copy .hero-price {
+  transition:
+    color 0.6s ease,
+    text-shadow 0.6s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-intro__title,
+  .hero-intro__meta,
+  .hero-open,
+  .hero-side-copy .hero-kicker,
+  .hero-side-copy .hero-product-name a,
+  .hero-side-copy .hero-product-name .np-fill,
+  .hero-side-copy .hero-product-name .np-accent,
+  .hero-side-copy .hero-desc,
+  .hero-side-copy .hero-specs,
+  .hero-side-copy .hero-price {
+    transition: none;
+  }
+}
+
+/* ===== V61 · spotlight pack at 85%, the queue climbs toward it =====
+   the waiting packs were 0.24 / 0.14 / 0.19 — three unrelated thumbnails. They are one
+   ladder now (0.12 → 0.17 → 0.23 → 0.85), so the ring reads as a queue receding from the
+   spotlight; the contact shadows and the cream plate follow the same 15%, otherwise each
+   pack would keep standing on a floor that is no longer under it. */
+.hero-ring__item.slot-0 {
+  transform: translate(-50%, -50%) translate(2.8vw, 0) scale(0.85) rotate(0deg);
+}
+.hero-ring__item.slot-1 {
+  transform: translate(-50%, -50%) translate(36.5vw, 19vh) scale(0.23) rotate(-90deg);
+}
+.hero-ring__item.slot-2 {
+  transform: translate(-50%, -50%) translate(45.6vw, 0) scale(0.17) rotate(-180deg);
+}
+.hero-ring__item.slot-3 {
+  transform: translate(-50%, -50%) translate(31.5vw, -21.8vh) scale(0.12) rotate(90deg);
+}
+.hero-ground {
+  --gw: 25.5vw;
+  --gh: 4.6vh;
+  --gy: 32vh;
+  --gb: 11px;
+  --gc: 6px;
+}
+.hero-ground--s1 {
+  --gy: 29.4vh;
+  --gw: 6.3vw;
+  --gh: 1.7vh;
+  --gb: 5px;
+  --gc: 2.5px;
+}
+.hero-ground--s2 {
+  --gy: 7.5vh;
+  --gw: 4.6vw;
+  --gh: 1.3vh;
+  --gb: 3px;
+  --gc: 1.5px;
+}
+.hero-ground--s3 {
+  --gy: -17vh;
+  --gw: 3.2vw;
+  --gh: 0.9vh;
+  --gb: 3px;
+  --gc: 1.5px;
+}
+.hero-plate {
+  width: min(54vh, 44vw);
+}
+@media (max-width: 1100px) {
+  .hero-ground {
+    --gw: 37vw;
+    --gh: 3.9vh;
+    --gy: 28vh;
+  }
+  .hero-ground--s1 {
+    --gy: 19vh;
+  }
+  .hero-plate {
+    width: min(49vh, 66vw);
+  }
+}
+@media (max-width: 750px) {
+  .hero-ring__item.slot-0 {
+    transform: translate(-50%, -50%) translate(0, -5vh) scale(0.85) rotate(0deg);
+  }
+  .hero-ground {
+    --gx: 0;
+    --gy: 6vh;
+    --gw: 42.5vw;
+    --gh: 2.6vh;
+    --gb: 8px;
+    --gc: 4px;
+  }
+  .hero-plate {
+    width: min(39vh, 75vw);
+    transform: translate(-50%, -50%) translate(0, -5vh);
+  }
+}
+

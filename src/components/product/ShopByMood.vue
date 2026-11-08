@@ -149,21 +149,8 @@ const productTags = (p) => {
 
     <div class="cat-stage" :style="{ '--ac': current.color }">
       <div class="cat-inner">
-        <div class="cat-bar">
-          <div>
-            <h3>{{ current.name }}</h3>
-            <p>
-              {{ current.tagline }}
-              <template v-if="current.items.length > MAX">
-                · hiển thị {{ MAX }}/{{ current.items.length }} món</template
-              >
-            </p>
-          </div>
-          <RouterLink
-            v-if="current.items.length > MAX"
-            :to="link"
-            class="cat-more"
-          >
+        <div v-if="current.items.length > MAX" class="cat-bar">
+          <RouterLink :to="link" class="cat-more">
             Xem toàn bộ ({{ current.items.length }}) <ArrowRight :size="16" />
           </RouterLink>
         </div>
@@ -254,9 +241,10 @@ const productTags = (p) => {
   padding: 48px 0 0;
 }
 .cat-inner {
-  max-width: 1920px;
+  /* one measure for the whole page: the tokens are the source, these numbers are it */
+  max-width: var(--container, 1920px);
   margin: 0 auto;
-  padding: 0 12px;
+  padding: 0 var(--gutter, 12px);
 }
 .cat-tabs {
   display: flex;
@@ -393,7 +381,9 @@ const productTags = (p) => {
 }
 .cat-bar {
   display: flex;
-  justify-content: space-between;
+  /* the stage lost its "Tất cả / 4-of-8" line: only the action is left, so it docks
+     to the right and the grid moves up to meet the tabs */
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
@@ -433,7 +423,7 @@ const productTags = (p) => {
   grid-template-columns: repeat(4, minmax(0, 456px));
   justify-content: center;
   gap: 24px;
-  padding: 88px 0 12px;
+  padding: 24px 0 12px;
 }
 .cat-card {
   container-type: inline-size;

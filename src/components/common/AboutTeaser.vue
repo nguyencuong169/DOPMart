@@ -21,6 +21,7 @@ const stats = computed(() => {
       <SectionHeader
         kicker="WHY DOP MART EXISTS"
         title="Bận rộn không có nghĩa là phải bỏ qua món mình thích."
+        :lines="['Bận rộn không có nghĩa', 'là phải bỏ qua', 'món mình thích.']"
         lead="Snack station nội bộ cho dân văn phòng: chọn trong 30 giây, nhận ngay tại tầng 14 hoặc 20 — không shipper, không chờ đợi."
         cta="Đọc chuyện DOP"
         to="/about"

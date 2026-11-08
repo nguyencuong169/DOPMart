@@ -14,7 +14,7 @@ export function relativeLuminance(hex) {
    candidate contrast ratios instead of guessing a luminance threshold, so a borderline
    colour can never end up with the worse of the two. */
 const INK = "#101010"
-const CREAM = "#fff9ee";
+const CREAM = "#fff7e3"; /* --cream in style.css: one cream for text and paper */
 export function contrastRatio(a, b) {
   const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m)
   return (hi + 0.05) / (lo + 0.05)

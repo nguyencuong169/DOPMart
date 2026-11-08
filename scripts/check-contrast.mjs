@@ -16,17 +16,45 @@ const ratio = (a, b) => {
   return (x + 0.05) / (y + 0.05)
 }
 
+/* the tokens the page actually ships, parsed from the stylesheet — so this file can
+   never drift from the CSS it is supposed to prove. `var(--x)` aliases are followed. */
+const css = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8')
+const token = (name, seen = []) => {
+  const m = css.match(new RegExp(`^\\s*--${name}:\\s*([^;]+);`, 'im'))
+  if (!m) throw new Error(`token --${name} not found in style.css`)
+  const value = m[1].trim()
+  const alias = value.match(/^var\(--([a-z0-9-]+)\)$/i)
+  if (!alias) return value
+  if (seen.includes(name)) throw new Error(`token --${name} aliases itself`)
+  return token(alias[1], [...seen, name])
+}
+const CREAM = token('cream')
+const INK = token('ink')
+const YELLOW = token('yellow')
+const PURPLE = token('purple')
+const RED = token('red')
+const RED_INK = token('red-ink')
+const GREEN = token('green')
+const GREEN_INK = token('green-ink')
+const TEXT_INK = '#101010' /* text ink is deeper than --ink on purpose: 16.6:1 on cream */
+
 const pairs = [
-  ['on-cream', '#4a4238', '#fff9ee', 'meta on paper'],
-  ['on-yellow', '#5a4400', '#ffd338', 'hero copy on sun'],
-  ['on-black', '#f3ece0', '#191919', 'footer links'],
-  ['on-purple', '#f4e7ff', '#7a32a8', 'spotlight description'],
-  ['on-red', '#fff9ee', '#b81f2b', 'SAVE badge'],
+  ['on-cream', token('on-cream'), CREAM, 'meta on paper'],
+  ['on-yellow', token('on-yellow'), YELLOW, 'copy on sun'],
+  ['on-black', token('on-black'), INK, 'footer links'],
+  ['on-purple', token('on-purple'), PURPLE, 'copy on --purple'],
+  ['on-red', token('on-red'), RED_INK, 'SAVE badge, cream on --red-ink'],
+  ['red-ink text', RED_INK, CREAM, 'sale price / out of stock'],
+  ['green-ink text', GREEN_INK, CREAM, 'in stock / success copy'],
+  ['purple text', PURPLE, CREAM, 'purple link or label'],
+  ['ink text', INK, CREAM, 'body copy on paper'],
+  ['ink on yellow', INK, YELLOW, 'step titles on --yellow'],
+  ['on-purple', token('on-purple'), '#7a32a8', 'spotlight description'],
   ['hero tone-mid', '#101010', '#31a354', 'copy on green slide'],
   ['hero tone-mid', '#101010', '#ef3340', 'copy on berry slide'],
-  ['hero tone-deep', '#fff9ee', '#7a32a8', 'copy on purple slide'],
-  ['low stock', '#8a4b00', '#fff9ee', 'low-stock label'],
-  ['old price', '#4a4238', '#fff9ee', 'strike-through price'],
+  ['hero tone-deep', CREAM, '#7a32a8', 'copy on purple slide'],
+  ['low stock', '#8a4b00', CREAM, 'low-stock label'],
+  ['old price', token('on-cream'), CREAM, 'strike-through price'],
   ['on-promo', '#101010', '#ef5b9a', 'deal card text on pink'],
   ['on-promo', '#101010', '#ff5a1f', 'deal card text on orange'],
   ['on-promo', '#101010', '#ef3340', 'deal card text on red'],
@@ -49,12 +77,24 @@ for (const [name, fg, bg, note] of pairs) {
   )
 }
 
+/* brand fills are not text colours: they only have to clear 3:1 as non-text UI
+   (dots, bars, 1.5px strokes). anything carrying text must use the -ink pair. */
+lines.push('brand fills (non-text UI, min 3:1):')
+for (const [name, hex] of [
+  ['--red', RED],
+  ['--green', GREEN],
+  ['--purple', PURPLE],
+]) {
+  const r = ratio(hex, CREAM)
+  const ok = r >= 3
+  if (!ok) fails++
+  lines.push(`  ${name.padEnd(9)} ${hex} on cream ${r.toFixed(2).padStart(6)}  ${ok ? 'pass' : 'FAIL'}`)
+}
+
 /* deal cards: the surface is the product's own dominant colour, so every tint in
    products.js must clear 4.5:1 with whichever text token surfaceTone() picks */
 const src = readFileSync(new URL('../src/data/products.js', import.meta.url), 'utf8')
 const tints = [...src.matchAll(/^\s{2}([a-z]+):\s*['"](#[0-9a-f]{6})['"],?$/gim)].map((m) => [m[1], m[2]])
-const INK = '#101010'
-const CREAM = '#fff9ee'
 lines.push('\ndeal-card tints (text colour is picked by the higher ratio):')
 if (!tints.length) {
   fails++
@@ -62,7 +102,7 @@ if (!tints.length) {
 }
 for (const [format, hex] of tints) {
   const withCream = ratio(CREAM, hex)
-  const withInk = ratio(INK, hex)
+  const withInk = ratio(TEXT_INK, hex)
   const dark = withCream > withInk
   const best = Math.max(withCream, withInk)
   const ok = best >= 4.5
@@ -84,8 +124,9 @@ if (!shelfColours.length) {
   fails++
   lines.push("  no shelf colours parsed")
 }
-const CREAM_TOKEN = "#fff9ee"
-const INK_TOKEN = "#101010"
+/* same pair the component derives: --cream from the stylesheet, deeper text ink */
+const CREAM_TOKEN = CREAM
+const INK_TOKEN = TEXT_INK
 const mix = (from, to, t) => {
   const ch = (hex, i) => parseInt(hex.replace("#", "").slice(i, i + 2), 16)
   const out = [0, 2, 4].map((i) =>

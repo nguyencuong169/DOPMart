@@ -1,56 +1,101 @@
 :root {
-  /* --- brand palette --- */
-  --paper: #fff9ee;
-  --paper-bright: #fffdf7;
-  --ink: #191919;
-  --sun: #ffd338;
+  /* --- brand palette: one value per hue --------------------------------
+     everything else in this file is an alias of these six. a fill colour is not
+     automatically safe to carry text on, so red and green each have a darkened
+     partner that clears 4.5:1 under cream (measured, see scripts/check-contrast):
+       --red    #e03e45  cream 3.98 FAIL   --red-ink   #b81f2b  cream 6.02 pass
+       --green  #1f8a4c  cream 4.10 FAIL   --green-ink #156b3d  cream 6.14 pass
+     use the -ink pair whenever the colour is text or sits behind text; the plain
+     pair is for fills, bars, dots and borders (non-text UI only needs 3:1). */
+  --green: #1f8a4c;
+  --green-ink: #156b3d;
+  --red: #e03e45;
+  --red-ink: #b81f2b;
+  --yellow: #ffd233;
+  --purple: #6b2fb3;
+  --ink: #1a1a1a;
+  --cream: #fff7e3;
+  /* accents the brief does not name but the sheet still paints with */
   --flame: #ff5a1f;
-  --leaf: #137c58;
-  --berry: #ef3340;
   --clay: #ea5b34;
   /* legacy aliases used across the stylesheet */
+  --paper: var(--cream);
+  --paper-bright: #fffdf7;
+  --sun: var(--yellow);
+  --leaf: var(--green);
+  --berry: var(--red);
+  --berry-deep: var(--red-ink);
   --orange: var(--flame);
-  --yellow: var(--sun);
-  --green: var(--leaf);
 
-  /* --- radii --- */
+  /* --- spacing: multiples of 8 --- */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 40px;
+  --sp-5: 64px;
+  --sp-6: 96px;
+  /* legacy rhythm names */
+  --s1: var(--sp-1);
+  --s2: var(--sp-2);
+  --s3: var(--sp-3);
+  --s4: var(--sp-4);
+  --s5: var(--sp-5);
+  --section-y: var(--sp-6);
+
+  /* --- layout ----------------------------------------------------------
+     the standard measure is the one section 2 (danh mục + lưới sản phẩm) set:
+     the content runs the width of the viewport minus 12px a side and stops growing
+     at 1920px. every other section is measured against it, so a card, a list row
+     and a colour band all start on the same line.
+     --gutter is that 12px edge; --edge is the page margin that centres content on
+     --container, so a full-bleed band can keep its own background across the
+     viewport while its content lines up with the rest of the page. */
+  --container: 1920px;
+  --gutter: 12px;
+  --edge: max(var(--gutter), calc((100% - var(--container)) / 2 + var(--gutter)));
+  --maxw: var(--container);
+
+  /* --- card: one shape for every surface --- */
+  --radius: 16px;
+  --border: 2px solid var(--ink);
+  --shadow: 4px 4px 0 var(--ink);
+  --touch: 44px;
+  /* legacy radius names -> the one radius */
   --r-xs: 12px;
-  --r-sm: 16px;
-  --r-md: 20px;
-  --r-lg: 26px;
-  --r-xl: 38px;
+  --r-sm: var(--radius);
+  --r-md: var(--radius);
+  --r-lg: var(--radius);
+  --r-xl: var(--radius);
   --r-pill: 999px;
-
-  /* --- borders + elevation (3 steps only) --- */
+  /* legacy border + elevation names */
   --bw: 1.5px;
   --bw-bold: 2px;
   --bw-heavy: 3px;
-  --e1: 3px 3px 0 var(--ink);
+  --e1: var(--shadow);
   --e2: 6px 6px 0 var(--ink);
   --e3: 10px 10px 0 var(--ink);
 
-  /* --- spacing + layout rhythm --- */
-  --s1: 8px;
-  --s2: 16px;
-  --s3: 24px;
-  --s4: 40px;
-  --s5: 64px;
-  --gutter: 6vw;
-  --section-y: 96px;
-  --maxw: 1320px;
-
-  /* --- type --- */
+  /* --- type: 1.25 scale, 14px floor for anything readable --------------
+     two families only: --font-display carries headlines, --font-ui carries
+     everything a person has to read. no per-section display face. */
   --font-ui: "Be Vietnam Pro", sans-serif;
   --font-display: "Bricolage Grotesque", "Be Vietnam Pro", sans-serif;
-  --fs-mega: clamp(56px, 9vw, 132px);
-  --fs-h1: clamp(38px, 5.4vw, 74px);
-  --fs-h2: clamp(30px, 3.8vw, 52px);
-  --fs-h3: clamp(17px, 1.5vw, 21px);
-  --fs-lead: clamp(15px, 1.05vw, 17px);
-  --fs-body: 16px;
-  --fs-small: 14px;
-  --fs-meta: 12px;
-  --fs-kicker: 12px;
+  --fs-xs: 12px; /* labels and kickers only — never body copy */
+  --fs-sm: 14px; /* description, meta */
+  --fs-md: 16px; /* body copy */
+  --fs-lg: 20px; /* product name, card title */
+  --fs-xl: clamp(28px, 4vw, 44px); /* section title */
+  --fs-hero: clamp(40px, 7vw, 88px); /* hero / page headline */
+  /* legacy type names, mapped onto the scale above */
+  --fs-mega: var(--fs-hero);
+  --fs-h1: var(--fs-hero);
+  --fs-h2: var(--fs-xl);
+  --fs-h3: var(--fs-lg);
+  --fs-lead: var(--fs-md);
+  --fs-body: var(--fs-md);
+  --fs-small: var(--fs-sm);
+  --fs-meta: var(--fs-xs);
+  --fs-kicker: var(--fs-xs);
   --tracking-display: -0.02em;
   --tracking-kicker: 0.2em;
   /* line-height floor — Vietnamese stacked diacritics need room above the cap */
@@ -58,15 +103,14 @@
   --lh-h2: 1.2;
   --lh-body: 1.5;
   /* secondary text: one token per surface, contrast measured — never opacity */
-  --on-cream: #4a4238;
-  --on-yellow: #5a4400;
-  --on-red: #fff9ee;
-  --on-purple: #f4e7ff;
-  --on-black: #f3ece0;
+  --on-cream: #4a4238; /* 9.24 on --cream */
+  --on-yellow: #5a4400; /* 6.42 on --yellow */
+  --on-red: var(--cream); /* 6.02 on --red-ink */
+  --on-purple: #f4e7ff; /* 6.61 on --purple */
+  --on-black: #f3ece0; /* 14.82 on --ink */
   /* text that sits on a saturated promo colour (pink / orange / red cards) */
   --on-promo: #101010;
   --on-promo-soft: #17120f;
-  --berry-deep: #b81f2b;
 
   font-family: var(--font-ui);
   color: var(--ink);
@@ -74,7 +118,21 @@
 }
 @media (max-width: 760px) {
   :root {
-    --section-y: 64px;
+    --section-y: var(--sp-5);
+  }
+}
+/* the header and the hero still lay themselves out against the pre-container edge
+   (6vw / 20px). scoped here instead of global so nothing else inherits the old
+   value by accident, and so moving them onto --edge is a one-line change later. */
+.dop-header,
+.dop-menu,
+.brand-hero {
+  --gutter: 6vw;
+}
+@media (max-width: 760px) {
+  .dop-header,
+  .dop-menu,
+  .brand-hero {
     --gutter: 20px;
   }
 }
@@ -107,7 +165,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0 4.5vw;
-  background: #fff9ee;
+  background: var(--cream);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -206,7 +264,7 @@ nav a {
   overflow: hidden;
   background:
     radial-gradient(circle at 76% 45%, #ffe66f 0 23%, transparent 23.2%),
-    linear-gradient(130deg, #fff9ee 0 54%, #ff7a24 54%);
+    linear-gradient(130deg, var(--cream) 0 54%, #ff7a24 54%);
 }
 .hero-copy {
   align-self: center;
@@ -359,8 +417,16 @@ nav a {
     transform: translateX(-50%);
   }
 }
+/* the one measure every page section shares — see --container / --edge above */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
 .section {
-  padding: 90px 6vw;
+  padding-block: var(--sp-6);
+  padding-inline: var(--edge);
 }
 .section-head {
   display: flex;
@@ -596,7 +662,7 @@ footer {
   right: -470px;
   width: min(450px, 100%);
   height: 100vh;
-  background: #fff9ee;
+  background: var(--cream);
   z-index: 50;
   transition: 0.35s;
   display: flex;
@@ -701,7 +767,7 @@ footer {
 .detail-modal {
   width: min(1050px, 96vw);
   max-height: 92vh;
-  background: #fff9ee;
+  background: var(--cream);
   border-radius: 34px;
   display: grid;
   grid-template-columns: 55% 45%;
@@ -793,7 +859,7 @@ footer {
     grid-template-columns: 1fr;
     min-height: auto;
     padding-top: 50px;
-    background: linear-gradient(145deg, #fff9ee 0 58%, #ff7a24 58%);
+    background: linear-gradient(145deg, var(--cream) 0 58%, #ff7a24 58%);
   }
   .hero-stage {
     height: 480px;
@@ -1067,7 +1133,7 @@ footer {
     align-items: center;
     gap: 2px;
     padding: 6px;
-    background: #fff9ee;
+    background: var(--cream);
     border: 1.5px solid #191919;
     border-radius: 18px;
     box-shadow: 4px 4px 0 #191919;
@@ -1200,7 +1266,7 @@ footer {
   color: #191919;
   text-transform: uppercase;
   transform: rotate(-3deg);
-  text-shadow: 3px 3px 0 #fff9ee;
+  text-shadow: 3px 3px 0 var(--cream);
 }
 .brand-tagline i {
   color: #ef3340;
@@ -1279,7 +1345,7 @@ footer {
   bottom: 15%;
   z-index: 6;
   width: 215px;
-  background: #fff9ee;
+  background: var(--cream);
   border: 2px solid #191919;
   border-radius: 17px;
   padding: 15px 17px;
@@ -1387,7 +1453,7 @@ footer {
   top: 5%;
   border: 2px solid #191919;
   border-radius: 99px;
-  background: #fff9ee;
+  background: var(--cream);
   padding: 9px 14px;
   font-weight: 900;
   font-size: 12px;
@@ -1620,7 +1686,7 @@ footer {
 }
 .best-seller-anchor {
   position: relative;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .best-seller-anchor:before {
   content: "01  BEST SELLER";
@@ -1714,7 +1780,7 @@ footer {
   font-size: clamp(24px, 3.4vw, 54px);
   letter-spacing: -0.035em;
   transform: rotate(-2deg);
-  text-shadow: 2px 2px 0 #fff9ee;
+  text-shadow: 2px 2px 0 var(--cream);
   white-space: nowrap;
 }
 .hero-side-copy {
@@ -1974,7 +2040,7 @@ header nav a.router-link-active {
   line-height: 1;
 }
 .brand-tagline b {
-  background: #fff9ee;
+  background: var(--cream);
 }
 .brand-tagline i {
   background: #ff5a1f;
@@ -2187,7 +2253,7 @@ header nav a.router-link-active {
   height: min(720px, 90vh);
   display: grid;
   grid-template-columns: 55% 45%;
-  background: #fff9ee;
+  background: var(--cream);
   border: 3px solid #191919;
   border-radius: 34px;
   overflow: hidden;
@@ -2212,7 +2278,7 @@ header nav a.router-link-active {
   display: grid;
   place-items: center;
   container-type: inline-size;
-  background: #fff9ee;
+  background: var(--cream);
   overflow: hidden;
   border-right: 3px solid #191919;
 }
@@ -2284,7 +2350,7 @@ header nav a.router-link-active {
   margin-top: -9px; /* (12 + 2 x 3 border) / 2 */
   border: 3px solid #191919;
   border-radius: 50%;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .quick-tag::after {
   content: "";
@@ -2809,7 +2875,7 @@ body {
 }
 /* ===== 28 product catalog ===== */
 .catalog-page {
-  background: #fff9ee;
+  background: var(--cream);
 }
 .catalog-title {
   display: flex;
@@ -2871,7 +2937,7 @@ body {
   flex: none;
   border: 1.5px solid #191919;
   border-radius: 999px;
-  background: #fff9ee;
+  background: var(--cream);
   padding: 9px 13px;
   font-size: 12px;
   font-weight: 800;
@@ -3033,7 +3099,7 @@ body {
   background: #e9a36c;
 }
 .rank-4 {
-  background: #fff9ee;
+  background: var(--cream);
 }
 .new-products-section {
   background: #f2e8d8;
@@ -3185,7 +3251,7 @@ body {
 .favorite-peek {
   border: 2px solid #191919;
   border-radius: 28px;
-  background: #fff9ee;
+  background: var(--cream);
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -3275,7 +3341,7 @@ body {
 }
 .mood-section {
   padding: 90px 4vw 110px;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .mood-heading {
   display: flex;
@@ -3449,7 +3515,7 @@ body {
   grid-template-columns: 46% 54%;
   gap: 6vw;
   align-items: center;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .about-visual {
   min-height: 580px;
@@ -3603,15 +3669,18 @@ body {
 }
 .promo-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0, 1fr): a card's min-content (pack, price row, CTA) must never push its
+     track wider than the section, which is what pushed the third card off-screen */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   align-items: center;
 }
 .promo-card {
+  min-width: 0;
   min-height: 480px;
   border: 2px solid #fff;
   border-radius: 26px;
-  background: linear-gradient(160deg, #fff9ee 0 64%, var(--promo-color) 64%);
+  background: linear-gradient(160deg, var(--cream) 0 64%, var(--promo-color) 64%);
   color: #191919;
   padding: 17px;
   position: relative;
@@ -3709,7 +3778,7 @@ body {
   padding: 24px;
   border: 2px solid #191919;
   border-radius: 24px;
-  background: #fff9ee;
+  background: var(--cream);
   box-shadow: 6px 6px 0 #191919;
 }
 .process-number {
@@ -3791,7 +3860,7 @@ body {
   border: 2px solid #191919;
   border-radius: 999px;
   padding: 10px 13px;
-  background: #fff9ee;
+  background: var(--cream);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3803,7 +3872,7 @@ body {
 }
 .feedback-form {
   position: relative;
-  background: #fff9ee;
+  background: var(--cream);
   color: #191919;
   border: 3px solid #191919;
   border-radius: 28px;
@@ -4217,7 +4286,7 @@ body {
   min-height: 230px;
   border: 2px solid #191919;
   border-radius: 23px;
-  background: #fff9ee;
+  background: var(--cream);
   padding: 13px;
   text-align: left;
   box-shadow: 6px 6px 0 #191919;
@@ -4353,7 +4422,7 @@ body {
   margin: auto;
   border: 3px solid #191919;
   border-radius: 50%;
-  background: #fff9ee;
+  background: var(--cream);
   box-shadow: 8px 8px 0 #ff5a1f;
   display: grid;
   place-items: center;
@@ -4530,7 +4599,7 @@ body {
   background: #fff9eef5;
 }
 .dop-header.is-menu-open {
-  background: #fff9ee;
+  background: var(--cream);
 }
 /* On the home page at the very top: the bar dissolves into the hero */
 .dop-header.on-hero.at-top {
@@ -4618,7 +4687,7 @@ body {
   background: #19191912;
 }
 .dop-nav__link.is-current {
-  color: #fff9ee;
+  color: var(--cream);
 }
 .dop-nav__indicator {
   position: absolute;
@@ -4663,7 +4732,7 @@ body {
   padding: 8px;
   border: 1.5px solid #191919;
   border-radius: 16px;
-  background: #fff9ee;
+  background: var(--cream);
   box-shadow: 5px 5px 0 #191919;
   z-index: 5;
 }
@@ -4711,7 +4780,7 @@ body {
 }
 .dop-nav-more__item:hover {
   background: #191919;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .dop-nav-more__item:hover small {
   color: #fff9eeaa;
@@ -4745,7 +4814,7 @@ body {
   padding: 0;
   border: 1.5px solid #191919;
   border-radius: 12px;
-  background: #fff9ee;
+  background: var(--cream);
   color: #191919;
   transition:
     background 0.18s ease,
@@ -4810,7 +4879,7 @@ body {
   padding: 12px;
   border: 1.5px solid #191919;
   border-radius: 22px;
-  background: #fff9ee;
+  background: var(--cream);
   box-shadow: 6px 6px 0 #191919;
   z-index: 2;
   transform-origin: top right;
@@ -4958,7 +5027,7 @@ body {
   border: 1.5px solid #191919;
   border-radius: 14px;
   background: #191919;
-  color: #fff9ee;
+  color: var(--cream);
   font-size: 12px;
   font-weight: 900;
   transition:
@@ -5029,7 +5098,7 @@ body.dop-menu-locked {
   align-items: center;
   margin-bottom: 10vh;
   border-radius: 38px;
-  background: linear-gradient(125deg, #fff9ee 0 54%, var(--spot-color) 54.2%);
+  background: linear-gradient(125deg, var(--cream) 0 54%, var(--spot-color) 54.2%);
   color: #191919;
   overflow: hidden;
   border: 2px solid #fff;
@@ -5245,7 +5314,7 @@ body.dop-menu-locked {
   transform: rotate(9deg);
 }
 .combo-info {
-  background: #fff9ee;
+  background: var(--cream);
   border: 3px solid #191919;
   border-radius: 28px;
   padding: 30px;
@@ -5542,7 +5611,7 @@ section[id] {
   align-items: flex-end;
   justify-content: space-between;
   gap: 5vw;
-  background: #fff9ee;
+  background: var(--cream);
   border-bottom: 2px solid #191919;
   overflow: hidden;
 }
@@ -5599,13 +5668,13 @@ section[id] {
 }
 .view-hero--ink {
   background: #191919;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .view-hero--ink:before {
   background: radial-gradient(circle, #ffd3382e 0 58%, transparent 59%);
 }
 .view-hero--ink h1 {
-  color: #fff9ee;
+  color: var(--cream);
 }
 .view-hero--ink h1 em {
   color: #ffd338;
@@ -5619,7 +5688,7 @@ section[id] {
 .view-hero--ink .view-hero__meta span {
   background: transparent;
   border-color: #fff9ee55;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .deals-score {
   position: relative;
@@ -5658,7 +5727,7 @@ section[id] {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
   padding: 54px 6vw 20px;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .deal-card {
   position: relative;
@@ -5694,7 +5763,7 @@ section[id] {
   position: relative;
   display: grid;
   place-items: center;
-  background: #fff9ee;
+  background: var(--cream);
   border-bottom: 2px solid #191919;
 }
 .deal-media:before {
@@ -5775,7 +5844,7 @@ section[id] {
 }
 .deal-actions button {
   background: #191919;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .deal-actions button:hover {
   background: #ff5a1f;
@@ -5827,7 +5896,7 @@ section[id] {
 }
 .how-faq {
   padding: 76px 6vw 90px;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .how-faq__head h2 {
   margin: 10px 0 26px;
@@ -5986,7 +6055,7 @@ section[id] {
   align-items: center;
   gap: 4vw;
   padding: 90px 6vw 100px;
-  background: #fff9ee;
+  background: var(--cream);
   border-top: 2px solid #191919;
 }
 .about-teaser__mark {
@@ -6053,7 +6122,7 @@ section[id] {
   padding: 9px 15px;
   border: 1.5px solid #191919;
   border-radius: 999px;
-  background: #fff9ee;
+  background: var(--cream);
   color: #191919;
   font-size: 12px;
   font-weight: 900;
@@ -6124,10 +6193,10 @@ section[id] {
 .promo-copy .primary {
   background: #ffd338;
   color: #191919;
-  box-shadow: 5px 5px 0 #fff9ee;
+  box-shadow: 5px 5px 0 var(--cream);
 }
 .promo-copy .primary:hover {
-  background: #fff9ee;
+  background: var(--cream);
 }
 .new-strip + .favorite-focus {
   margin-top: 0;
@@ -6201,25 +6270,27 @@ section[id] {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-/* One rhythm for every section instead of 6 different paddings */
+/* One rhythm for every section instead of 6 different paddings.
+   horizontal edge is --edge, not --gutter: every section's content now sits on the
+   same 1200px measure (--container) while the section keeps its full-bleed paint. */
 .new-strip,
 .how-faq {
-  padding: var(--section-y) var(--gutter);
+  padding: var(--section-y) var(--edge);
 }
 .about-teaser {
-  padding: var(--section-y) var(--gutter) calc(var(--section-y) * 1.15);
+  padding: var(--section-y) var(--edge) calc(var(--section-y) * 1.15);
 }
 .view-hero {
-  padding: calc(var(--section-y) + 40px) var(--gutter) 48px;
+  padding: calc(var(--section-y) + 40px) var(--edge) 48px;
 }
 .page {
-  padding: calc(var(--section-y) + 16px) var(--gutter) var(--section-y);
+  padding: calc(var(--section-y) + 16px) var(--edge) var(--section-y);
 }
 .deal-shelf {
-  padding: 56px var(--gutter) var(--s3);
+  padding: 56px var(--edge) var(--s3);
 }
 .deal-note {
-  margin: var(--s4) var(--gutter) calc(var(--section-y) * 0.8);
+  margin: var(--s4) var(--edge) calc(var(--section-y) * 0.8);
 }
 /* Three elevation steps, no more */
 .section-head > a,
@@ -6396,7 +6467,7 @@ textarea:focus-visible {
 }
 .hero-shop:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 #fff9ee;
+  box-shadow: 6px 6px 0 var(--cream);
 }
 .hero-deal {
   margin: 14px 0 0;
@@ -6466,12 +6537,12 @@ textarea:focus-visible {
 .hero-controls .play {
   background: var(--ink);
   color: var(--paper);
-  box-shadow: 2px 2px 0 #fff9ee;
+  box-shadow: 2px 2px 0 var(--cream);
 }
 .hero-controls .play:hover {
   background: var(--ink);
   color: var(--sun);
-  box-shadow: 3px 3px 0 #fff9ee;
+  box-shadow: 3px 3px 0 var(--cream);
 }
 .hero-dots {
   gap: 2px;
@@ -6571,7 +6642,9 @@ textarea:focus-visible {
   height: 18px;
   padding: 0 4px;
   border: var(--bw-bold) solid var(--paper);
-  background: var(--berry);
+  /* --berry is a fill: cream text on it is only 3.98:1, so the badge takes the
+     darkened partner that clears AA (6.02:1). 12px type has no large-text allowance. */
+  background: var(--red-ink);
   font-size: 12px;
   font-weight: 900;
   line-height: 1;
@@ -6782,7 +6855,7 @@ textarea:focus-visible {
   border-color: transparent;
   border-bottom: 1.5px solid #1919192e;
   border-radius: 0;
-  background: #fff9ee;
+  background: var(--cream);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: none;
@@ -6849,7 +6922,7 @@ textarea:focus-visible {
   height: 100%;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(180deg, #fff9ee 0 52%, #fff9eecc 74%, #fff9ee00 100%);
+  background: linear-gradient(180deg, var(--cream) 0 52%, #fff9eecc 74%, #fff9ee00 100%);
   opacity: 0;
   transition: opacity 0.28s ease;
 }
@@ -7294,7 +7367,7 @@ textarea:focus-visible {
   height: var(--sz, 10px);
   margin: calc(var(--sz, 10px) / -2) 0 0 calc(var(--sz, 10px) / -2);
   border-radius: var(--r, 50%);
-  background: var(--c, #fff9ee);
+  background: var(--c, var(--cream));
   box-shadow: 0 1px 0 #1919192e;
   transform: rotate(calc(var(--i) * 40deg)) translateY(calc(var(--d) - var(--i) * var(--step)));
   animation: fx-drift 4.8s calc(var(--i) * -0.62s) ease-out infinite;
@@ -7629,7 +7702,7 @@ textarea:focus-visible {
   border: 1.5px solid var(--ink);
   border-radius: 999px;
   background: var(--ink);
-  color: #fff9ee;
+  color: var(--cream);
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 800;
@@ -7660,7 +7733,7 @@ textarea:focus-visible {
   padding: 4px;
   border: 1.5px solid var(--ink);
   border-radius: 999px;
-  background: #fff9ee;
+  background: var(--cream);
 }
 .hero-qty button {
   width: 30px;
@@ -7676,7 +7749,7 @@ textarea:focus-visible {
 }
 .hero-qty button:hover {
   background: var(--ink);
-  color: #fff9ee;
+  color: var(--cream);
 }
 .hero-qty button:focus-visible {
   outline: 2px solid var(--ink);
@@ -7727,11 +7800,11 @@ textarea:focus-visible {
 }
 .hero-notes li:nth-child(2) i {
   background: #ff5a1f;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .hero-notes li:nth-child(3) i {
   background: #191919;
-  color: #fff9ee;
+  color: var(--cream);
 }
 .hero-notes b {
   display: block;
@@ -7947,7 +8020,7 @@ textarea:focus-visible {
   color: #ffd338;
 }
 .hero-shelf button:focus-visible {
-  outline: 2px solid #fff9ee;
+  outline: 2px solid var(--cream);
   outline-offset: 2px;
 }
 @media (max-width: 1100px) {
@@ -8214,7 +8287,7 @@ textarea:focus-visible {
   box-shadow: 7px 7px 0 var(--ink);
 }
 .hero-shelf__card:focus-visible {
-  outline: 3px solid #fff9ee;
+  outline: 3px solid var(--cream);
   outline-offset: 3px;
 }
 .hero-shelf__media {
@@ -8286,7 +8359,7 @@ textarea:focus-visible {
   color: #ffd338;
 }
 .hero-shelf .hero-shelf__add:focus-visible {
-  outline: 2px solid #fff9ee;
+  outline: 2px solid var(--cream);
   outline-offset: 2px;
 }
 @media (max-width: 1100px) {
@@ -8726,7 +8799,7 @@ textarea:focus-visible {
   filter: drop-shadow(0 30px 30px #0000003d);
 }
 .hero-queue__item:focus-visible {
-  outline: 3px solid #fff9ee;
+  outline: 3px solid var(--cream);
   outline-offset: 8px;
   border-radius: 18px;
 }
@@ -8831,7 +8904,7 @@ textarea:focus-visible {
   transition-delay: 0s;
 }
 .hero-ring__item:focus-visible {
-  outline: 3px solid #fff9ee;
+  outline: 3px solid var(--cream);
   outline-offset: 6px;
   border-radius: 20px;
 }
@@ -9229,7 +9302,7 @@ p.lead,
   --hero-text-soft: #16130f;
 }
 .brand-hero.tone-deep {
-  --hero-text: #fff9ee;
+  --hero-text: var(--cream);
   --hero-text-soft: #e3d2f2;
 }
 .hero-side-copy,
@@ -9348,7 +9421,7 @@ p.lead,
 
 /* --- 9. bestseller: shorter champion card, real Top 2–5, text on cream --- */
 .bestseller-story {
-  padding: calc(var(--section-y) - 16px) var(--gutter) var(--section-y);
+  padding: calc(var(--section-y) - 16px) var(--edge) var(--section-y);
 }
 .story-intro {
   min-height: 0;
@@ -9478,7 +9551,7 @@ p.lead,
 
 /* --- 8. deal cards: nothing clipped, readable price, 44px targets --- */
 .promo-showcase {
-  padding: calc(var(--section-y) - 8px) var(--gutter);
+  padding: calc(var(--section-y) - 8px) var(--edge);
   grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
   overflow: visible;
 }
@@ -9750,7 +9823,7 @@ html {
 
 /* --- 11. how it works: less air, readable copy, the dashed path never crosses text --- */
 .process-lab {
-  padding: 74px var(--gutter);
+  padding: 74px var(--edge);
 }
 .process-lab-head h2 {
   line-height: var(--lh-display);
@@ -9857,7 +9930,7 @@ html {
 /* ===== V50 · P1.13/14 — brand block + footer ===== */
 /* --- 14. footer: readable links on ink, every link works, no dead icons --- */
 .site-footer {
-  padding: 58px var(--gutter) 22px !important;
+  padding: 58px var(--edge) 22px !important;
 }
 .footer-col a,
 .footer-bottom a,
@@ -9897,7 +9970,7 @@ html {
   grid-template-columns: minmax(0, 32%) minmax(0, 1fr);
   align-items: start;
   gap: var(--s4);
-  padding: 72px var(--gutter) 84px;
+  padding: 72px var(--edge) 84px;
 }
 .about-teaser__mark {
   align-self: start;
@@ -9960,7 +10033,7 @@ html {
 
 /* ===== V54 · DOP combo as a home section (below FRESH DROP) ===== */
 .dop-combo {
-  padding: 80px var(--gutter);
+  padding: 80px var(--edge);
 }
 .combo-copy h2 {
   line-height: var(--lh-display);
@@ -10280,7 +10353,7 @@ html {
 }
 /* text sits on the product colour now — the tone class decides light or dark ink */
 .promo-card.is-dark {
-  --on-promo: #fff9ee;
+  --on-promo: var(--cream);
   --on-promo-soft: #f6efe6;
 }
 .promo-card.is-light {
@@ -10628,4 +10701,177 @@ html {
     transform: translate(-50%, -50%) translate(0, -5vh);
   }
 }
+
+/* ===== V63 · the two page-break bands =====================================
+   how-it-works and why-DOP stop being boxes inside the page. they run edge to edge
+   and act as the rhythm break between the shelves: one line of type, four beats
+   side by side, no pitch paragraph and no secondary buttons. the dashed guide stays
+   as decoration — it now runs behind the orbs, never through the copy. */
+
+/* --- happy deals: the band now starts 12px from the edge, and a lifted card used to
+   poke 22px past the viewport and make the whole page scroll sideways. clipping the
+   horizontal axis of the section (not the list: on phones the list is a scroller)
+   keeps the card animation inside the page. --- */
+.promo-showcase {
+  overflow-x: clip;
+}
+
+/* --- how it works: four beats on one line --- */
+.process-lab {
+  padding: var(--sp-6) 0 0;
+  border-block: var(--bw-bold) solid var(--ink);
+}
+.process-lab-head {
+  max-width: none;
+  padding-inline: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+/* gone from the template, kept here so a stale class can never resurrect them */
+.process-lab-head > p,
+.process-lab-link,
+.process-final {
+  display: none;
+}
+.process-path {
+  height: auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 0;
+  position: relative;
+}
+/* the zigzag survives as a guide behind the orbs: it starts above the row and ends
+   before the titles, so no word ever sits on the dashes */
+.process-path svg {
+  inset: 16px 0 auto;
+  height: 110px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.process-path path {
+  stroke-width: 4;
+  stroke-dasharray: 12 10;
+}
+.process-node {
+  position: relative;
+  width: auto;
+  text-align: left;
+  padding: var(--sp-3) var(--sp-3) var(--sp-5);
+  border-top: 0;
+}
+.process-node + .process-node {
+  border-left: var(--bw-bold) dashed var(--ink);
+}
+/* the step number moves to the corner and gets loud, so the row scans 01-04 fast */
+.process-node__n {
+  position: absolute;
+  top: var(--sp-1);
+  right: var(--sp-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(30px, 3.2vw, 54px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  opacity: 0.16;
+  pointer-events: none;
+  user-select: none;
+}
+.node-orb {
+  width: 72px;
+  height: 72px;
+  margin: 0 0 var(--sp-3);
+  border: var(--bw-bold) solid var(--ink);
+  background: var(--cream);
+  box-shadow: var(--shadow);
+}
+.node-orb svg {
+  width: 28px;
+  height: 28px;
+}
+.node-orb span {
+  right: -8px;
+  top: -8px;
+  width: 28px;
+  height: 28px;
+  font-size: var(--fs-xs);
+  background: var(--ink);
+  color: var(--yellow);
+}
+/* the sun-coloured mask was there to hide the guide behind the labels: not needed */
+.process-node h3 {
+  display: block;
+  margin: 0 0 var(--sp-1);
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  font-size: var(--fs-lg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  color: var(--ink);
+}
+.process-node p {
+  max-width: 24ch;
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--on-yellow);
+}
+@media (max-width: 1000px) {
+  /* one column, the guide becomes the vertical connector */
+  .process-path {
+    grid-template-columns: 1fr;
+  }
+  .process-node {
+    padding: var(--sp-3) var(--sp-3) var(--sp-4) var(--sp-4);
+    border-left: var(--bw-bold) dashed var(--ink);
+    margin-left: var(--sp-3);
+  }
+  .process-node + .process-node {
+    border-left: var(--bw-bold) dashed var(--ink);
+  }
+  .process-node__n {
+    right: var(--sp-3);
+  }
+  .process-path svg {
+    display: none;
+  }
+}
+
+/* --- why DOP: full-bleed split, the wordmark runs to the paper edge --- */
+.about-teaser {
+  grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+}
+.about-teaser__mark {
+  align-self: center;
+  padding: var(--sp-6) 0 var(--sp-6) var(--sp-3);
+  font-size: clamp(52px, 7.4vw, 132px);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+}
+.about-teaser__body {
+  padding: var(--sp-5) var(--sp-3);
+  border-left: var(--bw-bold) solid var(--ink);
+}
+.about-teaser .section-head h2 {
+  max-width: 22ch;
+}
+@media (max-width: 900px) {
+  .about-teaser {
+    grid-template-columns: 1fr;
+  }
+  .about-teaser__mark {
+    padding: var(--sp-5) var(--sp-3) 0;
+  }
+  .about-teaser__body {
+    padding: var(--sp-4) var(--sp-3) var(--sp-5);
+    border-left: 0;
+  }
+}
+
 

@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ShoppingBag,
   Sparkles,
+  Utensils,
 } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
@@ -15,12 +16,12 @@ const index = ref(0);
 
 /*
  * Per-combo card palettes — 1 màu tương ứng với 1 sản phẩm trong combo.
- * Chọn tông tối hơn combo-background để strip nổi lên nhưng vẫn hài hòa.
- * Khi productStore bổ sung trường `brandColor`, thay thế bằng:
- *   cardBg: p.brandColor ?? pal[ii % pal.length]
+ * Mọi tông ở đây đã đo: chữ trắng trên từng màu phải qua AA (4.5:1).
+ * Hai giá trị cũ trượt nên đã tối lại — #d64e12 (4.24) → #a83a09 (6.41);
+ * band #ef3340 (4.02) → #b81f2b (6.42). Đổi tông nào thì đo lại tông đó.
  */
 const PALETTES = [
-  ["#c8192a", "#d64e12", "#921520"], // Cứu deadline  — đỏ / cam đất
+  ["#c8192a", "#a83a09", "#921520"], // Cứu deadline  — đỏ / cam đất
   ["#0a5c3e", "#0e7a52"], // Sạc lại       — xanh lá sâu
   ["#4a1275", "#7a32a8", "#9640c4", "#2d0d5a"], // Hộp chia team — tím
 ];
@@ -46,7 +47,7 @@ const combos = computed(() =>
       tag: "MÌ · NƯỚC · SNACK",
       ids: [3, 4, 1],
       price: 39000,
-      color: "#ef3340",
+      color: "#b81f2b",
       copy: "Cứu đói nhanh trước một buổi họp dài.",
     },
     {
@@ -98,7 +99,7 @@ function add() {
       <!-- ── Left: copy + pricing + nav ── -->
       <aside class="dc__left">
         <p class="dc__eyebrow">
-          <Sparkles :size="12" aria-hidden="true" />
+          <Sparkles :size="14" aria-hidden="true" />
           DOP COMBO
         </p>
 
@@ -124,14 +125,14 @@ function add() {
 
         <div class="dc__nav" role="group" aria-label="Điều hướng combo">
           <button type="button" aria-label="Combo trước" @click="move(-1)">
-            <ChevronLeft :size="17" />
+            <ChevronLeft :size="18" />
           </button>
           <span class="dc__nav-label" aria-live="polite">
             {{ String(index + 1).padStart(2, "0") }} /
             {{ String(combos.length).padStart(2, "0") }}
           </span>
           <button type="button" aria-label="Combo tiếp theo" @click="move(1)">
-            <ChevronRight :size="17" />
+            <ChevronRight :size="18" />
           </button>
         </div>
       </aside>
@@ -156,9 +157,10 @@ function add() {
               -->
               <div class="dc__strip-body">
                 <h3 class="dc__strip-name">{{ item.name }}</h3>
-                <small v-if="ITEM_TAGS[item.id]" class="dc__strip-tag">
-                  {{ ITEM_TAGS[item.id] }}
-                </small>
+                <p class="dc__strip-meta">
+                  <Utensils :size="14" aria-hidden="true" />
+                  <span>{{ ITEM_TAGS[item.id] ?? item.categoryName }}</span>
+                </p>
                 <p class="dc__strip-price">
                   {{ item.price.toLocaleString("vi-VN") }}₫
                 </p>
@@ -195,11 +197,14 @@ function add() {
 </template>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&display=swap");
+/* No local web font any more: the section used Barlow Condensed italic 900 for its
+   display lines, which is neither of the two families the project keeps (and italic
+   condensed has no Vietnamese mark coverage worth trusting). It now uses the same
+   --font-display as every other headline. */
 
 /* ─── Shell ─── */
 .dc {
-  --cc: #ef3340;
+  --cc: #b81f2b;
   position: relative;
   overflow: hidden;
   background: var(--cc);
@@ -220,17 +225,17 @@ function add() {
   pointer-events: none;
 }
 
-/* ─── Layout grid ─── */
+/* ─── Layout grid: two columns on the page measure ─── */
 .dc__layout {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
   align-items: center;
-  gap: 2.75rem;
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 3.5rem 2.5rem 2.75rem;
+  gap: clamp(24px, 4vw, 72px);
+  /* same 12px edge as the shelves, the grids and the bestseller band, so the combo
+     copy starts on the same line as every other section */
+  padding: var(--sp-6) var(--edge) var(--sp-5);
   min-height: 440px;
 }
 
@@ -244,21 +249,21 @@ function add() {
 .dc__eyebrow {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   margin: 0;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.72;
+  color: var(--cream);
 }
 
 .dc__copy {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  opacity: 0.88;
-  max-width: 24ch;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--cream);
+  max-width: 26ch;
 }
 
 .dc__pricing {
@@ -270,18 +275,18 @@ function add() {
 .dc__save-pill {
   display: inline-flex;
   align-items: center;
-  background: rgb(0 0 0 / 0.22);
+  background: rgb(0 0 0 / 0.35);
   border-radius: 100px;
   padding: 0.3rem 0.9rem;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--fs-xs);
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   width: fit-content;
 }
 
 .dc__save-pill strong {
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   font-weight: 800;
   margin-left: 2px;
 }
@@ -293,70 +298,90 @@ function add() {
 }
 
 .dc__price-line s {
-  font-size: 0.9rem;
-  opacity: 0.5;
+  font-size: var(--fs-sm);
+  color: var(--cream);
+  text-decoration-thickness: 2px;
 }
 
 .dc__price-new {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.2vw, 36px);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-display);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-/* CTA */
+/* CTA — the card's plate language: ink rule, cream fill, hard shadow, 48px tall */
 .dc__cta {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: #111;
-  color: #fff;
-  border: none;
-  border-radius: 100px;
-  padding: 0.85rem 1.5rem;
-  font-size: 0.9rem;
-  font-weight: 700;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  background: var(--cream);
+  color: var(--ink);
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-pill);
+  padding: 0 20px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  font-weight: 800;
   cursor: pointer;
   width: fit-content;
+  box-shadow: 4px 4px 0 var(--ink);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .dc__cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.32);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
-/* Nav */
+.dc__cta:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dc__cta:focus-visible,
+.dc__nav button:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--cream);
+}
+
+/* Nav — 44px targets, the project's touch floor (the brief asks for 40+) */
 .dc__nav {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 10px;
 }
 
 .dc__nav button {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1.5px solid rgb(255 255 255 / 0.4);
+  border: var(--bw-bold) solid var(--cream);
   background: transparent;
-  color: #fff;
+  color: var(--cream);
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .dc__nav button:hover {
-  background: rgb(255 255 255 / 0.2);
+  background: rgb(255 255 255 / 0.22);
 }
 
 .dc__nav-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: var(--fs-sm);
+  font-weight: 800;
   letter-spacing: 0.06em;
-  opacity: 0.72;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Right panel ─── */
@@ -368,24 +393,26 @@ function add() {
 
 .dc__tag {
   margin: 0;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.28em;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  opacity: 0.72;
+  color: var(--cream);
 }
 
-/* BIG headline – food poster style */
+/* Big headline — the shared display face, no local condensed italic */
 .dc__name {
-  font-family: "Barlow Condensed", "Impact", "Arial Narrow", system-ui;
-  font-weight: 900;
-  font-style: italic;
-  font-size: clamp(2.75rem, 6.5vw, 5.25rem);
-  line-height: 0.88;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: normal;
+  font-size: clamp(2.25rem, 5.2vw, 4.5rem);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
   text-transform: uppercase;
   margin: 0 0 1rem;
-  word-break: break-word;
+  padding-top: 0.06em;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 /* ─── Product strips – REDESIGNED ─── */
@@ -478,62 +505,70 @@ function add() {
   padding: 1rem 1.6rem;
 }
 
-/* Big condensed italic name — food-poster style (giống LEAFZILLA, MIGHTYMEAT) */
+/* Item line 1 — name, in the display face */
 .dc__strip-name {
-  font-family: "Barlow Condensed", "Impact", "Arial Narrow", system-ui;
-  font-weight: 900;
-  font-style: italic;
-  font-size: clamp(1.1rem, 2.3vw, 1.65rem);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: normal;
+  font-size: clamp(1rem, 1.9vw, 1.4rem);
   text-transform: uppercase;
-  line-height: 1;
-  letter-spacing: 0.03em;
+  line-height: 1.15;
+  letter-spacing: var(--tracking-display);
   margin: 0;
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgb(255 255 255 / 0.2);
-  text-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
+  border-bottom: 1px solid rgb(255 255 255 / 0.28);
 }
 
-/* Tagline — tầng 2 (giống "Greens stacked with attitude" trong Image 1) */
-.dc__strip-tag {
-  font-size: 0.65rem;
-  font-weight: 500;
-  font-style: italic;
-  letter-spacing: 0.06em;
-  opacity: 0.65;
+/* Item line 2 — what it tastes like, with a 14px plate icon so the line reads as
+   "a thing you eat", not as a third tier of type */
+.dc__strip-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  line-height: 1;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cream);
 }
 
-/* Price — tầng 3, prominent */
+.dc__strip-meta svg {
+  flex-shrink: 0;
+}
+
+/* Item line 3 — price */
 .dc__strip-price {
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  opacity: 0.9;
+  letter-spacing: 0.02em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
   margin: 0;
 }
 
-/* ─── Ticker ─── */
+/* ─── Ticker: a 34px band with 12px type, not a 22px sliver of 10px caps ─── */
 .dc__ticker {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  background: rgb(0 0 0 / 0.25);
-  padding: 0.42rem 0;
+  background: rgb(0 0 0 / 0.35);
+  padding: 0.6rem 0;
 }
 
 .dc__ticker-track {
   display: flex;
   white-space: nowrap;
-  animation: dc-ticker 22s linear infinite;
+  animation: dc-ticker 26s linear infinite;
 }
 
 .dc__ticker-track span {
   flex-shrink: 0;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  line-height: 1.2; /* stacked diacritics need the extra baseline room */
+  letter-spacing: 0.2em;
   text-transform: uppercase;
+  color: var(--cream);
 }
 
 @keyframes dc-ticker {
@@ -553,13 +588,30 @@ function add() {
   opacity: 0;
 }
 
+/* ─── Reduced motion: the marquee stops dead, strips are already in place ─── */
+@media (prefers-reduced-motion: reduce) {
+  .dc__ticker-track {
+    animation: none;
+  }
+  .dc__strip {
+    animation: none;
+  }
+  .dc__strip,
+  .dc__img-wrap img,
+  .dc__cta,
+  .combo-swap-enter-active,
+  .combo-swap-leave-active {
+    transition: none;
+  }
+}
+
 /* ─── Responsive ─── */
-@media (max-width: 800px) {
+@media (max-width: 960px) {
   .dc__layout {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 2.5rem 1.5rem;
-    min-height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
+    padding: var(--sp-5) var(--edge) var(--sp-4);
+    min-height: 0;
   }
 
   /* Name + strips lên trước, copy/pricing xuống sau */
@@ -568,7 +620,7 @@ function add() {
   }
 
   .dc__name {
-    font-size: clamp(2.25rem, 10vw, 4rem);
+    font-size: clamp(2rem, 8vw, 3.25rem);
   }
 
   .dc__copy {
@@ -578,18 +630,6 @@ function add() {
   /* Trên mobile luôn left-align dù strip có flip hay không */
   .dc__strip--flip .dc__strip-body {
     text-align: left;
-  }
-
-  .dc__strip-name {
-    font-size: clamp(0.95rem, 3.5vw, 1.4rem);
-  }
-
-  .dc__strip-tag {
-    font-size: 0.6rem;
-  }
-
-  .dc__strip-price {
-    font-size: 0.82rem;
   }
 }
 </style>

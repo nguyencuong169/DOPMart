@@ -1,0 +1,115 @@
+{
+  "name": "Vue Professional Design Studio",
+  "version": "1.0.0",
+  "schema": "v1",
+
+  "models": [
+    {
+      "name": "Gemma 4 26B - Design Engineer",
+      "provider": "ollama",
+      "model": "gemma4:26b",
+      "apiBase": "http://localhost:11434",
+
+      "roles": ["chat", "edit", "apply"],
+
+      "capabilities": ["tool_use", "image_input"],
+
+      "defaultCompletionOptions": {
+        "temperature": 0.1,
+        "contextLength": 32768,
+        "maxTokens": 8192
+      }
+    },
+
+    {
+      "name": "Qwen Coder 7B - Autocomplete",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "apiBase": "http://localhost:11434",
+
+      "roles": ["autocomplete"],
+
+      "defaultCompletionOptions": {
+        "temperature": 0,
+        "contextLength": 4096,
+        "maxTokens": 256
+      }
+    },
+
+    {
+      "name": "Nomic Embed",
+      "provider": "ollama",
+      "model": "nomic-embed-text",
+      "apiBase": "http://localhost:11434",
+
+      "roles": ["embed"]
+    }
+  ],
+
+  "mcpServers": [
+    {
+      "name": "Vue Docs",
+      "type": "streamable-http",
+      "url": "https://mcp.vue-mcp.org/mcp"
+    },
+
+    {
+      "name": "Context7",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@upstash/context7-mcp@latest"]
+    },
+
+    {
+      "name": "Filesystem",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:/VueProjects"
+      ]
+    },
+
+    {
+      "name": "Playwright",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
+    },
+
+    {
+      "name": "Shadcn Vue",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@jpisnice/shadcn-ui-mcp-server",
+        "--framework",
+        "vue"
+      ]
+    },
+
+    {
+      "name": "Chrome DevTools",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "chrome-devtools-mcp@latest"]
+    }
+  ],
+
+  "rules": [
+    "You are a senior Vue 3 frontend architect.",
+    "Use Vue 3 Composition API with script setup.",
+    "Prefer TypeScript.",
+    "Understand architecture before changing code.",
+    "Reuse existing components and composables.",
+    "Follow existing routing and state management patterns.",
+    "Use Pinia for shared state.",
+    "Optimize performance before introducing dependencies.",
+    "Explain root cause before fixing bugs.",
+    "Always use MCP tools when documentation or validation is required.",
+    "Use Vue Docs MCP before answering Vue-specific questions.",
+    "Use Context7 before generating implementation code.",
+    "Use Playwright and Chrome DevTools to validate UI changes."
+  ]
+}

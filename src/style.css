@@ -7695,75 +7695,6 @@ textarea:focus-visible {
   align-items: center;
   gap: 10px;
 }
-.hero-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 13px 20px;
-  border: 1.5px solid var(--ink);
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--cream);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  box-shadow: 4px 4px 0 #19191933;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
-}
-.hero-add:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 #1919194d;
-}
-.hero-add:active {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 #19191933;
-}
-.hero-add:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
-}
-.hero-qty {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 4px;
-  border: 1.5px solid var(--ink);
-  border-radius: 999px;
-  background: var(--cream);
-}
-.hero-qty button {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: #19191914;
-  color: var(--ink);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.hero-qty button:hover {
-  background: var(--ink);
-  color: var(--cream);
-}
-.hero-qty button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-.hero-qty span {
-  min-width: 22px;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--ink);
-}
 
 /* --- flavour notes: fills the empty right half of the colour panel --- */
 .hero-notes {
@@ -7904,15 +7835,7 @@ textarea:focus-visible {
     flex-wrap: wrap;
     gap: 8px;
   }
-  .hero-add {
-    padding: 11px 16px;
-    font-size: 12px;
-  }
-  .hero-qty button {
-    width: 26px;
-    height: 26px;
-  }
-}
+    }
 
 
 
@@ -9330,15 +9253,6 @@ p.lead,
 }
 
 /* --- P0.5 · hero CTA hierarchy --- */
-.hero-add {
-  min-height: 48px;
-  padding: 0 22px;
-  font-size: 15px;
-}
-.hero-buy button {
-  min-width: 44px;
-  min-height: 44px;
-}
 .hero-deal {
   font-size: var(--fs-small);
 }
@@ -10564,13 +10478,6 @@ html {
   font-variant-numeric: tabular-nums;
 }
 /* a black pill needs an edge on a dark plane, or it melts into the panel */
-.brand-hero.tone-deep .hero-add {
-  border-color: var(--paper);
-  box-shadow: 4px 4px 0 #19191959;
-}
-.brand-hero.tone-deep .hero-add:hover {
-  box-shadow: 6px 6px 0 #19191970;
-}
 /* secondary CTA: ink on sun was a hard-code; it follows the layer under it now */
 .hero-deal,
 .hero-deal:hover {

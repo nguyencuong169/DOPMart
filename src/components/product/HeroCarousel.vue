@@ -5,25 +5,14 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Minus,
   Pause,
-  Play,
-  Plus,
-  ShoppingBag,
+  Play,
 } from "lucide-vue-next";
+import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore";
-import { useCartStore } from "../../stores/cartStore";
 import { relativeLuminance, surfaceTone, tintOn } from "../../utils/color";
 
 const store = useProductStore();
-const cart = useCartStore();
-const qty = ref(1);
-function addCurrent() {
-  const p = slides.value[current.value];
-  if (!p) return;
-  cart.add(p, qty.value);
-  qty.value = 1;
-}
 /* split the name into: filled head · outlined middle · accent last word */
 const nameParts = computed(() => {
   const words = (slides.value[current.value]?.name || "").split(/\s+/).filter(Boolean);
@@ -102,7 +91,6 @@ function go(i) {
   const total = slides.value.length;
   if (!total) return;
   current.value = (i + total) % total;
-  qty.value = 1;
   runTimer();
 }
 /* a far pack must not teleport: clicking it walks the ring one slot per beat,
@@ -336,26 +324,7 @@ onBeforeUnmount(() => {
         </p>
         <div class="hero-actions">
           <div class="hero-buy">
-            <button type="button" class="hero-add" @click="addCurrent">
-              <ShoppingBag :size="16" /> Thêm vào giỏ
-            </button>
-            <div class="hero-qty">
-              <button
-                type="button"
-                aria-label="Giảm số lượng"
-                @click="qty = Math.max(1, qty - 1)"
-              >
-                <Minus :size="13" />
-              </button>
-              <span aria-live="polite">{{ qty }}</span>
-              <button
-                type="button"
-                aria-label="Tăng số lượng"
-                @click="qty = Math.min(20, qty + 1)"
-              >
-                <Plus :size="13" />
-              </button>
-            </div>
+            <QuickAdd :product="slides[current]" size="md" />
           </div>
           <RouterLink to="/deals" class="hero-deal"
             >Khuyến mãi hôm nay <ArrowRight :size="13"

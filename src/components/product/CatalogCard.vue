@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { Heart, Plus } from "lucide-vue-next";
 import QuantitySelector from "./QuantitySelector.vue";
-import { headWords, heroMeta } from "../../data/products";
+import { headWords } from "../../data/products";
 
 /* The one product card for the whole page. Style and animation are the ones the
    "CH盻君 NHANH THEO DANH M盻､C" shelf already had 窶・they were lifted out of ShopByMood
@@ -43,26 +43,13 @@ const onColor = (hex) => {
   return l > 0.62 ? "#1a1a1a" : "#ffffff";
 };
 
-/* the hanging tags: the discount rides the product colour, hot stays red, the new
-   flag is the same shape as the price tag */
-const tags = computed(() => {
-  const p = props.product;
-  const on = onColor(p.color);
-  const out = [];
-  if (p.oldPrice > p.price)
-    out.push({
-      text: `-${Math.round((1 - p.price / p.oldPrice) * 100)}%`,
-      type: "save",
-      bg: p.color,
-      fg: on,
-    });
-  if (p.isNew) out.push({ text: "M盻唔", type: "hanging", bg: p.color, fg: on });
-  if (p.hot) out.push({ text: "Nﾃ哲G", type: "hanging", bg: "#c8202f", fg: "#ffffff" });
-  for (const x of (heroMeta[p.format]?.tags ?? []).slice(0, 2))
-    out.push({ text: x, type: "format", bg: "#fff", fg: "var(--ink)" });
-  return out;
-});
-const hangingTags = computed(() => tags.value.filter((t) => t.type === "hanging"));
+/* the tag rail reads from the product itself: hot is red, new is green, the discount
+   is the promo yellow, and the price tag keeps the product colour */
+const discount = computed(() =>
+  props.product.oldPrice > props.product.price
+    ? Math.round((1 - props.product.price / props.product.oldPrice) * 100)
+    : 0,
+);
 
 /* the shelf head is sized with a canvas measure so two lines always fill the card:
    --hs is what the type scales from, in container query units */
@@ -71,8 +58,7 @@ const fontTick = ref(0);
 const head = computed(() => {
   fontTick.value; // re-measure once the display face has landed
   if (typeof document !== "undefined" && !ctx) ctx = document.createElement("canvas").getContext("2d");
-  if (ctx)
-    ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
+  if (ctx) ctx.font = '800 100px "Bricolage Grotesque"';
   const lines = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
     "",
@@ -86,7 +72,7 @@ const head = computed(() => {
 });
 onMounted(async () => {
   try {
-    await document.fonts.load('italic 900 100px "Barlow Condensed"');
+    await document.fonts.load('800 100px "Bricolage Grotesque"');
   } catch {
     /* no font loading support: the fallback metrics already work */
   }
@@ -115,17 +101,15 @@ onMounted(async () => {
         <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
 
-      <!-- tags d蘯｡ng treo (Hot/New) -->
-      <div
-        v-for="(t, k) in hangingTags"
-        :key="'hanging-' + k"
-        class="cat-card__hanging-tag"
-        :style="`background:${t.bg};color:${t.fg};border-color:${t.fg}`"
-      >
-        {{ t.text }}
+      <!-- tag rail: one size, colour from the tag's meaning, sits on the right -->
+      <div class="cat-card__tags">
+        <span v-if="product.hot" class="cat-card__tag cat-card__tag--hot">NÓNG</span>
+        <span v-if="product.isNew" class="cat-card__tag cat-card__tag--new">MỚI</span>
+        <span v-if="discount" class="cat-card__tag cat-card__tag--save"
+          >-{{ discount }}%</span
+        >
+        <span v-if="!isGrid" class="cat-card__tag cat-card__tag--price" aria-hidden="true"><b>{{ fmt(product.price) }} 竄ｫ</b></span>
       </div>
-
-      <span class="cat-card__tag" aria-hidden="true"><b>{{ fmt(product.price) }} 竄ｫ</b></span>
 
       <button
         v-if="isGrid"
@@ -209,13 +193,14 @@ onMounted(async () => {
   pointer-events: none;
   user-select: none;
   opacity: 0;
-  font-family:
-    "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
-  font-weight: 900;
-  font-style: italic;
+  /* the display face carries this type: no third family, no italic — one voice for
+     every headline on the page */
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: normal;
   font-size: var(--hs, 22cqw);
-  line-height: 0.86;
-  letter-spacing: -0.005em;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
   text-transform: uppercase;
   white-space: nowrap;
   transition: opacity 0.35s ease-out;
@@ -321,114 +306,99 @@ onMounted(async () => {
   transform: translateX(-50%) scale(0.9, 0.86);
   opacity: 0.8;
 }
-/* tags treo (Hot/New) 窶・cﾃｹng hﾃｬnh v盻嬖 tag giﾃ｡ */
-.cat-card__hanging-tag {
+/* ==== tag rail: one size for every tag, the colour comes from what it says ====
+   hot = red pill, new = green pill, discount = red outline, price = the product colour
+   with the hanging hole and string. all of them live on the right edge of the pack. */
+.cat-card__tags {
   position: absolute;
-  right: 5%;
-  top: 45cqw;
-  z-index: 4;
-  padding: 5px 12px 5px 18px;
-  border: 2.5px solid var(--ink);
-  border-radius: 6px 14px 14px 6px;
-  font: 800 clamp(12px, 3.5cqw, 16px) / 1 var(--fd, var(--font-display));
-  white-space: nowrap;
-  box-shadow: 3px 4px 0 var(--ink);
+  right: 1.5%;
+  top: 3%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
   opacity: 0;
-  transform: rotate(-14deg) translateY(3cqw) scale(0.86);
-  transform-origin: 16% 30%;
+  transform: translateY(6px);
   transition:
     opacity 0.28s ease-out,
-    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+    transform 0.45s cubic-bezier(0.3, 1.3, 0.5, 1);
 }
-.cat-card__hanging-tag::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  margin-top: -4.5px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--cream, #fffaf0);
-}
-.cat-card__hanging-tag::after {
-  content: "";
-  position: absolute;
-  left: 13px;
-  top: calc(50% - 1.25px);
-  width: 26px;
-  height: 2.5px;
-  border-radius: 2px;
-  background: var(--ink);
-  transform-origin: 0 50%;
-  transform: rotate(-152deg);
-}
-.cat-card:hover .cat-card__hanging-tag,
-.cat-card:focus-within .cat-card__hanging-tag {
+.cat-card:hover .cat-card__tags,
+.cat-card:focus-within .cat-card__tags,
+.cat-card--grid .cat-card__tags {
   opacity: 1;
-  transform: rotate(-14deg) translateY(0) scale(1);
+  transform: translateY(0);
 }
 @media (hover: none) {
-  .cat-card__hanging-tag {
+  .cat-card__tags {
     opacity: 1;
-    transform: rotate(-14deg);
+    transform: none;
   }
 }
 .cat-card__tag {
-  position: absolute;
-  right: 1%;
-  top: 60cqw;
-  z-index: 4;
-  padding: 7px 14px 7px 22px;
-  border: 2.5px solid var(--ink);
-  border-radius: 6px 14px 14px 6px;
+  padding: 6px 10px;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: clamp(12px, 3.8cqw, 14px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 2px 3px 0 var(--ink);
+}
+.cat-card__tag--hot {
+  background: var(--red-ink);
+  border-radius: var(--r-pill);
+}
+.cat-card__tag--new {
+  background: var(--green-ink);
+  border-radius: var(--r-pill);
+}
+/* the discount is still red (it is a deal), but it is the only outlined tag so it can
+   never be mistaken for the hot pill or for the hanging price tag */
+.cat-card__tag--save {
+  background: var(--cream);
+  color: var(--red-ink);
+  border-color: var(--red-ink);
+  border-radius: 8px;
+}
+/* the price tag keeps the product colour and hangs from its hole + string */
+.cat-card__tag--price {
+  position: relative;
+  margin-right: 6px;
+  padding: 6px 10px 6px 20px;
+  border-radius: 6px 12px 12px 6px;
   background: var(--c);
   color: var(--on);
-  font: 800 clamp(13px, 4.4cqw, 19px) / 1 var(--fd, var(--font-display));
-  white-space: nowrap;
-  box-shadow: 3px 4px 0 var(--ink);
-  opacity: 0;
-  transform: rotate(-14deg) translateY(3cqw) scale(0.86);
-  transform-origin: 16% 30%;
-  transition:
-    opacity 0.28s ease-out,
-    transform 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+  transform: rotate(-5deg);
 }
-.cat-card__tag::before {
+.cat-card__tag--price::before {
   content: "";
   position: absolute;
   left: 6px;
   top: 50%;
-  width: 9px;
-  height: 9px;
-  margin-top: -6.5px;
-  border: 2px solid var(--ink);
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border: 1.5px solid currentColor;
   border-radius: 50%;
-  background: var(--cream, #fffaf0);
 }
-.cat-card__tag::after {
+.cat-card__tag--price::after {
   content: "";
   position: absolute;
-  left: 13px;
-  top: calc(50% - 1.25px);
-  width: 26px;
-  height: 2.5px;
-  border-radius: 2px;
-  background: var(--ink);
+  left: 12px;
+  top: 50%;
+  width: 16px;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: currentColor;
   transform-origin: 0 50%;
-  transform: rotate(-152deg);
-}
-.cat-card:hover .cat-card__tag,
-.cat-card:focus-within .cat-card__tag {
-  opacity: 1;
-  transform: rotate(-14deg) translateY(0) scale(1);
-}
-@media (hover: none) {
-  .cat-card__tag {
-    opacity: 1;
-    transform: rotate(-14deg);
-  }
+  transform: rotate(-150deg);
 }
 .cat-card__buy {
   position: absolute;
@@ -523,18 +493,7 @@ onMounted(async () => {
 .cat-card--grid .cat-card__ground {
   top: 92cqw;
 }
-/* the hanging tag stops hanging: at rest it sits in the top-left corner, readable */
-.cat-card--grid .cat-card__hanging-tag {
-  left: 3%;
-  right: auto;
-  top: 3%;
-  opacity: 1;
-  transform: rotate(-6deg);
-}
-.cat-card--grid .cat-card__hanging-tag + .cat-card__hanging-tag {
-  top: 15%;
-}
-.cat-card--grid .cat-card__tag,
+/* in the grid the buy row moves into the plate, so the pack keeps only the tags */
 .cat-card--grid .cat-card__buy {
   display: none;
 }

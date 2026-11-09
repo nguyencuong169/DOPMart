@@ -123,8 +123,6 @@ const link = computed(() =>
 </template>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&display=swap");
-
 .cat-strip {
   --ink: #1a1a1a;
   --cream: #fffaf0;
@@ -143,10 +141,27 @@ const link = computed(() =>
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  padding: 58px 12px 26px;
-  margin: 0 -12px;
+  /* full bleed: the row runs the whole viewport even inside the container, with its
+     first chip on the page edge, so no chip is cut by an invisible margin. the fade on
+     the right says "there is more", and the spacer after the last chip lets it scroll
+     clear of the fade */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: 58px
+    max(var(--gutter, 12px), calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px)))
+    26px;
+  scroll-padding-inline: max(
+    var(--gutter, 12px),
+    calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
+  );
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 72px), transparent 100%);
   scroll-snap-type: x proximity;
   scrollbar-width: none;
+}
+.cat-tabs::after {
+  content: "";
+  flex: none;
+  width: 72px;
 }
 .cat-tabs::-webkit-scrollbar {
   display: none;

@@ -89,7 +89,6 @@ const onColor = (hex) => {
               <QuickAdd
                 :product="products.quickProduct"
                 :stock="products.quickProduct.stock[floor.floor]"
-                size="md"
                 @added="products.closeQuick()"
               />
             </div>

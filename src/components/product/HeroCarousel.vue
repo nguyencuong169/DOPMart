@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
         </p>
         <div class="hero-actions">
           <div class="hero-buy">
-            <QuickAdd :product="slides[current]" size="md" />
+            <QuickAdd :product="slides[current]" />
           </div>
           <RouterLink to="/deals" class="hero-deal"
             >Khuyến mãi hôm nay <ArrowRight :size="13"

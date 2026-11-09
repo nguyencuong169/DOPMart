@@ -40,7 +40,7 @@ const add = () => {
 };
 </script>
 <template>
-  <div class="qa" :class="[`qa--${variant}`, `qa--${size}`]">
+  <div class="qa" :class="`qa--${variant}`">
     <div v-if="variant === 'row'" class="qa__qty">
       <button
         type="button"
@@ -90,15 +90,15 @@ const add = () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 6px;
+  padding: 4px 8px;
   border: var(--bw-bold) solid var(--ink);
   border-radius: var(--r-pill);
   background: #fff;
   box-shadow: 2px 2px 0 var(--ink);
 }
 .qa__step {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -116,9 +116,9 @@ const add = () => {
   background: #f3f3f3;
 }
 .qa__n {
-  min-width: 18px;
+  min-width: 22px;
   text-align: center;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -127,14 +127,14 @@ const add = () => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 36px;
-  padding: 0 14px;
+  height: 48px;
+  padding: 0 20px;
   border: var(--bw-bold) solid var(--ink);
   border-radius: var(--r-pill);
   background: var(--yellow);
   color: var(--ink);
   font-weight: 800;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
   transition:
@@ -161,28 +161,11 @@ const add = () => {
   outline: 3px solid var(--ink);
   outline-offset: 2px;
 }
-/* the icon form is the 44px target a small tile can carry */
+/* the icon form is the same 48px box, just square */
 .qa--icon .qa__go {
-  width: var(--touch);
-  height: var(--touch);
-  padding: 0;
-}
-/* md is for the quick view and the detail page */
-.qa--md .qa__qty {
-  padding: 4px 8px;
-}
-.qa--md .qa__step {
-  width: 30px;
-  height: 30px;
-}
-.qa--md .qa__n {
-  min-width: 22px;
-  font-size: var(--fs-md);
-}
-.qa--md .qa__go {
+  width: 48px;
   height: 48px;
-  padding: 0 20px;
-  font-size: var(--fs-md);
+  padding: 0;
 }
 @media (prefers-reduced-motion: reduce) {
   .qa__go {

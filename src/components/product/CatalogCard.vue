@@ -110,7 +110,7 @@ onMounted(async () => {
         <span
           v-if="product.hot"
           class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
-          >NÓNG</span
+          >BÁN CHẠY</span
         >
         <span
           v-if="discount"
@@ -305,19 +305,20 @@ onMounted(async () => {
   transform: translateX(-50%) scale(0.9, 0.86);
   opacity: 0.8;
 }
-/* ==== tags: one type scale, one hanging shape, colour from what the tag says ====
-   the price tag hangs on the middle-right of the pack, the status tags hang in a
-   column on the left (MỚI first, then NÓNG, then the discount). every tag is visible
-   at rest; hover only brings the shelf type in. */
+/* ==== tags: one box for every tag, one anchor for every string ====
+   every tag shares the same padding, radius and type, so they read as one family. the
+   hole sits inside that padding on the edge facing the pack and the string leaves the
+   hole exactly, so a tag never looks detached from the product. */
 .cat-card__tags {
   position: absolute;
-  left: 1%;
-  top: 12%;
+  left: 0.5%;
+  /* beside the pack's body, not up in the corner: the strings then run into the pack */
+  top: 30%;
   z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   pointer-events: none;
 }
 .cat-card__tag {
@@ -327,7 +328,7 @@ onMounted(async () => {
   border-radius: 8px;
   background: var(--ink);
   color: var(--cream);
-  /* the ui face carries tag type: it is the one with every Vietnamese glyph and ₫ */
+  /* tag type is the ui face: the one with every Vietnamese glyph and ₫ */
   font-family: var(--font-ui);
   font-size: clamp(12px, 3.6cqw, 14px);
   font-weight: 800;
@@ -337,56 +338,58 @@ onMounted(async () => {
   white-space: nowrap;
   box-shadow: 2px 3px 0 var(--ink);
 }
-/* the string that ties the tag to the pack: a hole plus a line that leaves the edge */
+/* the hole lives inside the padding, so it never widens the tag */
 .cat-card__tag::before {
   content: "";
   position: absolute;
   top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
   border: 1.5px solid currentColor;
   border-radius: 50%;
+  background: inherit;
 }
+/* the string leaves the hole and climbs into the pack */
 .cat-card__tag::after {
   content: "";
   position: absolute;
   top: 50%;
-  width: 15px;
-  height: 1.5px;
-  margin-top: -0.75px;
+  width: 26px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
   background: currentColor;
-  transform-origin: 0 50%;
 }
-/* status tags sit on the left: hole on their right edge, string up to the pack */
+/* left column: hole 4px in from the tag's right edge, string up and to the right */
 .cat-card__tag--hang-left {
   transform: rotate(-6deg);
 }
 .cat-card__tag--hang-left::before {
-  right: 5px;
+  right: 4px;
 }
 .cat-card__tag--hang-left::after {
-  right: -2px;
-  transform: rotate(-152deg);
+  left: calc(100% - 7px);
+  transform-origin: 0 50%;
+  transform: rotate(-34deg);
 }
-/* the price tag sits on the right: hole on its left edge, string up to the pack */
+/* price tag on the right: hole 4px in from its left edge, string up and to the left */
 .cat-card__tag--hang-right::before {
-  left: 5px;
+  left: 4px;
 }
 .cat-card__tag--hang-right::after {
-  left: -2px;
-  transform: rotate(-28deg);
+  right: calc(100% - 7px);
+  transform-origin: 100% 50%;
+  transform: rotate(34deg);
 }
 .cat-card__tag--price {
   position: absolute;
   right: 0.5%;
   top: 46%;
   z-index: 5;
-  padding: 7px 12px 7px 20px;
-  border-radius: 6px 12px 12px 6px;
   background: var(--c);
   color: var(--on);
-  transform: translateY(-50%) rotate(-6deg);
+  transform: translateY(-50%) rotate(6deg);
 }
 .cat-card__tag--new {
   background: var(--green-ink);

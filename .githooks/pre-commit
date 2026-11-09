@@ -1,0 +1,24 @@
+#!/bin/sh
+# Encoding gate: a commit must never carry a file that is not clean UTF-8.
+#
+# The console on this machine is cp932, so a shell round trip through
+# PowerShell can silently corrupt a file (a Vietnamese letter loses its
+# final byte). This hook is the backstop for that: if it slipped through,
+# the commit is refused rather than pushed. See .clinerules/encoding.md.
+#
+# This file is deliberately pure ASCII: no code page can ever alter it.
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "encoding: node not found, cannot verify UTF-8, refusing the commit."
+  exit 1
+fi
+
+if ! node scripts/check-encoding.mjs; then
+  echo ""
+  echo "encoding: refusing the commit. The files above are not clean UTF-8."
+  echo "          See .clinerules/encoding.md for how to repair them."
+  exit 1
+fi

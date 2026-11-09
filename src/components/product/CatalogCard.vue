@@ -5,7 +5,7 @@ import QuickAdd from "./QuickAdd.vue";
 import { headWords } from "../../data/products";
 
 /* The one product card for the whole page. Style and animation are the ones the
-   "CH盻君 NHANH THEO DANH M盻､C" shelf already had 窶・they were lifted out of ShopByMood
+   "CHỌN NHANH THEO DANH MỤC" shelf already had — they were lifted out of ShopByMood
    verbatim so the other grids can share them without a single pixel moving:
    container-query type on the shelf head, the pack that floats and lifts on hover,
    the hanging price/new/hot tags, the buy row that rises from the bottom edge. */
@@ -23,6 +23,7 @@ const emit = defineEmits(["quick", "toggle-favorite"]);
 
 const isGrid = computed(() => props.variant === "grid");
 const soldOut = computed(() => props.stock !== null && props.stock <= 0);
+const nameVisible = ref(false);
 const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3);
 /* stock is per floor and reads as a sentence, never as colour alone */
 const stockLabel = computed(() => {
@@ -50,6 +51,19 @@ const discount = computed(() =>
     : 0,
 );
 
+/* The poster splits the product name in two: the tail — the last two words, the
+   flavour or the qualifier — goes under the pack, the head goes above it.
+   "Mì ly ăn liền" reads "Mì ly" over "ăn liền", "Soda trái cây nhiệt đới" reads
+   "Soda trái cây" over "nhiệt đới". The split always lands on a word boundary,
+   so no word is ever cut in half. */
+const splitName = (name) => {
+  const words = String(name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (words.length < 2) return [words[0] ?? "", ""];
+  if (words.length === 2) return [words[0], words[1]];
+  const cut = words.length - 2;
+  return [words.slice(0, cut).join(" "), words.slice(cut).join(" ")];
+};
+
 /* the shelf head is sized with a canvas measure so two lines always fill the card:
    --hs is what the type scales from, in container query units */
 let ctx = null;
@@ -58,14 +72,26 @@ const head = computed(() => {
   fontTick.value; // re-measure once the display face has landed
   if (typeof document !== "undefined" && !ctx) ctx = document.createElement("canvas").getContext("2d");
   if (ctx) ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
-  const lines = headWords[props.product.category] ?? [
+  const slogan = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
     "",
   ];
+  /* the shelf card headlines the product itself — that card carries no name
+     plate, so the poster is the one place the shopper reads what this pack is.
+     The grid card keeps the shelf slogan, because its plate already names it. */
+  const lines = isGrid.value ? slogan : splitName(props.product.name);
+  /* the type is drawn uppercase, so the measure has to be the uppercase string */
   const widest = Math.max(
-    ...lines.map((l) => (ctx ? ctx.measureText(l).width : l.length * 46)),
+    ...lines.map((l) => {
+      const text = (l ?? "").toUpperCase();
+      /* fallback metrics for a face that has not loaded yet: a condensed
+         uppercase line runs about 0.42em per letter */
+      return Math.max(ctx ? ctx.measureText(text).width : text.length * 42, 1);
+    }),
     1,
   );
+  /* the size that makes the widest line span 96% of the card; the cap keeps a
+     short name from turning into a billboard */
   const size = Math.min(26, Math.max(12, 9600 / widest));
   return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
 });
@@ -147,9 +173,17 @@ onMounted(async () => {
     <!-- grid variant: the plate that is always readable -->
     <div v-if="isGrid" class="cat-card__info">
       <span class="cat-card__cat">{{ product.categoryName }}</span>
-      <button type="button" class="cat-card__name-btn" @click="emit('quick')">
-        <h3 class="cat-card__name">{{ product.name }}</h3>
+      <button
+        type="button"
+        class="cat-card__name-btn"
+        :data-name="product.name"
+        @mouseenter="nameVisible = true"
+        @mouseleave="nameVisible = false"
+        @click="emit('quick')"
+      >
+        <h3 class="cat-card__name" :class="{ show: nameVisible }">{{ product.name }}</h3>
       </button>
+
       <p class="cat-card__meta">
         <span>★ {{ product.rating }}</span><span>{{ product.sold }} đã bán</span>
       </p>
@@ -197,6 +231,7 @@ onMounted(async () => {
   font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
+  /* both poster lines share one size, so the name and the slogan read as a pair */
   font-size: var(--hs, 22cqw);
   line-height: 0.86;
   letter-spacing: -0.005em;
@@ -217,10 +252,17 @@ onMounted(async () => {
   color: color-mix(in srgb, var(--c) 86%, var(--ink));
 }
 .cat-card__line:last-child {
-  top: 99cqw;
+  /* the shelf poster: the bottom line tucks up behind the pack, so the type and
+     the artwork read as one poster instead of floating under the product */
+  top: 90cqw;
   transform: translateY(-26cqw);
   color: transparent;
   -webkit-text-stroke: clamp(1.5px, 0.5cqw, 3.5px) var(--ink);
+}
+/* the grid card is shorter and its plate sits right under the pack, so its
+   slogan keeps the roomier position */
+.cat-card--grid .cat-card__line:last-child {
+  top: 99cqw;
 }
 .cat-card:hover .cat-card__head,
 .cat-card:focus-within .cat-card__head {
@@ -359,7 +401,7 @@ onMounted(async () => {
   height: 2px;
   margin-top: -1px;
   border-radius: 2px;
-  background: currentColor;
+  background: #1a1a1a;   /* ← đen, không dùng currentColor (trắng) nữa */
 }
 /* left column: hole 4px in from the tag's right edge, string up and to the right */
 .cat-card__tag--hang-left {
@@ -411,6 +453,8 @@ onMounted(async () => {
   z-index: 4;
   display: flex;
   align-items: center;
+  /* the buy row sits in the middle of the card, under the pack */
+  justify-content: center;
   gap: 8px;
   opacity: 0;
   transform: translateY(10px);
@@ -525,6 +569,34 @@ onMounted(async () => {
   line-height: 1.18;
   letter-spacing: var(--tracking-display);
 }
+/* ===== product name hover: word-by-word split reveal ===== */
+.cat-card__name-btn::after {
+  content: attr(data-name);
+  display: block;
+  font: 800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-display);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
+  pointer-events: none;
+}
+.cat-card__name-btn:hover::after,
+.cat-card__name-btn:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* the visible name stays on the plate, slides up on hover for the "split" glimpse */
+.cat-card__name {
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+.cat-card__name-btn:hover .cat-card__name,
+.cat-card__name-btn:focus-within .cat-card__name {
+  transform: translateY(-6px);
+  color: var(--on-cream);
+}
 .cat-card__meta {
   display: flex;
   flex-wrap: wrap;
@@ -589,5 +661,32 @@ onMounted(async () => {
   .cat-card__shot {
     transform: translateX(-50%) rotate(var(--tilt, 3deg)) !important;
   }
+/* ===== product name hover: split bay tách 2 dòng (override) ===== */
+.cat-card__name {
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+.cat-card__name-btn:hover .cat-card__name,
+.cat-card__name-btn:focus-within .cat-card__name {
+  transform: translateY(-10px);
+  color: var(--on-cream);
+}
+.cat-card__name-btn::after {
+  content: attr(data-name);
+  display: block;
+  font: 800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-display);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
+  pointer-events: none;
+  color: var(--c);
+}
+.cat-card__name-btn:hover::after,
+.cat-card__name-btn:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
 }
 </style>

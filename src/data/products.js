@@ -144,8 +144,9 @@ export const shelves = [
 /* the UI browses shelves; this alias keeps one name for "what the shopper picks" */
 export const categories = shelves
 
-/* the poster head reads as a shelf slogan, never as the product name:
-   two short ad lines, line 1 solid in the shelf colour, line 2 hollow ink */
+/* the poster head for the grid card reads as a shelf slogan, never as the
+   product name: two short ad lines, line 1 solid in the shelf colour,
+   line 2 hollow ink. The shelf card splits the product name instead. */
 export const headWords = {
   "do-uong": ["NƯỚC MÁT", "GIẢI KHÁT"],
   "bua-nhanh": ["MÌ NÓNG", "ĂN LIỀN"],

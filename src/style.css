@@ -2709,6 +2709,63 @@ header nav a.router-link-active {
 body {
   overflow-x: hidden;
 }
+
+/* --- hold vivid: nothing sits on the page with a "first paint" flush; every layer
+   arrives in one orchestrated wave, not a haphazard cascade. --- */
+.catalog-page,
+.page,
+.catalog-toolbar,
+.category-chips button,
+.catalog-actions select {
+  animation: page-fade-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.catalog-page {
+  animation-delay: 0ms;
+}
+.page {
+  animation-delay: 60ms;
+}
+.catalog-toolbar {
+  animation-delay: 140ms;
+}
+.category-chips button {
+  animation: chip-fade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.catalog-actions select {
+  animation-delay: 200ms;
+}
+
+/* add subtle grain to the background for atmosphere */
+body {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.4) 0 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(255, 199, 44, 0.08) 0 1.5px, transparent 1.5px);
+  background-size: 120px 120px, 180px 180px;
+  background-repeat: repeat;
+}
+
+/* --- hold vivid: nothing sits on the page with a "first paint" flush; every layer
+   arrives in one orchestrated wave, not a haphazard cascade. --- */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes chip-fade {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
 .app-shell {
   min-height: 100vh;
 }
@@ -2877,6 +2934,49 @@ body {
 /* ===== 28 product catalog ===== */
 .catalog-page {
   background: var(--cream);
+/* ===== fullbleed page ===== */
+.catalog-page.full-bleed {
+  background: linear-gradient(160deg, var(--cream) 0%, var(--ink) 55%, var(--cream) 100%);
+}
+.catalog-page.full-bleed .catalog-title {
+  color: var(--cream);
+}
+.catalog-page.full-bleed .catalog-title .kicker {
+  color: var(--yellow);
+}
+.catalog-page.full-bleed .catalog-toolbar {
+  color: var(--cream);
+}
+.catalog-page.full-bleed .catalog-toolbar .filter-label {
+  color: var(--cream);
+}
+.catalog-page.full-bleed .catalog-toolbar select,
+.catalog-page.full-bleed .catalog-toolbar label {
+  color: var(--cream);
+}
+.catalog-page.full-bleed .catalog-toolbar select option {
+  background: var(--ink);
+  color: var(--cream);
+}
+/* the grid runs dark on fullbleed */
+.catalog-page.full-bleed .catalog-grid,
+.catalog-page.full-bleed .product-card {
+  background: var(--cream);
+}
+.catalog-page.full-bleed .catalog-grid .product-card {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.catalog-page.full-bleed .pagination {
+  color: var(--cream);
+}
+.catalog-page.full-bleed .pagination button {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream);
+}
+.catalog-page.full-bleed .pagination button.active {
+  background: var(--yellow);
+  color: var(--ink);
+}
 }
 .catalog-title {
   display: flex;
@@ -2907,15 +3007,37 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
-.catalog-toolbar {
-  margin: 0 0 35px;
+/* ========== refine toolbar hover states ========== */
+.catalog-toolbar:hover,
+.catalog-toolbar:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 7px 7px 0 #e8d5b0;
+}
+.catalog-toolbar:active {
+  transform: translateY(1px);
+  box-shadow: 3px 3px 0 #eadcc7;
+}
+/* the active chip gets a crisp "pressed" state */
+.category-chips button.active {
+  background: #191919;
+  color: #fff;
+  box-shadow: 4px 4px 0 #ffd338;
+  transform: translateY(1px);
+}
+.category-chips button.active::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
   border: 2px solid #191919;
-  border-radius: 22px;
-  background: #fff;
-  padding: 18px;
-  display: grid;
-  gap: 15px;
-  box-shadow: 5px 5px 0 #eadcc7;
+  pointer-events: none;
+}
+/* category chips: lift on hover for tactile feedback */
+.category-chips button:hover {
+  background: #191919;
+  color: #fff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 3px 3px 0 #ffd338;
 }
 .filter-label {
   font-size: 12px;
@@ -2924,10 +3046,16 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--ink);
+  transition: color 0.2s;
+}
+.filter-label:hover {
+  color: var(--red-ink);
 }
 .filter-label svg {
   width: 17px;
 }
+/* category chips */
 .category-chips {
   display: flex;
   gap: 7px;
@@ -2942,6 +3070,45 @@ body {
   padding: 9px 13px;
   font-size: 12px;
   font-weight: 800;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+}
+/* catalog actions row */
+.catalog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px dashed #cfc0ad;
+}
+.catalog-actions label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.catalog-actions label:hover {
+  color: var(--red-ink);
+}
+.catalog-actions select {
+  padding: 9px 14px;
+  border: 1.5px solid #191919;
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.catalog-actions select:focus-visible {
+  outline: 3px solid var(--red-ink);
+  outline-offset: 2px;
+  border-color: var(--red-ink);
 }
 .category-chips button.active {
   background: #191919;

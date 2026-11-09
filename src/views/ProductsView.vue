@@ -1,5 +1,7 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SlidersHorizontal } from "lucide-vue-next";
 import { useProductStore } from "../stores/productStore";
 import { useFloorStore } from "../stores/floorStore";
@@ -7,6 +9,8 @@ import { applyCatalogFilters, paginate } from "../data/catalog";
 import ProductGrid from "../components/product/ProductGrid.vue";
 import ProductShowcase from "../components/product/ProductShowcase.vue";
 import Pagination from "../components/common/Pagination.vue";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const props = defineProps({ mode: { type: String, default: "all" } });
 
@@ -32,7 +36,7 @@ const views = {
   },
   best: {
     kicker: "BEST SELLERS · OFFICE FAVORITES",
-    title: "Bán chạy nhất",
+    title: "Bán nổi nhất",
     lead: (n) => `${n} món được săn nhiều nhất tại tầng ${floor.floor}.`,
     sort: "best",
   },
@@ -67,16 +71,82 @@ watch(
 watch(pages, (v) => {
   if (page.value > v) page.value = v;
 });
+
+const entrance = ref();
+const fullBleed = ref(false);
+
+onMounted(() => {
+  if (!entrance.value) return;
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: entrance.value,
+      start: "top 90%",
+      toggleActions: "play none none reverse",
+    },
+  });
+  tl.set(entrance.value, { opacity: 0, y: 24 });
+  tl.from(
+    ".catalog-title",
+    {
+      opacity: 0,
+      y: 32,
+      duration: 0.6,
+      ease: "power4.out",
+    },
+    0
+  )
+    .from(
+      ".catalog-toolbar",
+      {
+        opacity: 0,
+        y: 12,
+        duration: 0.5,
+        ease: "power3.out",
+        stagger: 0.06,
+      },
+      "<0.1"
+    )
+    .from(
+      ".product-grid",
+      {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        ease: "back.out(1.4)",
+        stagger: 0.05,
+      },
+      "<0.2"
+    );
+
+  // FULLBLEED
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          fullBleed.value = true;
+          observer.disconnect();
+        }
+      });
+    },
+    { threshold: 0.25 }
+  );
+  observer.observe(entrance.value);
+});
 </script>
 <template>
-  <main class="catalog-page">
+  <main
+  class="catalog-page"
+  :class="{
+    'is-entering': entrance,
+    'full-bleed': fullBleed,
+  }"
+>
     <ProductShowcase v-if="mode === 'new' && s.newProducts[0]" :product="s.newProducts[0]" />
-    <div class="page">
+    <div class="page" ref="entrance">
       <div class="page-title catalog-title">
         <div>
           <span class="kicker">{{ view.kicker }}</span>
           <h1>{{ view.title }}</h1>
-          <p>{{ view.lead(filtered.length) }}</p>
         </div>
         <div class="catalog-stat">
           <b>{{ base.length }}</b><span>sản phẩm</span>

@@ -84,6 +84,11 @@ const add = () => {
   gap: 8px;
   font-family: var(--font-ui);
 }
+.qa--row {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
 .qa__qty {
   display: inline-flex;
   align-items: center;

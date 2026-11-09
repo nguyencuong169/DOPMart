@@ -1,13 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import gsap from "gsap";
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
-} from "lucide-vue-next";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-vue-next";
 import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore";
 import { relativeLuminance, surfaceTone, tintOn } from "../../utils/color";
@@ -227,7 +221,10 @@ function clearRingInline() {
 function playIntro() {
   if (prefersReduced) return;
   gsap
-    .timeline({ defaults: { ease: "power3.out", overwrite: "auto" }, onComplete: clearRingInline })
+    .timeline({
+      defaults: { ease: "power3.out", overwrite: "auto" },
+      onComplete: clearRingInline,
+    })
     .from(".hero-side-copy > *", { y: 40, opacity: 0, stagger: 0.1, duration: 0.7 })
     .from(
       ".hero-ring__item",
@@ -236,7 +233,13 @@ function playIntro() {
     )
     .from(
       ".hero-ring__item img",
-      { scale: 0.92, duration: 0.8, stagger: 0.1, ease: "back.out(1.4)", clearProps: "transform" },
+      {
+        scale: 0.92,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "back.out(1.4)",
+        clearProps: "transform",
+      },
       "<"
     )
     .from(".hero-controls", { y: 18, opacity: 0, duration: 0.45 }, "-=0.45");
@@ -283,7 +286,10 @@ onBeforeUnmount(() => {
     aria-label="Sản phẩm nổi bật tại DOP Mart"
     @mousemove="parallax"
     @mouseenter="pause"
-    @mouseleave="resume(); resetParallax()"
+    @mouseleave="
+      resume();
+      resetParallax();
+    "
     @focusin="pause"
     @focusout="onFocusOut"
     :style="{
@@ -368,7 +374,11 @@ onBeforeUnmount(() => {
     <div class="hero-product-zone">
       <div class="hero-halo"></div>
       <div class="hero-fx" :class="`fx-${fx.kind}`" aria-hidden="true">
-        <i v-for="n in fx.bits" :key="`${slides[current].id}-${n}`" :style="{ '--i': n - 1 }" />
+        <i
+          v-for="n in fx.bits"
+          :key="`${slides[current].id}-${n}`"
+          :style="{ '--i': n - 1 }"
+        />
       </div>
       <div v-if="fx.steam" class="hero-steam" aria-hidden="true"><i /><i /><i /></div>
     </div>
@@ -393,11 +403,14 @@ onBeforeUnmount(() => {
       <button type="button" aria-label="Xem sản phẩm tiếp theo" @click="go(current + 1)">
         <ChevronRight /></button
       ><span class="hero-count" aria-hidden="true"
-        ><b>0{{ current + 1 }}</b>/0{{ slides.length }}</span
+        ><b>0{{ current + 1 }}</b
+        >/0{{ slides.length }}</span
       ><button
         type="button"
         class="play"
-        :aria-label="playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'"
+        :aria-label="
+          playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'
+        "
         :aria-pressed="!playing"
         @click="toggle"
       >
@@ -406,4 +419,3 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
-

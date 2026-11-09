@@ -5,21 +5,29 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run check:encoding",
     "build": "vite build",
     "preview": "vite preview",
     "check:catalog": "node scripts/check-catalog.mjs",
-    "check:contrast": "node scripts/check-contrast.mjs"
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:encoding": "node scripts/check-encoding.mjs",
+    "utf8": "node scripts/utf8.mjs",
+    "hooks:install": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "gsap": "3.12.5",
     "lucide-vue-next": "0.468.0",
     "motion-v": "^2.11.1",
     "pinia": "2.3.0",
-    "vue": "3.5.13",
+    "vue": "^3.5.45",
     "vue-router": "4.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.2.1",
-    "vite": "6.0.5"
+    "vite": "^6.4.5"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "vue-demi@0.14.10": true
   }
 }

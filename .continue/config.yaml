@@ -99,3 +99,6 @@ rules:
   - Use Pinia for appropriate shared state.
   - Follow existing Vue Router architecture.
   - Write clean modular and maintainable code.
+  - Read and write every file as UTF-8; never let the console code page decide,
+    or UTF-8 text comes back as mojibake and gets written back damaged. Run
+    `npm run check:encoding` after editing.

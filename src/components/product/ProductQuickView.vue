@@ -1,15 +1,12 @@
 <script setup>
-import { computed, ref, watch } from "vue";
-import { X, ShoppingBag, MapPin, ArrowUpRight } from "lucide-vue-next";
+import { computed } from "vue";
+import { X, MapPin, ArrowUpRight } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
-import { useCartStore } from "../../stores/cartStore";
 import { useFloorStore } from "../../stores/floorStore";
-import QuantitySelector from "./QuantitySelector.vue";
+import QuickAdd from "./QuickAdd.vue";
 import { headWords } from "../../data/products";
 const products = useProductStore(),
-  cart = useCartStore(),
-  floor = useFloorStore(),
-  qty = ref(1);
+  floor = useFloorStore();
 /* the poster lines behind the pack read as a shelf slogan, never the name */
 const lines = computed(() => {
   const p = products.quickProduct;
@@ -22,14 +19,6 @@ const onColor = (hex) => {
     (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   return l > 0.62 ? "#191919" : "#ffffff";
 };
-watch(
-  () => products.quickProduct,
-  () => (qty.value = 1)
-);
-function add() {
-  cart.add(products.quickProduct, qty.value);
-  products.closeQuick();
-}
 </script>
 <template>
   <Teleport to="body"
@@ -97,9 +86,12 @@ function add() {
               {{ products.quickProduct.price.toLocaleString("vi-VN") }} ₫
             </div>
             <div class="quick-buy">
-              <QuantitySelector v-model="qty" /><button class="checkout" @click="add">
-                Thêm vào giỏ <ShoppingBag />
-              </button>
+              <QuickAdd
+                :product="products.quickProduct"
+                :stock="products.quickProduct.stock[floor.floor]"
+                size="md"
+                @added="products.closeQuick()"
+              />
             </div>
             <RouterLink
               :to="`/product/${products.quickProduct.slug}`"

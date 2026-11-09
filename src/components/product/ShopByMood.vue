@@ -1,24 +1,14 @@
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { ArrowRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
 import CatalogCard from "./CatalogCard.vue";
 import { useProductStore } from "../../stores/productStore";
-import { useCartStore } from "../../stores/cartStore";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
 const store = useProductStore();
-const cart = useCartStore();
 const active = ref("all");
 const uid = Math.random().toString(36).slice(2, 7);
-
-/* per-card quantity for the hover quick-add (defaults to 1, resets after add) */
-const qty = reactive({});
-const qtyOf = (p) => qty[p.id] ?? 1;
-const addToCart = (p) => {
-  cart.add(p, qtyOf(p));
-  qty[p.id] = 1;
-};
 
 const bySold = (arr) => [...arr].sort((a, b) => b.sold - a.sold);
 // chọn màu chữ (đen/trắng) theo độ sáng của màu sản phẩm
@@ -110,11 +100,8 @@ const link = computed(() =>
             v-for="(p, i) in shown"
             :key="p.id ?? p.slug"
             :product="p"
-            :index="i"
-            :quantity="qtyOf(p)"
-            @update:quantity="(v) => (qty[p.id] = v)"
+            :index="i"
             @quick="store.openQuick(p)"
-            @add="addToCart(p)"
           />
         </div>
       </div>

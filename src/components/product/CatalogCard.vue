@@ -1,7 +1,7 @@
 ﻿<script setup>
 import { computed, onMounted, ref } from "vue";
-import { Heart, Plus } from "lucide-vue-next";
-import QuantitySelector from "./QuantitySelector.vue";
+import { Heart } from "lucide-vue-next";
+import QuickAdd from "./QuickAdd.vue";
 import { headWords } from "../../data/products";
 
 /* The one product card for the whole page. Style and animation are the ones the
@@ -12,7 +12,6 @@ import { headWords } from "../../data/products";
 const props = defineProps({
   product: { type: Object, required: true },
   index: { type: Number, default: 0 },
-  quantity: { type: Number, default: 1 },
   /* "shelf" = the hover shelf, "grid" = same pack plus an always-readable plate */
   variant: { type: String, default: "shelf" },
   /* grid only: the plate is complete when the parent passes floor + stock */
@@ -20,7 +19,7 @@ const props = defineProps({
   stock: { type: Number, default: null },
   floor: { type: [Number, String], default: "" },
 });
-const emit = defineEmits(["add", "quick", "update:quantity", "toggle-favorite"]);
+const emit = defineEmits(["quick", "toggle-favorite"]);
 
 const isGrid = computed(() => props.variant === "grid");
 const soldOut = computed(() => props.stock !== null && props.stock <= 0);
@@ -58,7 +57,7 @@ const fontTick = ref(0);
 const head = computed(() => {
   fontTick.value; // re-measure once the display face has landed
   if (typeof document !== "undefined" && !ctx) ctx = document.createElement("canvas").getContext("2d");
-  if (ctx) ctx.font = '800 100px "Bricolage Grotesque"';
+  if (ctx) ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
   const lines = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
     "",
@@ -72,7 +71,7 @@ const head = computed(() => {
 });
 onMounted(async () => {
   try {
-    await document.fonts.load('800 100px "Bricolage Grotesque"');
+    await document.fonts.load('italic 900 100px "Barlow Condensed"');
   } catch {
     /* no font loading support: the fallback metrics already work */
   }
@@ -101,15 +100,32 @@ onMounted(async () => {
         <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
 
-      <!-- tag rail: one size, colour from the tag's meaning, sits on the right -->
+      <!-- status tags hang on the left: MỚI first, then NÓNG, then the discount -->
       <div class="cat-card__tags">
-        <span v-if="product.hot" class="cat-card__tag cat-card__tag--hot">NÓNG</span>
-        <span v-if="product.isNew" class="cat-card__tag cat-card__tag--new">MỚI</span>
-        <span v-if="discount" class="cat-card__tag cat-card__tag--save"
+        <span
+          v-if="product.isNew"
+          class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
+          >MỚI</span
+        >
+        <span
+          v-if="product.hot"
+          class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
+          >NÓNG</span
+        >
+        <span
+          v-if="discount"
+          class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
           >-{{ discount }}%</span
         >
-        <span v-if="!isGrid" class="cat-card__tag cat-card__tag--price" aria-hidden="true"><b>{{ fmt(product.price) }} 竄ｫ</b></span>
       </div>
+
+      <!-- the price tag hangs on the middle-right of the pack -->
+      <span
+        v-if="!isGrid"
+        class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
+        aria-hidden="true"
+        >{{ fmt(product.price) }} ₫</span
+      >
 
       <button
         v-if="isGrid"
@@ -124,13 +140,7 @@ onMounted(async () => {
       </button>
 
       <div class="cat-card__buy">
-        <QuantitySelector
-          :model-value="quantity"
-          @update:model-value="(v) => emit('update:quantity', v)"
-        />
-        <button type="button" class="cat-card__add" @click="emit('add')">
-          Thﾃｪm vﾃo gi盻・
-        </button>
+        <QuickAdd :product="product" :stock="stock" />
       </div>
     </div>
 
@@ -152,17 +162,7 @@ onMounted(async () => {
       </p>
       <div class="cat-card__price-row">
         <strong class="cat-card__price">{{ fmt(product.price) }} ₫</strong>
-        <button
-          type="button"
-          class="cat-card__plus"
-          :disabled="soldOut"
-          :aria-label="
-            soldOut ? `${product.name} đã hết hàng` : `Thêm ${product.name} vào giỏ`
-          "
-          @click="emit('add')"
-        >
-          <Plus :size="20" />
-        </button>
+        <QuickAdd :product="product" :stock="stock" variant="icon" />
       </div>
     </div>
   </article>
@@ -193,14 +193,13 @@ onMounted(async () => {
   pointer-events: none;
   user-select: none;
   opacity: 0;
-  /* the display face carries this type: no third family, no italic — one voice for
-     every headline on the page */
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-style: normal;
+  /* the sliding shelf type: Barlow Condensed, the one condensed voice on the page */
+  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-weight: 900;
+  font-style: italic;
   font-size: var(--hs, 22cqw);
-  line-height: 0.9;
-  letter-spacing: -0.035em;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
   text-transform: uppercase;
   white-space: nowrap;
   transition: opacity 0.35s ease-out;
@@ -306,81 +305,42 @@ onMounted(async () => {
   transform: translateX(-50%) scale(0.9, 0.86);
   opacity: 0.8;
 }
-/* ==== tag rail: one size for every tag, the colour comes from what it says ====
-   hot = red pill, new = green pill, discount = red outline, price = the product colour
-   with the hanging hole and string. all of them live on the right edge of the pack. */
+/* ==== tags: one type scale, one hanging shape, colour from what the tag says ====
+   the price tag hangs on the middle-right of the pack, the status tags hang in a
+   column on the left (MỚI first, then NÓNG, then the discount). every tag is visible
+   at rest; hover only brings the shelf type in. */
 .cat-card__tags {
   position: absolute;
-  right: 1.5%;
-  top: 3%;
+  left: 1%;
+  top: 12%;
   z-index: 5;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 12px;
   pointer-events: none;
-  opacity: 0;
-  transform: translateY(6px);
-  transition:
-    opacity 0.28s ease-out,
-    transform 0.45s cubic-bezier(0.3, 1.3, 0.5, 1);
-}
-.cat-card:hover .cat-card__tags,
-.cat-card:focus-within .cat-card__tags,
-.cat-card--grid .cat-card__tags {
-  opacity: 1;
-  transform: translateY(0);
-}
-@media (hover: none) {
-  .cat-card__tags {
-    opacity: 1;
-    transform: none;
-  }
 }
 .cat-card__tag {
-  padding: 6px 10px;
+  position: relative;
+  padding: 7px 12px;
   border: var(--bw-bold) solid var(--ink);
   border-radius: 8px;
   background: var(--ink);
   color: var(--cream);
-  font-family: var(--font-display);
-  font-size: clamp(12px, 3.8cqw, 14px);
+  /* the ui face carries tag type: it is the one with every Vietnamese glyph and ₫ */
+  font-family: var(--font-ui);
+  font-size: clamp(12px, 3.6cqw, 14px);
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   white-space: nowrap;
   box-shadow: 2px 3px 0 var(--ink);
 }
-.cat-card__tag--hot {
-  background: var(--red-ink);
-  border-radius: var(--r-pill);
-}
-.cat-card__tag--new {
-  background: var(--green-ink);
-  border-radius: var(--r-pill);
-}
-/* the discount is still red (it is a deal), but it is the only outlined tag so it can
-   never be mistaken for the hot pill or for the hanging price tag */
-.cat-card__tag--save {
-  background: var(--cream);
-  color: var(--red-ink);
-  border-color: var(--red-ink);
-  border-radius: 8px;
-}
-/* the price tag keeps the product colour and hangs from its hole + string */
-.cat-card__tag--price {
-  position: relative;
-  margin-right: 6px;
-  padding: 6px 10px 6px 20px;
-  border-radius: 6px 12px 12px 6px;
-  background: var(--c);
-  color: var(--on);
-  transform: rotate(-5deg);
-}
-.cat-card__tag--price::before {
+/* the string that ties the tag to the pack: a hole plus a line that leaves the edge */
+.cat-card__tag::before {
   content: "";
   position: absolute;
-  left: 6px;
   top: 50%;
   width: 7px;
   height: 7px;
@@ -388,17 +348,57 @@ onMounted(async () => {
   border: 1.5px solid currentColor;
   border-radius: 50%;
 }
-.cat-card__tag--price::after {
+.cat-card__tag::after {
   content: "";
   position: absolute;
-  left: 12px;
   top: 50%;
-  width: 16px;
+  width: 15px;
   height: 1.5px;
   margin-top: -0.75px;
   background: currentColor;
   transform-origin: 0 50%;
-  transform: rotate(-150deg);
+}
+/* status tags sit on the left: hole on their right edge, string up to the pack */
+.cat-card__tag--hang-left {
+  transform: rotate(-6deg);
+}
+.cat-card__tag--hang-left::before {
+  right: 5px;
+}
+.cat-card__tag--hang-left::after {
+  right: -2px;
+  transform: rotate(-152deg);
+}
+/* the price tag sits on the right: hole on its left edge, string up to the pack */
+.cat-card__tag--hang-right::before {
+  left: 5px;
+}
+.cat-card__tag--hang-right::after {
+  left: -2px;
+  transform: rotate(-28deg);
+}
+.cat-card__tag--price {
+  position: absolute;
+  right: 0.5%;
+  top: 46%;
+  z-index: 5;
+  padding: 7px 12px 7px 20px;
+  border-radius: 6px 12px 12px 6px;
+  background: var(--c);
+  color: var(--on);
+  transform: translateY(-50%) rotate(-6deg);
+}
+.cat-card__tag--new {
+  background: var(--green-ink);
+}
+.cat-card__tag--hot {
+  background: var(--red-ink);
+}
+/* the discount is still red — it is a deal — but outlined, so it never reads as hot */
+.cat-card__tag--save {
+  background: var(--cream);
+  color: var(--red-ink);
+  border-color: var(--red-ink);
 }
 .cat-card__buy {
   position: absolute;
@@ -419,41 +419,6 @@ onMounted(async () => {
 .cat-card:focus-within .cat-card__buy {
   opacity: 1;
   transform: translateY(0);
-}
-.cat-card__buy .quantity {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 2px 2px 0 var(--ink);
-}
-.cat-card__buy .quantity button {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
-  border-radius: 50%;
-  border: 1.5px solid var(--ink);
-  background: #fff;
-  color: var(--ink);
-  font: 800 13px/1 var(--font-display);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  line-height: 1;
-}
-.cat-card__buy .quantity button:hover {
-  background: #f3f3f3;
-}
-.cat-card__buy .quantity span {
-  min-width: 20px;
-  text-align: center;
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--ink);
 }
 .cat-card__add {
   flex: 1;
@@ -527,11 +492,6 @@ onMounted(async () => {
   color: var(--cream);
 }
 .cat-card__fav:focus-visible,
-.cat-card__plus:focus-visible,
-.cat-card__name-btn:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
-}
 .cat-card__info {
   position: relative;
   z-index: 2;
@@ -597,34 +557,6 @@ onMounted(async () => {
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: var(--red-ink);
-}
-.cat-card__plus {
-  flex: none;
-  width: var(--touch);
-  height: var(--touch);
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: var(--bw-bold) solid var(--ink);
-  border-radius: var(--r-pill);
-  background: var(--yellow);
-  color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-}
-.cat-card__plus:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
-}
-.cat-card__plus:disabled {
-  background: color-mix(in srgb, var(--ink) 8%, transparent);
-  border-color: color-mix(in srgb, var(--ink) 24%, transparent);
-  color: color-mix(in srgb, var(--ink) 45%, transparent);
-  box-shadow: none;
-  cursor: not-allowed;
 }
 .cat-card--grid.is-sold-out .cat-card__shot img {
   filter: grayscale(0.45);

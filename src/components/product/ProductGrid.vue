@@ -1,5 +1,4 @@
 <script setup>
-import { useCartStore } from "../../stores/cartStore";
 import { useFavoriteStore } from "../../stores/favoriteStore";
 import { useFloorStore } from "../../stores/floorStore";
 import { useProductStore } from "../../stores/productStore";
@@ -16,17 +15,11 @@ defineProps({
 });
 
 const store = useProductStore();
-const cart = useCartStore();
 const favorites = useFavoriteStore();
 const floor = useFloorStore();
 
 /* stock is per floor: a product without stock data still gets a card, just no row */
 const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
-const add = (p) => {
-  const stock = stockOf(p);
-  if (stock !== null && stock <= 0) return;
-  cart.add(p);
-};
 </script>
 <template>
   <div v-if="loading" class="product-grid" role="status" aria-live="polite">
@@ -43,7 +36,6 @@ const add = (p) => {
       :favorited="favorites.has(p.id)"
       :stock="stockOf(p)"
       :floor="floor.floor"
-      @add="add(p)"
       @quick="store.openQuick(p)"
       @toggle-favorite="favorites.toggle(p.id)"
     />

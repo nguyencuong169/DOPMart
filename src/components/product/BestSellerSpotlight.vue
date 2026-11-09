@@ -2,13 +2,16 @@
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger.js'
-import { ArrowRight, ShoppingBag } from 'lucide-vue-next'
+import { ArrowRight } from 'lucide-vue-next'
+import QuickAdd from './QuickAdd.vue'
 import { useProductStore } from '../../stores/productStore'
-import { useCartStore } from '../../stores/cartStore'
+import { useFloorStore } from '../../stores/floorStore'
 gsap.registerPlugin(ScrollTrigger)
 const store = useProductStore()
-const cart = useCartStore()
+const floor = useFloorStore()
 const root = ref(null)
+/* stock is per floor; a product without stock data keeps the control live */
+const stockOf = (p) => p?.stock?.[floor.floor] ?? null
 /* one champion + a compact Top 2-5 instead of a 950px block for a single can */
 const ranked = computed(() => store.bestSellers.slice(0, 5))
 const top = computed(() => ranked.value[0])
@@ -67,15 +70,14 @@ onBeforeUnmount(() => ctx?.revert())
         <span>{{ top.categoryName }} · TOP 1</span>
         <h3>{{ top.name }}</h3>
         <div class="spotlight-rating">
-          ★★★★★ <small>{{ top.rating }} · {{ top.sold }} đã bán</small>
+          <span aria-hidden="true">★★★★★</span>
+          <small>{{ top.rating }} · {{ top.sold }} đã bán</small>
         </div>
         <p>{{ top.description }}</p>
         <strong>{{ top.price.toLocaleString('vi-VN') }} ₫</strong>
-        <div>
-          <button class="spotlight-buy" @click="cart.add(top)">
-            Thêm vào giỏ <ShoppingBag />
-          </button>
-          <RouterLink :to="`/product/${top.slug}`">Xem chi tiết <ArrowRight /></RouterLink>
+        <div class="spotlight-actions">
+          <QuickAdd :product="top" :stock="stockOf(top)" />
+          <RouterLink :to="`/product/${top.slug}`">Xem chi tiết <ArrowRight :size="16" /></RouterLink>
         </div>
       </div>
     </article>
@@ -88,14 +90,7 @@ onBeforeUnmount(() => ctx?.revert())
           <small>{{ product.categoryName }} · {{ product.sold }} đã bán</small>
         </span>
         <span class="top-price">{{ product.price.toLocaleString('vi-VN') }} ₫</span>
-        <button
-          type="button"
-          class="top-add"
-          :aria-label="`Thêm ${product.name} vào giỏ`"
-          @click="cart.add(product)"
-        >
-          +
-        </button>
+        <QuickAdd :product="product" :stock="stockOf(product)" variant="icon" />
       </li>
     </ol>
     <RouterLink class="spotlight-all" to="/best-sellers">

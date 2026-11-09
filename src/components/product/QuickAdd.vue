@@ -10,10 +10,8 @@ const props = defineProps({
   product: { type: Object, required: true },
   /* stock on the floor being shopped; null means unknown, so the control stays live */
   stock: { type: Number, default: null },
-  /* "row" = stepper + button, "icon" = the single 44px button a small tile has room for */
+  /* "row" = stepper + button, "icon" = the single 48px button a small tile has room for */
   variant: { type: String, default: "row" },
-  /* "sm" inside a card, "md" on a page */
-  size: { type: String, default: "sm" },
   label: { type: String, default: "Thêm vào giỏ" },
 });
 const emit = defineEmits(["added"]);

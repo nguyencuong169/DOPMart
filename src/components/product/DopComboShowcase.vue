@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,7 +12,33 @@ import { useCartStore } from "../../stores/cartStore";
 
 const store = useProductStore();
 const cart = useCartStore();
+const sectionEl = ref(null);
 const index = ref(0);
+let rayObserver;
+let sectionIsInView = false;
+
+function syncRayAnimation() {
+  sectionEl.value?.classList.toggle(
+    "dc--rays-paused",
+    !sectionIsInView || document.hidden,
+  );
+}
+
+onMounted(() => {
+  if (!("IntersectionObserver" in window)) return;
+
+  rayObserver = new IntersectionObserver(([entry]) => {
+    sectionIsInView = entry.isIntersecting;
+    syncRayAnimation();
+  });
+  rayObserver.observe(sectionEl.value);
+  document.addEventListener("visibilitychange", syncRayAnimation);
+});
+
+onBeforeUnmount(() => {
+  rayObserver?.disconnect();
+  document.removeEventListener("visibilitychange", syncRayAnimation);
+});
 
 /*
  * Per-combo palette accents keep each product card's edge and shadow tied to its
@@ -89,9 +115,7 @@ function add() {
 </script>
 
 <template>
-  <section class="dc" :style="{ '--cc': current.color }">
-    <!-- Sunburst rays -->
-    <div class="dc__rays" aria-hidden="true" />
+  <section ref="sectionEl" class="dc" :style="{ '--cc': current.color }">
     <svg class="dc__defs" aria-hidden="true" focusable="false">
       <defs>
         <clipPath id="dc-trapezoid-shape" clipPathUnits="objectBoundingBox">
@@ -148,6 +172,7 @@ function add() {
       <!-- ── Right: big name + product strips ── -->
       <Transition name="combo-swap" mode="out-in">
         <div class="dc__right" :key="index">
+          <div class="dc__rays" aria-hidden="true" />
           <p class="dc__tag">{{ current.tag }}</p>
           <h2 class="dc__name">{{ current.name }}</h2>
 
@@ -236,14 +261,38 @@ function add() {
 /* ─── Sunburst rays ─── */
 .dc__rays {
   position: absolute;
-  inset: 0;
-  background: repeating-conic-gradient(
-    from -4deg at 50% 48%,
-    rgb(92 37 10 / 0.055) 0deg 5deg,
-    transparent 5deg 12deg
-  );
-  opacity: 0.8;
+  z-index: -1;
+  top: 56%;
+  left: 50%;
+  width: min(100%, 820px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle, rgb(255 244 220 / 0.2), transparent 62%),
+    repeating-conic-gradient(
+      from -4deg at 50% 50%,
+      rgb(92 37 10 / 0.055) 0deg 5deg,
+      transparent 5deg 12deg
+    );
+  opacity: 0.82;
   pointer-events: none;
+  animation: dc-rays-rotation 72s linear infinite;
+}
+
+@keyframes dc-rays-rotation {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.dc--rays-paused .dc__rays {
+  animation-play-state: paused;
+}
+
+.dc__right {
+  position: relative;
+  isolation: isolate;
 }
 
 .dc__defs {
@@ -258,7 +307,7 @@ function add() {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
   align-items: center;
   gap: clamp(24px, 3.5vw, 64px);
   /* same 12px edge as the shelves, the grids and the bestseller band, so the combo
@@ -271,8 +320,8 @@ function add() {
 .dc__left {
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
-  padding-inline: clamp(16px, 2.4vw, 36px);
+  gap: clamp(0.9rem, 1.5vw, 1.3rem);
+  padding-inline: clamp(12px, 1.4vw, 20px);
 }
 
 .dc__eyebrow {
@@ -285,18 +334,19 @@ function add() {
   color: #57260f;
   font-size: var(--fs-xs);
   font-weight: 800;
-  letter-spacing: 0.17em;
+  letter-spacing: var(--tracking-kicker);
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
 .dc__section-title {
-  margin: -0.5rem 0 0;
+  margin: 0;
   color: #54220e;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 3.2vw, 2.5rem);
-  font-weight: 900;
-  letter-spacing: -0.055em;
-  line-height: 0.98;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
   text-wrap: balance;
 }
 
@@ -308,10 +358,12 @@ function add() {
 
 .dc__copy {
   margin: 0;
-  max-width: 28ch;
+  max-width: min(100%, 45ch);
   color: #63381f;
-  font-size: 15px;
-  line-height: 1.55;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.6;
+  text-wrap: pretty;
 }
 
 .dc__pricing {
@@ -337,6 +389,8 @@ function add() {
   font-size: var(--fs-md);
   font-weight: 800;
   margin-left: 2px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .dc__price-line {
@@ -349,6 +403,7 @@ function add() {
   font-size: var(--fs-sm);
   color: #713e24;
   text-decoration-thickness: 2px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -356,9 +411,9 @@ function add() {
   font-family: var(--font-display);
   color: #52220d;
   font-size: clamp(28px, 2.4vw, 36px);
-  font-weight: 900;
-  letter-spacing: -0.045em;
-  line-height: 1;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -447,9 +502,10 @@ function add() {
 .dc__tag {
   margin: 0;
   color: #57260f;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
+  font-size: var(--fs-meta);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
@@ -457,11 +513,11 @@ function add() {
 .dc__name {
   font-family: var(--font-display);
   color: #54220e;
-  font-weight: 900;
+  font-weight: 800;
   font-style: normal;
   font-size: clamp(2.5rem, 4.5vw, 4rem);
-  line-height: 0.98;
-  letter-spacing: -0.055em;
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
   text-transform: uppercase;
   margin: 0 0 0.6rem;
   padding-top: 0.06em;
@@ -630,13 +686,13 @@ function add() {
   position: relative;
   z-index: 1;
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 700;
   font-style: normal;
-  font-size: clamp(1.1rem, 1.65vw, 1.4rem);
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
   color: #642811;
   text-transform: uppercase;
-  line-height: 1.15;
-  letter-spacing: -0.035em;
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tracking-display);
   margin: 0;
   padding: 0 1.5rem;
   text-wrap: balance;
@@ -652,9 +708,10 @@ function add() {
   gap: 6px;
   margin: 0;
   padding-inline: 1.5rem;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.02em;
+  line-height: 1.4;
   color: #8f4c2b;
 }
 
@@ -681,7 +738,7 @@ function add() {
   font-weight: 900;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  line-height: 1.2;
   white-space: nowrap;
   box-shadow: 0 4px 0 rgb(64 28 8 / 0.18);
 }
@@ -734,6 +791,9 @@ function add() {
 
 /* ─── Reduced motion: the marquee stops dead, strips are already in place ─── */
 @media (prefers-reduced-motion: reduce) {
+  .dc__rays {
+    animation: none;
+  }
   .dc__ticker-track {
     animation: none;
   }
@@ -776,7 +836,7 @@ function add() {
   }
 
   .dc__copy {
-    max-width: none;
+    max-width: min(100%, 45ch);
   }
 }
 
@@ -809,12 +869,8 @@ function add() {
     padding-inline: 0.8rem;
   }
 
-  .dc__strip-name {
-    font-size: clamp(0.95rem, 4vw, 1.15rem);
-  }
-
   .dc__strip-meta {
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
 
   .dc__strip-price {
@@ -822,7 +878,7 @@ function add() {
     margin-top: 2px;
     margin-inline: 0.8rem 0;
     padding: 4px 11px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
 
   .dc__strip--flip .dc__strip-price {

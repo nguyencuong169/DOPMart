@@ -92,6 +92,16 @@ function add() {
   <section class="dc" :style="{ '--cc': current.color }">
     <!-- Sunburst rays -->
     <div class="dc__rays" aria-hidden="true" />
+    <svg class="dc__defs" aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id="dc-trapezoid-shape" clipPathUnits="objectBoundingBox">
+          <path
+            d="M .1 0 H .88 Q .96 0 .96 .08 V .72 Q .96 .8 .88 .82 L .12 1 Q .04 1 .04 .92 V .08 Q .04 0 .1 0 Z"
+          />
+        </clipPath>
+      </defs>
+    </svg>
+
     <div class="dc__layout">
       <!-- ── Left: copy + pricing + nav ── -->
       <aside class="dc__left">
@@ -148,11 +158,6 @@ function add() {
                 'dc__strip',
                 {
                   'dc__strip--flip': i % 2 !== 0,
-                  'dc__strip--stack-top': i === 0,
-                  'dc__strip--stack-middle':
-                    i > 0 && i < current.items.length - 1,
-                  'dc__strip--stack-bottom':
-                    i === current.items.length - 1 && current.items.length > 1,
                   'dc__strip--solo': current.items.length === 1,
                 },
               ]"
@@ -233,6 +238,13 @@ function add() {
   );
   opacity: 0.8;
   pointer-events: none;
+}
+
+.dc__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 /* ─── Layout grid: two columns on the page measure ─── */
@@ -442,13 +454,14 @@ function add() {
   isolation: isolate;
   list-style: none;
   margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 820px;
-  row-gap: 0;
+  row-gap: 7px;
   align-items: stretch;
+  padding: 4px 3px;
+  border-radius: 30px 12px 30px 12px;
 }
 
 .dc__strips::before {
@@ -457,10 +470,14 @@ function add() {
   inset: 0;
   z-index: -1;
   border-radius: 28px 10px 28px 10px;
-  background:
-    linear-gradient(100deg, rgb(255 250 231 / 0.98), #fff0dc 72%),
-    color-mix(in srgb, var(--cc) 8%, #fff2dc);
-  box-shadow: 0 8px 18px rgb(64 28 8 / 0.16);
+  background: linear-gradient(
+    125deg,
+    rgb(255 244 220 / 0.76),
+    color-mix(in srgb, var(--cc) 18%, rgb(105 50 18 / 0.48))
+  );
+  box-shadow:
+    inset 0 1px 5px rgb(77 39 15 / 0.15),
+    0 8px 18px rgb(64 28 8 / 0.12);
 }
 
 .dc__strip {
@@ -470,53 +487,47 @@ function add() {
   background: transparent;
   color: #552510;
   border: 0;
-  border-radius: 0;
+  border-radius: 18px 8px;
   min-height: 152px;
   width: 100%;
   overflow: visible;
   animation: strip-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--n, 0) * 0.07s + 0.14s);
-  transition: transform 0.2s ease;
 }
 
-.dc__strip + .dc__strip {
-  border-top: 1px solid rgb(84 34 14 / 0.12);
-}
-
-.dc__strip--stack-middle::before,
-.dc__strip--stack-bottom::before {
-  content: "";
-  display: block;
-  position: absolute;
-  z-index: 2;
-  top: -8px;
-  left: 28%;
-  width: 42px;
-  height: 15px;
-  border: 1px solid rgb(84 34 14 / 0.12);
-  border-radius: 0 0 50% 50%;
-  background: #fff4e3;
-  pointer-events: none;
-}
-
-.dc__strip--stack-top::after,
-.dc__strip--stack-middle::after {
+.dc__strip::before {
   content: "";
   position: absolute;
-  z-index: 2;
-  right: 28%;
-  bottom: -8px;
-  width: 42px;
-  height: 15px;
-  border: 1px solid rgb(84 34 14 / 0.12);
-  border-radius: 50% 50% 0 0;
-  background: #fff4e3;
+  inset: 0;
+  z-index: 0;
+  clip-path: url(#dc-trapezoid-shape);
+  background: radial-gradient(
+    ellipse 78% 120% at 82% 50%,
+    rgb(255 253 244 / 0.99) 0%,
+    color-mix(in srgb, var(--bc) 9%, #fff1dc) 54%,
+    color-mix(in srgb, var(--bc) 24%, #f3c77a) 100%
+  );
+  filter: drop-shadow(0 6px 12px rgb(64 28 8 / 0.2));
+  opacity: 0.97;
   pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    filter 0.25s ease;
 }
 
-.dc__strip--stack-middle::before {
-  left: auto;
-  right: 28%;
+.dc__strip--flip::before {
+  transform: scaleX(-1);
+  background: radial-gradient(
+    ellipse 78% 120% at 18% 50%,
+    rgb(255 253 244 / 0.99) 0%,
+    color-mix(in srgb, var(--bc) 9%, #fff1dc) 54%,
+    color-mix(in srgb, var(--bc) 24%, #f3c77a) 100%
+  );
+}
+
+.dc__strip:hover::before {
+  opacity: 1;
+  filter: drop-shadow(0 9px 16px rgb(64 28 8 / 0.25));
 }
 
 .dc__strip--solo {
@@ -746,6 +757,11 @@ function add() {
 
   .dc__strips::before {
     border-radius: 20px 8px 20px 8px;
+  }
+
+  .dc__strips {
+    row-gap: 5px;
+    padding: 3px 2px;
   }
 
   .dc__img-wrap {

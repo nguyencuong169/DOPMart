@@ -110,6 +110,7 @@ function add() {
           DOP COMBO
         </p>
 
+        <h2 class="dc__section-title">Gom vui.<br /><em>Giá nhẹ.</em></h2>
         <p class="dc__copy">{{ current.copy }}</p>
 
         <div class="dc__pricing">
@@ -150,7 +151,15 @@ function add() {
           <p class="dc__tag">{{ current.tag }}</p>
           <h2 class="dc__name">{{ current.name }}</h2>
 
-          <ul class="dc__strips" aria-label="Món trong combo">
+          <ul
+            class="dc__strips"
+            :class="{
+              'dc__strips--2': current.items.length === 2,
+              'dc__strips--3': current.items.length === 3,
+              'dc__strips--4': current.items.length === 4,
+            }"
+            aria-label="Món trong combo"
+          >
             <li
               v-for="(item, i) in current.items"
               :key="item.id"
@@ -163,17 +172,14 @@ function add() {
               ]"
               :style="{ '--n': i, '--bc': item.cardBg }"
             >
-              <div class="dc__strip-body">
-                <h3 class="dc__strip-name">{{ item.name }}</h3>
-                <p class="dc__strip-meta">
-                  <Utensils :size="14" aria-hidden="true" />
-                  <span>{{ ITEM_TAGS[item.id] ?? item.categoryName }}</span>
-                </p>
-                <p class="dc__strip-price">
-                  {{ item.price.toLocaleString("vi-VN") }}₫
-                </p>
-              </div>
-
+              <h3 class="dc__strip-name">{{ item.name }}</h3>
+              <p class="dc__strip-meta">
+                <Utensils :size="14" aria-hidden="true" />
+                <span>{{ ITEM_TAGS[item.id] ?? item.categoryName }}</span>
+              </p>
+              <p class="dc__strip-price">
+                {{ item.price.toLocaleString("vi-VN") }}₫
+              </p>
               <div class="dc__img-wrap" aria-hidden="true">
                 <img
                   :src="item.image"
@@ -275,15 +281,29 @@ function add() {
   align-items: center;
   gap: 6px;
   margin: 0;
-  padding: 7px 11px;
-  border: 1px solid rgb(83 35 13 / 0.25);
-  border-radius: var(--r-pill);
-  background: rgb(255 253 247 / 0.34);
+  padding: 0;
   color: #57260f;
   font-size: var(--fs-xs);
   font-weight: 800;
   letter-spacing: 0.17em;
   text-transform: uppercase;
+}
+
+.dc__section-title {
+  margin: -0.5rem 0 0;
+  color: #54220e;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.2vw, 2.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.dc__section-title em {
+  color: var(--cream);
+  font-style: normal;
+  text-shadow: 1px 2px 0 rgb(82 34 13 / 0.14);
 }
 
 .dc__copy {
@@ -322,23 +342,25 @@ function add() {
 .dc__price-line {
   display: flex;
   align-items: baseline;
-  gap: 0.65rem;
+  gap: 0.4rem;
 }
 
 .dc__price-line s {
   font-size: var(--fs-sm);
   color: #713e24;
   text-decoration-thickness: 2px;
+  white-space: nowrap;
 }
 
 .dc__price-new {
   font-family: var(--font-display);
   color: #52220d;
-  font-size: clamp(30px, 3vw, 40px);
+  font-size: clamp(28px, 2.4vw, 36px);
   font-weight: 900;
   letter-spacing: -0.045em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* CTA — the card's plate language: ink rule, cream fill, hard shadow, 48px tall */
@@ -451,7 +473,6 @@ function add() {
 /* ─── Product strips – REDESIGNED ─── */
 .dc__strips {
   position: relative;
-  isolation: isolate;
   list-style: none;
   margin: 0;
   display: flex;
@@ -464,26 +485,16 @@ function add() {
   border-radius: 30px 12px 30px 12px;
 }
 
-.dc__strips::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: 28px 10px 28px 10px;
-  background: linear-gradient(
-    125deg,
-    rgb(255 244 220 / 0.76),
-    color-mix(in srgb, var(--cc) 18%, rgb(105 50 18 / 0.48))
-  );
-  box-shadow:
-    inset 0 1px 5px rgb(77 39 15 / 0.15),
-    0 8px 18px rgb(64 28 8 / 0.12);
-}
-
 .dc__strip {
+  --dc-image-size: clamp(176px, 15vw, 232px);
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(3, max-content);
+  align-content: center;
   align-items: center;
+  row-gap: 0.3rem;
+  padding-right: calc(var(--dc-image-size) + 1rem);
   background: transparent;
   color: #552510;
   border: 0;
@@ -535,17 +546,41 @@ function add() {
 }
 
 .dc__strip--flip {
-  flex-direction: row-reverse;
-}
-
-.dc__strip--flip .dc__strip-body {
-  padding-left: 4.2rem;
-  padding-right: 1.2rem;
-  text-align: right;
+  padding-right: 0;
+  padding-left: calc(var(--dc-image-size) + 1rem);
 }
 
 .dc__strip--flip .dc__strip-meta {
   justify-content: flex-end;
+}
+
+.dc__strip-name {
+  grid-column: 1;
+  grid-row: 1;
+  padding-inline: 1.5rem;
+  text-align: left;
+}
+
+.dc__strip-meta {
+  grid-column: 1;
+  grid-row: 2;
+  padding-inline: 1.5rem;
+}
+
+.dc__strip-price {
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
+  margin-inline: 1.5rem 0;
+}
+
+.dc__strip--flip .dc__strip-name {
+  text-align: right;
+}
+
+.dc__strip--flip .dc__strip-price {
+  justify-self: end;
+  margin-inline: 0 1.5rem;
 }
 
 @keyframes strip-enter {
@@ -557,16 +592,23 @@ function add() {
 
 /* ── Floating image ── */
 .dc__img-wrap {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  right: -0.25rem;
   z-index: 1;
   flex-shrink: 0;
-  width: clamp(176px, 15vw, 232px);
-  height: clamp(176px, 15vw, 232px);
+  width: var(--dc-image-size);
+  height: var(--dc-image-size);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
-  margin-inline: -0.25rem;
+  transform: translateY(-50%);
+}
+
+.dc__strip--flip .dc__img-wrap {
+  right: auto;
+  left: -0.25rem;
 }
 
 .dc__img-wrap img {
@@ -583,21 +625,10 @@ function add() {
   transform: scale(1.4) translateY(-8%);
 }
 
-/* ── Text body ── */
-.dc__strip-body {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 1rem 4.2rem 1rem 1.2rem;
-}
-
 /* Item line 1 — name, in the display face */
 .dc__strip-name {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-weight: 900;
   font-style: normal;
@@ -607,17 +638,20 @@ function add() {
   line-height: 1.15;
   letter-spacing: -0.035em;
   margin: 0;
-  padding: 0;
+  padding: 0 1.5rem;
   text-wrap: balance;
 }
 
 /* Item line 2 — what it tastes like, with a 14px plate icon so the line reads as
    "a thing you eat", not as a third tier of type */
 .dc__strip-meta {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0;
+  padding-inline: 1.5rem;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -630,33 +664,30 @@ function add() {
 
 /* Item line 3 — price */
 .dc__strip-price {
-  position: absolute;
-  top: 50%;
-  right: -38px;
+  position: relative;
   z-index: 3;
-  display: grid;
-  place-items: center;
-  width: 76px;
-  height: 76px;
-  padding: 5px;
-  border: 3px solid #fff4e3;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 34px;
+  margin: 4px 1.5rem 0;
+  padding: 5px 15px;
+  border: 0;
+  border-radius: var(--r-pill);
   background: #52220d;
   color: var(--cream);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  margin: 0;
-  text-align: center;
-  line-height: 1.1;
-  transform: translateY(-50%);
-  box-shadow: 0 5px 12px rgb(64 28 8 / 0.24);
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 rgb(64 28 8 / 0.18);
 }
 
 .dc__strip--flip .dc__strip-price {
-  right: auto;
-  left: -38px;
+  justify-self: end;
 }
 
 /* ─── Ticker: a 34px band with 12px type, not a 22px sliver of 10px caps ─── */
@@ -755,10 +786,6 @@ function add() {
     border-radius: 15px 6px 15px 6px;
   }
 
-  .dc__strips::before {
-    border-radius: 20px 8px 20px 8px;
-  }
-
   .dc__strips {
     row-gap: 5px;
     padding: 3px 2px;
@@ -769,17 +796,17 @@ function add() {
     height: 96px;
   }
 
-  .dc__strip {
+  .dc__strip,
+  .dc__strips--2 .dc__strip,
+  .dc__strips--3 .dc__strip,
+  .dc__strips--4 .dc__strip {
+    --dc-image-size: 96px;
     min-height: 112px;
   }
 
-  .dc__strip-body {
-    gap: 0.25rem;
-    padding: 0.8rem 2.8rem 0.8rem 0.7rem;
-  }
-
-  .dc__strip--flip .dc__strip-body {
-    padding: 0.8rem 0.7rem 0.8rem 2.8rem;
+  .dc__strip-name,
+  .dc__strip-meta {
+    padding-inline: 0.8rem;
   }
 
   .dc__strip-name {
@@ -791,15 +818,66 @@ function add() {
   }
 
   .dc__strip-price {
-    right: -30px;
-    width: 60px;
-    height: 60px;
+    min-height: 27px;
+    margin-top: 2px;
+    margin-inline: 0.8rem 0;
+    padding: 4px 11px;
     font-size: 11px;
   }
 
   .dc__strip--flip .dc__strip-price {
-    right: auto;
-    left: -30px;
+    margin-inline: 0 0.8rem;
+  }
+}
+
+@media (min-width: 601px) {
+  .dc__strips--2 {
+    row-gap: 12px;
+  }
+
+  .dc__strips--2 .dc__strip {
+    --dc-image-size: clamp(180px, 16.8vw, 240px);
+    min-height: clamp(196px, 16vw, 238px);
+    width: 97%;
+  }
+
+  .dc__strips--2 .dc__strip--flip {
+    width: 93%;
+  }
+
+  .dc__strips--2 .dc__img-wrap {
+    width: var(--dc-image-size);
+    height: var(--dc-image-size);
+  }
+
+  .dc__strips--3 .dc__strip {
+    --dc-image-size: clamp(154px, 14.4vw, 206px);
+    min-height: clamp(160px, 13vw, 194px);
+    width: 97%;
+  }
+
+  .dc__strips--3 .dc__strip--flip {
+    width: 94%;
+  }
+
+  .dc__strips--3 .dc__img-wrap {
+    width: var(--dc-image-size);
+    height: var(--dc-image-size);
+  }
+
+  .dc__strips--4 .dc__strip {
+    --dc-image-size: clamp(136px, 12.4vw, 184px);
+    min-height: clamp(138px, 11.3vw, 172px);
+    width: 97%;
+  }
+
+  .dc__strips--4 .dc__strip--flip {
+    width: 94%;
+  }
+
+  .dc__strips--4 .dc__img-wrap {
+    width: var(--dc-image-size);
+    height: var(--dc-image-size);
   }
 }
 </style>

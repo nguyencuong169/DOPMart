@@ -15,10 +15,8 @@ const cart = useCartStore();
 const index = ref(0);
 
 /*
- * Per-combo card palettes — 1 màu tương ứng với 1 sản phẩm trong combo.
- * Mọi tông ở đây đã đo: chữ trắng trên từng màu phải qua AA (4.5:1).
- * Hai giá trị cũ trượt nên đã tối lại — #d64e12 (4.24) → #a83a09 (6.41);
- * band #ef3340 (4.02) → #b81f2b (6.42). Đổi tông nào thì đo lại tông đó.
+ * Per-combo palette accents keep each product card's edge and shadow tied to its
+ * combo while the shared cream surface keeps the text contrast consistent.
  */
 const PALETTES = [
   ["#c8192a", "#a83a09", "#921520"], // Cứu deadline  — đỏ / cam đất
@@ -94,7 +92,6 @@ function add() {
   <section class="dc" :style="{ '--cc': current.color }">
     <!-- Sunburst rays -->
     <div class="dc__rays" aria-hidden="true" />
-
     <div class="dc__layout">
       <!-- ── Left: copy + pricing + nav ── -->
       <aside class="dc__left">
@@ -147,14 +144,20 @@ function add() {
             <li
               v-for="(item, i) in current.items"
               :key="item.id"
-              :class="['dc__strip', { 'dc__strip--flip': i % 2 !== 0 }]"
+              :class="[
+                'dc__strip',
+                {
+                  'dc__strip--flip': i % 2 !== 0,
+                  'dc__strip--stack-top': i === 0,
+                  'dc__strip--stack-middle':
+                    i > 0 && i < current.items.length - 1,
+                  'dc__strip--stack-bottom':
+                    i === current.items.length - 1 && current.items.length > 1,
+                  'dc__strip--solo': current.items.length === 1,
+                },
+              ]"
               :style="{ '--n': i, '--bc': item.cardBg }"
             >
-              <!--
-                DOM order: [strip-body, img-wrap]
-                Default (row)       → body LEFT  | image RIGHT  (Image-1 style)
-                .dc__strip--flip    → image LEFT  | body RIGHT  (xen kẽ)
-              -->
               <div class="dc__strip-body">
                 <h3 class="dc__strip-name">{{ item.name }}</h3>
                 <p class="dc__strip-meta">
@@ -207,7 +210,13 @@ function add() {
   --cc: #b81f2b;
   position: relative;
   overflow: hidden;
-  background: var(--cc);
+  background:
+    radial-gradient(
+      ellipse at 88% 12%,
+      color-mix(in srgb, var(--cc) 18%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(132deg, #ffd22d 0%, #ffad1b 54%, #f47718 100%);
   color: #fff;
   isolation: isolate;
   transition: background-color 0.55s ease;
@@ -218,10 +227,11 @@ function add() {
   position: absolute;
   inset: 0;
   background: repeating-conic-gradient(
-    from -6deg at 68% 52%,
-    rgb(255 255 255 / 0.07) 0deg 7deg,
-    transparent 7deg 14deg
+    from -4deg at 50% 48%,
+    rgb(92 37 10 / 0.055) 0deg 5deg,
+    transparent 5deg 12deg
   );
+  opacity: 0.8;
   pointer-events: none;
 }
 
@@ -230,9 +240,9 @@ function add() {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(24px, 4vw, 72px);
+  gap: clamp(24px, 3.5vw, 64px);
   /* same 12px edge as the shelves, the grids and the bestseller band, so the combo
      copy starts on the same line as every other section */
   padding: var(--sp-6) var(--edge) var(--sp-5);
@@ -244,26 +254,32 @@ function add() {
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
+  padding-inline: clamp(16px, 2.4vw, 36px);
 }
 
 .dc__eyebrow {
   display: flex;
+  width: fit-content;
   align-items: center;
   gap: 6px;
   margin: 0;
+  padding: 7px 11px;
+  border: 1px solid rgb(83 35 13 / 0.25);
+  border-radius: var(--r-pill);
+  background: rgb(255 253 247 / 0.34);
+  color: #57260f;
   font-size: var(--fs-xs);
   font-weight: 800;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
-  color: var(--cream);
 }
 
 .dc__copy {
   margin: 0;
-  font-size: var(--fs-sm);
-  line-height: 1.6;
-  color: var(--cream);
-  max-width: 26ch;
+  max-width: 28ch;
+  color: #63381f;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .dc__pricing {
@@ -299,15 +315,16 @@ function add() {
 
 .dc__price-line s {
   font-size: var(--fs-sm);
-  color: var(--cream);
+  color: #713e24;
   text-decoration-thickness: 2px;
 }
 
 .dc__price-new {
   font-family: var(--font-display);
-  font-size: clamp(24px, 3.2vw, 36px);
-  font-weight: 800;
-  letter-spacing: var(--tracking-display);
+  color: #52220d;
+  font-size: clamp(30px, 3vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.045em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -365,22 +382,22 @@ function add() {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: var(--bw-bold) solid var(--cream);
+  border: var(--bw-bold) solid #57260f;
   background: transparent;
-  color: var(--cream);
+  color: #57260f;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .dc__nav button:hover {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(255 253 247 / 0.6);
 }
 
 .dc__nav-label {
   font-size: var(--fs-sm);
   font-weight: 800;
   letter-spacing: 0.06em;
-  color: var(--cream);
+  color: #57260f;
   font-variant-numeric: tabular-nums;
 }
 
@@ -389,68 +406,135 @@ function add() {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: min(100%, 820px);
+  justify-self: start;
 }
 
 .dc__tag {
   margin: 0;
-  font-size: var(--fs-xs);
+  color: #57260f;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--cream);
 }
 
 /* Big headline — the shared display face, no local condensed italic */
 .dc__name {
   font-family: var(--font-display);
-  font-weight: 800;
+  color: #54220e;
+  font-weight: 900;
   font-style: normal;
-  font-size: clamp(2.25rem, 5.2vw, 4.5rem);
-  line-height: var(--lh-display);
-  letter-spacing: var(--tracking-display);
+  font-size: clamp(2.5rem, 4.5vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
   text-transform: uppercase;
-  margin: 0 0 1rem;
+  margin: 0 0 0.6rem;
   padding-top: 0.06em;
   overflow-wrap: break-word;
   text-wrap: balance;
+  text-shadow: 2px 2px 0 rgb(255 253 247 / 0.28);
 }
 
 /* ─── Product strips – REDESIGNED ─── */
 .dc__strips {
+  position: relative;
+  isolation: isolate;
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  width: 100%;
+  max-width: 820px;
+  row-gap: 0;
+  align-items: stretch;
+}
+
+.dc__strips::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 28px 10px 28px 10px;
+  background:
+    linear-gradient(100deg, rgb(255 250 231 / 0.98), #fff0dc 72%),
+    color-mix(in srgb, var(--cc) 8%, #fff2dc);
+  box-shadow: 0 8px 18px rgb(64 28 8 / 0.16);
 }
 
 .dc__strip {
   position: relative;
   display: flex;
   align-items: center;
-  /* flex-direction: row (default) → body LEFT | image RIGHT */
-  background: var(--bc);
-  color: #fff;
-  border-radius: 100px;
-  min-height: 108px;
+  background: transparent;
+  color: #552510;
+  border: 0;
+  border-radius: 0;
+  min-height: 152px;
+  width: 100%;
   overflow: visible;
-  box-shadow:
-    0 6px 28px rgb(0 0 0 / 0.28),
-    inset 0 1px 0 rgb(255 255 255 / 0.14); /* subtle top highlight */
-
   animation: strip-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--n, 0) * 0.07s + 0.14s);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
-.dc__strip:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 14px 40px rgb(0 0 0 / 0.32),
-    inset 0 1px 0 rgb(255 255 255 / 0.14);
+.dc__strip + .dc__strip {
+  border-top: 1px solid rgb(84 34 14 / 0.12);
+}
+
+.dc__strip--stack-middle::before,
+.dc__strip--stack-bottom::before {
+  content: "";
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: -8px;
+  left: 28%;
+  width: 42px;
+  height: 15px;
+  border: 1px solid rgb(84 34 14 / 0.12);
+  border-radius: 0 0 50% 50%;
+  background: #fff4e3;
+  pointer-events: none;
+}
+
+.dc__strip--stack-top::after,
+.dc__strip--stack-middle::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  right: 28%;
+  bottom: -8px;
+  width: 42px;
+  height: 15px;
+  border: 1px solid rgb(84 34 14 / 0.12);
+  border-radius: 50% 50% 0 0;
+  background: #fff4e3;
+  pointer-events: none;
+}
+
+.dc__strip--stack-middle::before {
+  left: auto;
+  right: 28%;
+}
+
+.dc__strip--solo {
+  border-radius: 28px 10px 28px 10px;
+}
+
+.dc__strip--flip {
+  flex-direction: row-reverse;
+}
+
+.dc__strip--flip .dc__strip-body {
+  padding-left: 4.2rem;
+  padding-right: 1.2rem;
+  text-align: right;
+}
+
+.dc__strip--flip .dc__strip-meta {
+  justify-content: flex-end;
 }
 
 @keyframes strip-enter {
@@ -460,63 +544,60 @@ function add() {
   }
 }
 
-/* Flip: image LEFT, body RIGHT — tạo nhịp điệu xen kẽ */
-.dc__strip--flip {
-  flex-direction: row-reverse;
-}
-
-.dc__strip--flip .dc__strip-body {
-  text-align: right;
-}
-
 /* ── Floating image ── */
 .dc__img-wrap {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
-  width: 108px;
-  height: 108px;
+  width: clamp(176px, 15vw, 232px);
+  height: clamp(176px, 15vw, 232px);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
+  margin-inline: -0.25rem;
 }
 
 .dc__img-wrap img {
   width: 100%;
   height: 100%;
-  max-height: 130%; /* giới hạn overflow cho ảnh tall (lon nước, chai) */
+  max-height: 130%;
   object-fit: contain;
-  /* Nổi lên trên strip, nhô ra ngoài biên trên */
-  transform: scale(1.55) translateY(-10%);
-  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.4));
+  transform: scale(1.3) translateY(-5%);
+  filter: drop-shadow(0 10px 13px rgb(63 27 9 / 0.28));
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dc__strip:hover .dc__img-wrap img {
-  transform: scale(1.65) translateY(-15%);
+  transform: scale(1.4) translateY(-8%);
 }
 
 /* ── Text body ── */
 .dc__strip-body {
+  position: relative;
+  z-index: 1;
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 1rem 1.6rem;
+  gap: 0.3rem;
+  padding: 1rem 4.2rem 1rem 1.2rem;
 }
 
 /* Item line 1 — name, in the display face */
 .dc__strip-name {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 900;
   font-style: normal;
-  font-size: clamp(1rem, 1.9vw, 1.4rem);
+  font-size: clamp(1.1rem, 1.65vw, 1.4rem);
+  color: #642811;
   text-transform: uppercase;
   line-height: 1.15;
-  letter-spacing: var(--tracking-display);
+  letter-spacing: -0.035em;
   margin: 0;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgb(255 255 255 / 0.28);
+  padding: 0;
+  text-wrap: balance;
 }
 
 /* Item line 2 — what it tastes like, with a 14px plate icon so the line reads as
@@ -526,10 +607,10 @@ function add() {
   align-items: center;
   gap: 6px;
   margin: 0;
-  font-size: var(--fs-xs);
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--cream);
+  color: #8f4c2b;
 }
 
 .dc__strip-meta svg {
@@ -538,12 +619,33 @@ function add() {
 
 /* Item line 3 — price */
 .dc__strip-price {
-  font-size: var(--fs-md);
-  font-weight: 800;
+  position: absolute;
+  top: 50%;
+  right: -38px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  padding: 5px;
+  border: 3px solid #fff4e3;
+  border-radius: 50%;
+  background: #52220d;
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 900;
   letter-spacing: 0.02em;
-  color: #fff;
   font-variant-numeric: tabular-nums;
   margin: 0;
+  text-align: center;
+  line-height: 1.1;
+  transform: translateY(-50%);
+  box-shadow: 0 5px 12px rgb(64 28 8 / 0.24);
+}
+
+.dc__strip--flip .dc__strip-price {
+  right: auto;
+  left: -38px;
 }
 
 /* ─── Ticker: a 34px band with 12px type, not a 22px sliver of 10px caps ─── */
@@ -623,13 +725,65 @@ function add() {
     font-size: clamp(2rem, 8vw, 3.25rem);
   }
 
+  .dc__right {
+    width: 100%;
+  }
+
+  .dc__strips {
+    max-width: 820px;
+  }
+
   .dc__copy {
     max-width: none;
   }
+}
 
-  /* Trên mobile luôn left-align dù strip có flip hay không */
+@media (max-width: 600px) {
+  .dc__strip {
+    min-height: 112px;
+    border-radius: 15px 6px 15px 6px;
+  }
+
+  .dc__strips::before {
+    border-radius: 20px 8px 20px 8px;
+  }
+
+  .dc__img-wrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  .dc__strip {
+    min-height: 112px;
+  }
+
+  .dc__strip-body {
+    gap: 0.25rem;
+    padding: 0.8rem 2.8rem 0.8rem 0.7rem;
+  }
+
   .dc__strip--flip .dc__strip-body {
-    text-align: left;
+    padding: 0.8rem 0.7rem 0.8rem 2.8rem;
+  }
+
+  .dc__strip-name {
+    font-size: clamp(0.95rem, 4vw, 1.15rem);
+  }
+
+  .dc__strip-meta {
+    font-size: 11px;
+  }
+
+  .dc__strip-price {
+    right: -30px;
+    width: 60px;
+    height: 60px;
+    font-size: 11px;
+  }
+
+  .dc__strip--flip .dc__strip-price {
+    right: auto;
+    left: -30px;
   }
 }
 </style>

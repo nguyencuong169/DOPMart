@@ -1,16 +1,13 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowUpRight, ChevronDown, MapPin, QrCode, ShoppingBag, Store } from "lucide-vue-next";
+import { ArrowUpRight, ChevronDown, QrCode, ShoppingBag, Store } from "lucide-vue-next";
 import SearchBox from "../common/SearchBox.vue";
-import FloorSelector from "../common/FloorSelector.vue";
 import { useCartStore } from "../../stores/cartStore";
-import { useFloorStore } from "../../stores/floorStore";
 import { useProductStore } from "../../stores/productStore";
 
 const route = useRoute();
 const cart = useCartStore();
-const floor = useFloorStore();
 const catalog = useProductStore();
 
 const scrolled = ref(false);
@@ -20,7 +17,6 @@ const menuOpen = ref(false);
 const toggleEl = ref(null);
 const panelEl = ref(null);
 let compactMode = null;
-let lastY = 0;
 
 const onHero = computed(() => route.path === "/");
 
@@ -61,6 +57,15 @@ const catEl = ref(null);
 function toggleCats() {
   catOpen.value = !catOpen.value;
   moreOpen.value = false;
+}
+function openCats() {
+  catOpen.value = true;
+}
+function closeCats() {
+  catOpen.value = false;
+}
+function onCatsFocusout(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) closeCats();
 }
 /* cart badge: cap the number and bounce for <= 200ms on change */
 const bump = ref(false);
@@ -119,24 +124,16 @@ function syncIndicator() {
 }
 function onScroll() {
   const y = window.scrollY;
-  const delta = y - lastY;
   scrolled.value = y > 54;
   atTop.value = y < 24;
-  if (menuOpen.value || moreOpen.value) {
-    hidden.value = false;
-    lastY = y;
-    return;
-  }
-  if (y < 140) hidden.value = false;
-  else if (Math.abs(delta) > 6) hidden.value = delta > 0;
-  lastY = y;
+  hidden.value = false;
 }
 function reveal() {
   hidden.value = false;
 }
 function onResize() {
   onScroll();
-  const compact = window.innerWidth <= 1023;
+  const compact = window.innerWidth <= 1120;
   if (compact !== compactMode) {
     compactMode = compact;
     closeMenu();
@@ -209,9 +206,8 @@ watch(
 
 let navObserver = null;
 onMounted(() => {
-  lastY = window.scrollY;
   onScroll();
-  compactMode = window.innerWidth <= 1023;
+  compactMode = window.innerWidth <= 1120;
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onResize);
   window.addEventListener("keydown", onKeydown);
@@ -255,7 +251,15 @@ onBeforeUnmount(() => {
         :style="{ width: `${indicator.width}px`, transform: `translateX(${indicator.x}px)` }"
         aria-hidden="true"
       />
-      <div ref="catEl" class="dop-nav-cats" :class="{ open: catOpen }">
+      <div
+        ref="catEl"
+        class="dop-nav-cats"
+        :class="{ open: catOpen }"
+        @mouseenter="openCats"
+        @mouseleave="closeCats"
+        @focusin="openCats"
+        @focusout="onCatsFocusout"
+      >
         <RouterLink
           to="/products"
           class="dop-nav__link"
@@ -279,6 +283,8 @@ onBeforeUnmount(() => {
               :key="c.slug"
               :to="`/category/${c.slug}`"
               class="dop-nav-cats__item"
+              :class="{ 'is-current': route.path === `/category/${c.slug}` }"
+              :aria-current="route.path === `/category/${c.slug}` ? 'page' : undefined"
               @click="catOpen = false"
             >
               <span aria-hidden="true">{{ c.icon }}</span>
@@ -306,7 +312,6 @@ onBeforeUnmount(() => {
     </nav>
     <div class="dop-nav-actions">
       <div class="nav-search"><SearchBox /></div>
-      <FloorSelector />
       <button
         type="button"
         class="cart-button"
@@ -352,7 +357,6 @@ onBeforeUnmount(() => {
       >
         <div class="dop-menu__head">
           <span class="dop-menu__kicker">DOP MART · MENU</span>
-          <span class="dop-menu__pickup"><MapPin :size="13" /> Tầng {{ floor.floor }}</span>
         </div>
         <nav class="dop-menu__links" aria-label="Điều hướng chính">
           <RouterLink
@@ -371,7 +375,6 @@ onBeforeUnmount(() => {
         </nav>
         <div class="dop-menu__tools">
           <div class="nav-search"><SearchBox /></div>
-          <FloorSelector />
         </div>
         <button type="button" class="dop-menu__cart" @click="openCart">
           <ShoppingBag :size="18" /><span>Giỏ hàng</span><b>{{ cart.count }} món</b>

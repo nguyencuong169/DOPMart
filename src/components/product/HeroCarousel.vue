@@ -7,14 +7,27 @@ import { useProductStore } from "../../stores/productStore";
 import { relativeLuminance, surfaceTone, tintOn } from "../../utils/color";
 
 const store = useProductStore();
-/* split the name into: filled head · outlined middle · accent last word */
+const emphasizedEndings = [
+  "bùng vị",
+  "nhiệt đới",
+  "ăn liền",
+  "trái cây",
+  "mini",
+  "mộc",
+  "cay",
+];
 const nameParts = computed(() => {
-  const words = (slides.value[current.value]?.name || "").split(/\s+/).filter(Boolean);
-  if (words.length < 2) return { head: words.join(" "), tail: "", last: "" };
-  const last = words[words.length - 1];
-  const rest = words.slice(0, -1);
-  const half = Math.ceil(rest.length / 2);
-  return { head: rest.slice(0, half).join(" "), tail: rest.slice(half).join(" "), last };
+  const name = slides.value[current.value]?.name || "";
+  const words = name.split(/\s+/).filter(Boolean);
+  const normalized = name.toLocaleLowerCase("vi-VN");
+  const ending =
+    emphasizedEndings.find((phrase) => normalized.endsWith(phrase)) ||
+    words[words.length - 1] ||
+    "";
+  return {
+    head: ending ? name.slice(0, -ending.length).trim() : name,
+    accent: ending ? name.slice(-ending.length) : "",
+  };
 });
 
 /* four packs on a ring: slot 0 = centre (focused), 1..3 = waiting points */
@@ -179,10 +192,10 @@ function applyParallax() {
     ease: "power2.out",
     overwrite: "auto",
   });
-  /* the type block drifts the other way = counter depth */
+  /* keep a subtle vertical counter-motion without shifting text horizontally */
   gsap.to(".hero-side-top", {
-    x: x * -20,
-    y: y * -10,
+    x: 0,
+    y: y * -6,
     duration: 0.9,
     ease: "power2.out",
     overwrite: "auto",
@@ -315,9 +328,8 @@ onBeforeUnmount(() => {
         </span>
         <h2 class="hero-product-name">
           <RouterLink :to="`/product/${slides[current].slug}`"
-            ><span class="np-fill">{{ nameParts.head }}</span
-            ><span v-if="nameParts.tail" class="np-outline"> {{ nameParts.tail }}</span
-            ><span class="np-accent"> {{ nameParts.last }}</span></RouterLink
+            ><span class="np-fill">{{ nameParts.head }}</span>
+            <span class="np-accent-badge">{{ nameParts.accent }}</span></RouterLink
           >
         </h2>
         <p class="hero-desc">{{ slides[current].description }}</p>

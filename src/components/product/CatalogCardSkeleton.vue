@@ -1,14 +1,22 @@
+<script setup>
+defineProps({
+  variant: { type: String, default: "grid" },
+});
+</script>
+
 <template>
-  <div class="cat-skel" aria-hidden="true">
+  <div class="cat-skel" :class="{ 'cat-skel--shelf': variant === 'shelf' }" aria-hidden="true">
     <span class="cat-skel__stage"></span>
-    <span class="cat-skel__line" style="--w: 32%; --d: 40ms"></span>
-    <span class="cat-skel__line cat-skel__line--title" style="--w: 84%; --d: 80ms"></span>
-    <span class="cat-skel__line cat-skel__line--title" style="--w: 56%; --d: 120ms"></span>
-    <span class="cat-skel__line" style="--w: 48%; --d: 160ms"></span>
-    <span class="cat-skel__row">
-      <span class="cat-skel__line cat-skel__line--price" style="--w: 44%; --d: 200ms"></span>
-      <span class="cat-skel__circle"></span>
-    </span>
+    <template v-if="variant === 'grid'">
+      <span class="cat-skel__line" style="--w: 32%; --d: 40ms"></span>
+      <span class="cat-skel__line cat-skel__line--title" style="--w: 84%; --d: 80ms"></span>
+      <span class="cat-skel__line cat-skel__line--title" style="--w: 56%; --d: 120ms"></span>
+      <span class="cat-skel__line" style="--w: 48%; --d: 160ms"></span>
+      <span class="cat-skel__row">
+        <span class="cat-skel__line cat-skel__line--price" style="--w: 44%; --d: 200ms"></span>
+        <span class="cat-skel__circle"></span>
+      </span>
+    </template>
   </div>
 </template>
 
@@ -26,6 +34,9 @@
   border-radius: 24px;
   background: color-mix(in srgb, var(--ink) 7%, transparent);
   animation: cat-skel-pulse 1.6s ease-in-out infinite;
+}
+.cat-skel--shelf .cat-skel__stage {
+  padding-top: 150%;
 }
 .cat-skel__line {
   display: block;

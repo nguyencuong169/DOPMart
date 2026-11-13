@@ -6,12 +6,13 @@ import CatalogCard from "./CatalogCard.vue";
 import CatalogCardSkeleton from "./CatalogCardSkeleton.vue";
 
 /* One grid for every catalogue surface (home fresh drop, products, category, search).
-   It renders the standard card, and it can hold the card's exact footprint while the
-   data is on its way, so a pending shelf is grey tiles instead of a cream hole. */
+   The caller can choose the shelf poster or readable grid card; loading tiles preserve
+   the matching card footprint so a pending shelf never becomes a cream hole. */
 defineProps({
   products: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   skeletonCount: { type: Number, default: 8 },
+  variant: { type: String, default: "grid" },
 });
 
 const store = useProductStore();
@@ -24,7 +25,11 @@ const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
 <template>
   <div v-if="loading" class="product-grid" role="status" aria-live="polite">
     <span class="sr-only">Đang tải sản phẩm…</span>
-    <CatalogCardSkeleton v-for="n in skeletonCount" :key="n" />
+    <CatalogCardSkeleton
+      v-for="n in skeletonCount"
+      :key="n"
+      :variant="variant"
+    />
   </div>
   <div v-else-if="products.length" class="product-grid">
     <CatalogCard
@@ -32,7 +37,7 @@ const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
       :key="p.id ?? p.slug"
       :product="p"
       :index="i"
-      variant="grid"
+      :variant="variant"
       :favorited="favorites.has(p.id)"
       :stock="stockOf(p)"
       :floor="floor.floor"

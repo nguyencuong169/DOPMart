@@ -1,11 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useCartStore } from "../stores/cartStore";
 import { useFloorStore } from "../stores/floorStore";
 const cart = useCartStore(),
   floor = useFloorStore(),
   name = ref(""),
   method = ref("pickup");
+onMounted(() => {
+  cart.init();
+  floor.init();
+});
 </script>
 <template>
   <main class="page checkout-page">

@@ -76,6 +76,8 @@ const entrance = ref();
 const fullBleed = ref(false);
 
 onMounted(() => {
+  s.init();
+  floor.init();
   if (!entrance.value) return;
   const tl = gsap.timeline({
     scrollTrigger: {

@@ -321,7 +321,7 @@ onBeforeUnmount(() => {
         }}</span>
       </p>
     </div>
-    <div class="hero-side-copy">
+    <div class="hero-side-copy" v-if="slides[current]">
       <div class="hero-side-top">
         <span class="hero-kicker">
           <b>DOP Mart</b> · {{ slides[current].categoryName }}

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { ArrowRight, Clock3, MapPin, ShoppingBag, Sparkles, Tag } from "lucide-vue-next";
 import { useProductStore } from "../stores/productStore";
 import { useCartStore } from "../stores/cartStore";
@@ -9,6 +9,11 @@ import DopComboShowcase from "../components/product/DopComboShowcase.vue";
 const s = useProductStore();
 const cart = useCartStore();
 const floor = useFloorStore();
+onMounted(() => {
+  s.init();
+  cart.init();
+  floor.init();
+});
 
 const offers = computed(() => s.offers);
 const maxDiscount = computed(() => Math.max(...offers.value.map((o) => o.discount)));

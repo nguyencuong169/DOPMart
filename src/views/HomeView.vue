@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useProductStore } from "../stores/productStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import HeroCarousel from "../components/product/HeroCarousel.vue";
@@ -14,6 +14,10 @@ import AboutTeaser from "../components/common/AboutTeaser.vue";
 
 const store = useProductStore();
 const favorites = useFavoriteStore();
+onMounted(() => {
+  store.init();
+  favorites.init();
+});
 const homeNewProducts = computed(() => store.newProducts.slice(0, 4));
 </script>
 <template>

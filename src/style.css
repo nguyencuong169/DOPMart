@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:wght@500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
 @import "tw-animate-css";
 @import "shadcn-vue/tailwind.css";
 
@@ -447,9 +447,10 @@ nav a {
 .section-head h2,
 .showcase h2 {
   font-size: clamp(35px, 5vw, 64px);
-  line-height: 1;
+  line-height: 1.15;
   margin: 10px 0;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 .section-head button {
   border: 0;
@@ -590,8 +591,9 @@ nav a {
   z-index: 3;
 }
 .showcase-copy p {
-  line-height: 1.8;
+  line-height: 1.55;
   color: #d5eee5;
+  max-width: 40ch;
 }
 .showcase .primary {
   background: #ffd338;

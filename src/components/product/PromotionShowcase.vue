@@ -51,7 +51,7 @@ onBeforeUnmount(() => animation?.revert());
         :style="{ '--promo-color': offer.tint || offer.color }"
       >
         <div class="promo-media">
-          <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" />
+          <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" width="400" height="300" />
         </div>
         <div class="promo-body">
           <small>{{ offer.categoryName }}</small>
@@ -73,3 +73,19 @@ onBeforeUnmount(() => animation?.revert());
     </div>
   </section>
 </template>
+
+<style scoped>
+.promo-card button:focus-visible {
+  outline: 3px solid #1a1a1a;
+  outline-offset: 2px;
+}
+.promo-kicker,
+.promo-card h3 {
+  line-height: 1.1;
+}
+.promo-card p {
+  line-height: 1.5;
+  max-width: 45ch;
+  text-wrap: pretty;
+}
+</style>

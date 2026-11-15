@@ -18,13 +18,17 @@ const props = defineProps({
   favorited: { type: Boolean, default: false },
   stock: { type: Number, default: null },
   floor: { type: [Number, String], default: "" },
+  /* grid only: ẩn toàn bộ thẻ thông tin dưới ảnh sản phẩm (danh mục, tên, đánh giá, tồn kho, giá) */
+  hideInfo: { type: Boolean, default: false },
 });
 const emit = defineEmits(["quick", "toggle-favorite"]);
 
 const isGrid = computed(() => props.variant === "grid");
 const soldOut = computed(() => props.stock !== null && props.stock <= 0);
 const nameVisible = ref(false);
-const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3);
+const lowStock = computed(
+  () => props.stock !== null && props.stock > 0 && props.stock <= 3,
+);
 /* stock is per floor and reads as a sentence, never as colour alone */
 const stockLabel = computed(() => {
   if (props.stock === null) return "";
@@ -39,7 +43,8 @@ const fmt = (n) => n.toLocaleString("vi-VN");
 /* black or white type on the product's own colour, by perceived lightness */
 const onColor = (hex) => {
   const n = parseInt(hex.replace("#", ""), 16);
-  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  const l =
+    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   return l > 0.62 ? "#1a1a1a" : "#ffffff";
 };
 
@@ -57,7 +62,10 @@ const discount = computed(() =>
    "Soda trái cây" over "nhiệt đới". The split always lands on a word boundary,
    so no word is ever cut in half. */
 const splitName = (name) => {
-  const words = String(name ?? "").trim().split(/\s+/).filter(Boolean);
+  const words = String(name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
   if (words.length < 2) return [words[0] ?? "", ""];
   if (words.length === 2) return [words[0], words[1]];
   const cut = words.length - 2;
@@ -70,8 +78,11 @@ let ctx = null;
 const fontTick = ref(0);
 const head = computed(() => {
   fontTick.value; // re-measure once the display face has landed
-  if (typeof document !== "undefined" && !ctx) ctx = document.createElement("canvas").getContext("2d");
-  if (ctx) ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
+  if (typeof document !== "undefined" && !ctx)
+    ctx = document.createElement("canvas").getContext("2d");
+  if (ctx)
+    ctx.font =
+      'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
   const slogan = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
     "",
@@ -109,12 +120,18 @@ onMounted(async () => {
   <article
     class="cat-card"
     :class="{ 'cat-card--grid': isGrid, 'is-sold-out': isGrid && soldOut }"
-    :style="{ '--c': product.color, '--on': onColor(product.color), '--i': index }"
+    :style="{
+      '--c': product.color,
+      '--on': onColor(product.color),
+      '--i': index,
+    }"
   >
     <div class="cat-card__stage">
       <div class="cat-card__head" aria-hidden="true" :style="head.style">
         <span class="cat-card__line">{{ head.lines[0] }}</span>
-        <span class="cat-card__line cat-card__line--hollow">{{ head.lines[1] }}</span>
+        <span class="cat-card__line cat-card__line--hollow">{{
+          head.lines[1]
+        }}</span>
       </div>
       <i class="cat-card__ground" aria-hidden="true"></i>
       <button
@@ -123,7 +140,12 @@ onMounted(async () => {
         :aria-label="`Xem nhanh ${product.name}`"
         @click="emit('quick')"
       >
-        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
+        <img
+          :src="product.image"
+          :alt="product.name"
+          loading="lazy"
+          decoding="async"
+        />
       </button>
 
       <!-- status tags hang on the left: MỚI first, then NÓNG, then the discount -->
@@ -158,7 +180,9 @@ onMounted(async () => {
         type="button"
         class="cat-card__fav"
         :class="{ liked: favorited }"
-        :aria-label="favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`"
+        :aria-label="
+          favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`
+        "
         :aria-pressed="favorited"
         @click="emit('toggle-favorite')"
       >
@@ -171,7 +195,7 @@ onMounted(async () => {
     </div>
 
     <!-- grid variant: the plate that is always readable -->
-    <div v-if="isGrid" class="cat-card__info">
+    <div v-if="isGrid && !hideInfo" class="cat-card__info">
       <span class="cat-card__cat">{{ product.categoryName }}</span>
       <button
         type="button"
@@ -181,11 +205,14 @@ onMounted(async () => {
         @mouseleave="nameVisible = false"
         @click="emit('quick')"
       >
-        <h3 class="cat-card__name" :class="{ show: nameVisible }">{{ product.name }}</h3>
+        <h3 class="cat-card__name" :class="{ show: nameVisible }">
+          {{ product.name }}
+        </h3>
       </button>
 
       <p class="cat-card__meta">
-        <span>★ {{ product.rating }}</span><span>{{ product.sold }} đã bán</span>
+        <span>★ {{ product.rating }}</span
+        ><span>{{ product.sold }} đã bán</span>
       </p>
       <p
         v-if="stockLabel"
@@ -225,6 +252,8 @@ onMounted(async () => {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
   user-select: none;
   opacity: 0;
   /* the sliding shelf type: Barlow Condensed, the one condensed voice on the page */
@@ -233,7 +262,7 @@ onMounted(async () => {
   font-style: italic;
   /* both poster lines share one size, so the name and the slogan read as a pair */
   font-size: var(--hs, 22cqw);
-  line-height: 0.86;
+  line-height: 1.25;
   letter-spacing: -0.005em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -401,7 +430,7 @@ onMounted(async () => {
   height: 2px;
   margin-top: -1px;
   border-radius: 2px;
-  background: #1a1a1a;   /* ← đen, không dùng currentColor (trắng) nữa */
+  background: #1a1a1a; /* ← đen, không dùng currentColor (trắng) nữa */
 }
 /* left column: hole 4px in from the tag's right edge, string up and to the right */
 .cat-card__tag--hang-left {
@@ -568,29 +597,39 @@ onMounted(async () => {
   font-weight: 800;
   line-height: 1.18;
   letter-spacing: var(--tracking-display);
+  /* tên dài không bao giờ bị cắt: bao đóng trong plate, xeb ngang nếu cần */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
 /* ===== product name hover: word-by-word split reveal ===== */
 .cat-card__name-btn::after {
   content: attr(data-name);
   display: block;
-  font: 800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font:
+    800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed",
+    "Arial Narrow",
+    Impact,
+    sans-serif;
   line-height: 1.2;
   letter-spacing: var(--tracking-display);
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
   pointer-events: none;
+  /* tên đầy đủ không tràn khi thể hiện */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .cat-card__name-btn:hover::after,
 .cat-card__name-btn:focus-within::after {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* the visible name stays on the plate, slides up on hover for the "split" glimpse */
-.cat-card__name {
-  display: block;
-  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
 .cat-card__name-btn:hover .cat-card__name,
 .cat-card__name-btn:focus-within .cat-card__name {
@@ -661,32 +700,5 @@ onMounted(async () => {
   .cat-card__shot {
     transform: translateX(-50%) rotate(var(--tilt, 3deg)) !important;
   }
-/* ===== product name hover: split bay tách 2 dòng (override) ===== */
-.cat-card__name {
-  display: block;
-  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
-}
-.cat-card__name-btn:hover .cat-card__name,
-.cat-card__name-btn:focus-within .cat-card__name {
-  transform: translateY(-10px);
-  color: var(--on-cream);
-}
-.cat-card__name-btn::after {
-  content: attr(data-name);
-  display: block;
-  font: 800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
-  line-height: 1.2;
-  letter-spacing: var(--tracking-display);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
-  pointer-events: none;
-  color: var(--c);
-}
-.cat-card__name-btn:hover::after,
-.cat-card__name-btn:focus-within::after {
-  opacity: 1;
-  transform: translateY(0);
-}
 }
 </style>

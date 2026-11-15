@@ -1,939 +1,716 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import {
   ChevronLeft,
   ChevronRight,
   ShoppingBag,
-  Sparkles,
-  Utensils,
+  CheckCircle2,
 } from "lucide-vue-next";
-import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
+import drinkImg from "../../assets/products/drinks.webp";
+import noodleImg from "../../assets/products/noodles.webp";
+import seaweedImg from "../../assets/products/candy.webp";
+import spicyImg from "../../assets/products/spicy.webp";
 
-const store = useProductStore();
 const cart = useCartStore();
-const sectionEl = ref(null);
 const index = ref(0);
-let rayObserver;
-let sectionIsInView = false;
+const addedFeedback = ref(false);
+let feedbackTimer;
+let touchStartX = 0;
 
-function syncRayAnimation() {
-  sectionEl.value?.classList.toggle(
-    "dc--rays-paused",
-    !sectionIsInView || document.hidden,
-  );
-}
+const vnd = (n) => `${n.toLocaleString("vi-VN")}₫`;
 
-onMounted(() => {
-  if (!("IntersectionObserver" in window)) return;
-
-  rayObserver = new IntersectionObserver(([entry]) => {
-    sectionIsInView = entry.isIntersecting;
-    syncRayAnimation();
-  });
-  rayObserver.observe(sectionEl.value);
-  document.addEventListener("visibilitychange", syncRayAnimation);
-});
-
-onBeforeUnmount(() => {
-  rayObserver?.disconnect();
-  document.removeEventListener("visibilitychange", syncRayAnimation);
-});
-
-/*
- * Per-combo palette accents keep each product card's edge and shadow tied to its
- * combo while the shared cream surface keeps the text contrast consistent.
- */
-const PALETTES = [
-  ["#c8192a", "#a83a09", "#921520"], // Cứu deadline  — đỏ / cam đất
-  ["#0a5c3e", "#0e7a52"], // Sạc lại       — xanh lá sâu
-  ["#4a1275", "#7a32a8", "#9640c4", "#2d0d5a"], // Hộp chia team — tím
-];
-
-/*
- * Tagline ngắn per-product — tạo cấu trúc 3 tầng: NAME → tagline → price
- * giống LEAFZILLA / "Greens stacked with attitude" / ₦5,000 trong Image 1.
- * Extend bảng này khi thêm sản phẩm mới vào store.
- */
-const ITEM_TAGS = {
-  1: "Giòn rụm · Cay phê",
-  2: "Bùi béo · Healthy",
-  3: "Nóng hổi · Đậm vị",
-  4: "Giải khát tức thì",
-  6: "Dẻo dai · Trái cây",
-  8: "Thanh vị · Nhiệt đới",
+const PRODUCTS = {
+  noodle: {
+    id: "noodle",
+    name: "Mì ly vị tôm cay",
+    price: 28000,
+    image: noodleImg,
+  },
+  drink: {
+    id: "drink",
+    name: "Soda trái cây 330ml",
+    price: 16000,
+    image: drinkImg,
+  },
+  seaweed: {
+    id: "seaweed",
+    name: "Snack rong biển 40g",
+    price: 18000,
+    image: seaweedImg,
+  },
+  spicy: {
+    id: "spicy",
+    name: "Khoai tây chiên cay 50g",
+    price: 20000,
+    image: spicyImg,
+  },
 };
 
-const combos = computed(() =>
-  [
-    {
-      name: "Cứu deadline",
-      tag: "MÌ · NƯỚC · SNACK",
-      ids: [3, 4, 1],
-      price: 39000,
-      color: "#b81f2b",
-      copy: "Cứu đói nhanh trước một buổi họp dài.",
-    },
-    {
-      name: "Sạc lại buổi chiều",
-      tag: "HẠT · NƯỚC",
-      ids: [2, 4],
-      price: 25000,
-      color: "#137c58",
-      copy: "Nhẹ bụng nhưng vẫn đủ năng lượng cho buổi chiều.",
-    },
-    {
-      name: "Hộp chia team",
-      tag: "4 MÓN CHIA SẺ",
-      ids: [1, 8, 6, 4],
-      price: 45000,
-      color: "#7a32a8",
-      copy: "Một combo vui vẻ để chia cùng đồng đội.",
-    },
-  ].map((c, ci) => {
-    const pal = PALETTES[ci];
-    const items = c.ids
-      .map((id, ii) => {
-        const p = store.products.find((x) => x.id === id);
-        return p ? { ...p, cardBg: pal[ii % pal.length] } : null;
-      })
-      .filter(Boolean);
-    const old = items.reduce((s, p) => s + p.price, 0);
-    return { ...c, items, old, save: old - c.price };
-  }),
-);
+const LAYOUTS = {
+  2: [
+    { x: 0, b: 3, w: 58, z: 3, r: -3 },
+    { x: 40, b: 12, w: 60, z: 2, r: 4 },
+  ],
+  3: [
+    { x: 0, b: 3, w: 50, z: 3, r: -3 },
+    { x: 26, b: 18, w: 48, z: 2, r: 3 },
+    { x: 54, b: 3, w: 46, z: 4, r: 5 },
+  ],
+  4: [
+    { x: 0, b: 3, w: 42, z: 3, r: -4 },
+    { x: 19, b: 27, w: 42, z: 1, r: 2 },
+    { x: 40, b: 3, w: 42, z: 4, r: -2 },
+    { x: 60, b: 25, w: 40, z: 2, r: 5 },
+  ],
+};
 
-const current = computed(() => combos.value[index.value]);
+const COMBOS = [
+  {
+    kicker: "COMBO OFFER",
+    name: "CỨU ĐÓI GIỮA CA",
+    tag: "MÌ · NƯỚC",
+    ids: ["noodle", "drink"],
+    price: 35000,
+    accent: "#E52521",
+    copy: "Tô mì tôm cay nóng hổi đi cùng lon soda trái cây mát lạnh, xong bữa chỉ trong 5 phút.",
+  },
+  {
+    kicker: "SNACK TIME",
+    name: "CHILL BUỔI CHIỀU",
+    tag: "SNACK · NƯỚC",
+    ids: ["spicy", "seaweed", "drink"],
+    price: 42000,
+    accent: "#D9381E",
+    copy: "Một gói cay giòn, một gói rong biển thanh nhẹ, thêm lon soda để cân vị.",
+  },
+  {
+    kicker: "HEALTHY DEAL",
+    name: "NHẸ BỤNG ĐỦ VỊ",
+    tag: "RONG BIỂN · NƯỚC",
+    ids: ["seaweed", "drink"],
+    price: 29000,
+    accent: "#1F7A3A",
+    copy: "Rong biển giòn ít béo, không bột ngọt, đi cùng lon soda trái cây thật.",
+  },
+  {
+    kicker: "PARTY PACK",
+    name: "HỘP CHIA TEAM",
+    tag: "4 MÓN CHIA SỂ",
+    ids: ["noodle", "drink", "seaweed", "spicy"],
+    price: 69000,
+    accent: "#C81D25",
+    copy: "Gom đủ 4 món best-seller để cả nhóm cùng nhâm nhi.",
+  },
+].map((c) => {
+  const items = c.ids.map((id) => PRODUCTS[id]);
+  const old = items.reduce((s, p) => s + p.price, 0);
+  return { ...c, items, old, save: old - c.price };
+});
+
+const maxSavePct = Math.max(
+  ...COMBOS.map((c) => Math.round((c.save / c.old) * 100)),
+);
+const tickerText =
+  `DOP COMBO OFFER · GOM VUI GIÁ NHẸ · TIẾT KIỆM TỚI ${maxSavePct}% · `.repeat(
+    4,
+  );
+
+const current = computed(() => COMBOS[index.value]);
+const kickerLines = computed(() => current.value.kicker.split(" "));
 
 function move(d) {
-  index.value = (index.value + d + combos.value.length) % combos.value.length;
+  index.value = (index.value + d + COMBOS.length) % COMBOS.length;
+}
+
+function itemStyle(i) {
+  const set = LAYOUTS[current.value.items.length] ?? LAYOUTS[4];
+  const l = set[i] ?? set[set.length - 1];
+  return {
+    left: `${l.x}%`,
+    bottom: `${l.b}%`,
+    width: `${l.w}%`,
+    zIndex: l.z,
+    "--r": `${l.r}deg`,
+    "--i": i,
+  };
 }
 
 function add() {
   current.value.items.forEach((p) => cart.add(p, 1));
+  addedFeedback.value = true;
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => (addedFeedback.value = false), 1600);
 }
+
+function onTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+}
+
+function onTouchEnd(e) {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 40) move(dx > 0 ? -1 : 1);
+}
+
+onBeforeUnmount(() => clearTimeout(feedbackTimer));
 </script>
 
 <template>
-  <section ref="sectionEl" class="dc" :style="{ '--cc': current.color }">
-    <svg class="dc__defs" aria-hidden="true" focusable="false">
-      <defs>
-        <clipPath id="dc-trapezoid-shape" clipPathUnits="objectBoundingBox">
-          <path
-            d="M .1 0 H .88 Q .96 0 .96 .08 V .72 Q .96 .8 .88 .82 L .12 1 Q .04 1 .04 .92 V .08 Q .04 0 .1 0 Z"
-          />
-        </clipPath>
-      </defs>
-    </svg>
+  <section
+    class="fp-combo"
+    :style="{ '--fp-red': current.accent }"
+    tabindex="0"
+    aria-roledescription="carousel"
+    aria-label="Combo ưu đãi"
+    @keydown.left.prevent="move(-1)"
+    @keydown.right.prevent="move(1)"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+    touch-action="pan-x"
+  >
+    <!-- Branding đơn giản của khu vực (kicker + title), không dùng SectionHeader -->
+    <header class="fp-combo__eyebrow">
+      <span class="fp-combo__kicker">DOP COMBO</span>
+      <h2 class="fp-combo__section-title">MÀU SẮC MỚI</h2>
+    </header>
 
-    <div class="dc__layout">
-      <!-- ── Left: copy + pricing + nav ── -->
-      <aside class="dc__left">
-        <p class="dc__eyebrow">
-          <Sparkles :size="14" aria-hidden="true" />
-          DOP COMBO
-        </p>
+    <!-- POSTER NGANG 16:9 — mọi kích thước bên trong tính theo bề rộng poster (cqw) -->
+    <div class="fp-combo__stage">
+      <div class="fp-combo__bg" aria-hidden="true">
+        <svg viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice">
+          <g fill="none" stroke="#FFF9EE" stroke-width="2.2" opacity="0.6">
+            <path
+              v-for="n in 18"
+              :key="n"
+              :d="`M -100 ${n * 48 - 200} Q 250 ${n * 48 - 110}, 600 ${n * 48 - 40} T 1350 ${n * 48 + 140}`"
+            />
+          </g>
+        </svg>
+        <div class="fp-combo__blob"></div>
+      </div>
 
-        <h2 class="dc__section-title">Gom vui.<br /><em>Giá nhẹ.</em></h2>
-        <p class="dc__copy">{{ current.copy }}</p>
-
-        <div class="dc__pricing">
-          <span class="dc__save-pill">
-            Tiết kiệm&nbsp;<strong
-              >{{ current.save.toLocaleString("vi-VN") }}₫</strong
-            >
-          </span>
-          <div class="dc__price-line">
-            <s>{{ current.old.toLocaleString("vi-VN") }} ₫</s>
-            <strong class="dc__price-new"
-              >{{ current.price.toLocaleString("vi-VN") }} ₫</strong
-            >
-          </div>
-        </div>
-
-        <button class="dc__cta" type="button" @click="add">
-          Thêm cả combo <ShoppingBag :size="16" aria-hidden="true" />
+      <div class="fp-combo__nav" role="group" aria-label="Chuyển combo">
+        <button
+          type="button"
+          class="fp-combo__nav-btn"
+          aria-label="Combo trước"
+          @click="move(-1)"
+        >
+          <ChevronLeft />
         </button>
+        <span class="fp-combo__nav-count" aria-live="polite">
+          {{ String(index + 1).padStart(2, "0") }} /
+          {{ String(COMBOS.length).padStart(2, "0") }}
+        </span>
+        <button
+          type="button"
+          class="fp-combo__nav-btn"
+          aria-label="Combo tiếp theo"
+          @click="move(1)"
+        >
+          <ChevronRight />
+        </button>
+      </div>
 
-        <div class="dc__nav" role="group" aria-label="Điều hướng combo">
-          <button type="button" aria-label="Combo trước" @click="move(-1)">
-            <ChevronLeft :size="18" />
-          </button>
-          <span class="dc__nav-label" aria-live="polite">
-            {{ String(index + 1).padStart(2, "0") }} /
-            {{ String(combos.length).padStart(2, "0") }}
-          </span>
-          <button type="button" aria-label="Combo tiếp theo" @click="move(1)">
-            <ChevronRight :size="18" />
-          </button>
-        </div>
-      </aside>
+      <Transition name="fp-fade" mode="out-in">
+        <div :key="index" class="fp-combo__slide">
+          <h2 class="fp-combo__title">
+            <span class="fp-combo__kicker">
+              <span
+                v-for="(word, w) in kickerLines"
+                :key="w"
+                class="fp-combo__kicker-line"
+                >{{ word }}</span
+              >
+            </span>
+            <span class="fp-combo__name">{{ current.name }}</span>
+          </h2>
 
-      <!-- ── Right: big name + product strips ── -->
-      <Transition name="combo-swap" mode="out-in">
-        <div class="dc__right" :key="index">
-          <div class="dc__rays" aria-hidden="true" />
-          <p class="dc__tag">{{ current.tag }}</p>
-          <h2 class="dc__name">{{ current.name }}</h2>
+          <!-- Thẻ đỏ: giá hero "CHỈ / GIÁ / THÔI" + thanh trắng -->
+          <div class="fp-combo__red-card">
+            <span class="fp-combo__price-line">CHỈ</span>
+            <strong class="fp-combo__price-line">{{
+              vnd(current.price)
+            }}</strong>
+            <span class="fp-combo__price-line">THÔI</span>
+            <span class="fp-combo__white-bar" aria-hidden="true"></span>
+          </div>
 
-          <ul
-            class="dc__strips"
-            :class="{
-              'dc__strips--2': current.items.length === 2,
-              'dc__strips--3': current.items.length === 3,
-              'dc__strips--4': current.items.length === 4,
-            }"
-            aria-label="Món trong combo"
-          >
-            <li
-              v-for="(item, i) in current.items"
+          <div class="fp-combo__glow" aria-hidden="true"></div>
+          <div class="fp-combo__cluster">
+            <div
+              v-for="(item, idx) in current.items"
               :key="item.id"
-              :class="[
-                'dc__strip',
-                {
-                  'dc__strip--flip': i % 2 !== 0,
-                  'dc__strip--solo': current.items.length === 1,
-                },
-              ]"
-              :style="{ '--n': i, '--bc': item.cardBg }"
+              class="fp-combo__product"
+              :style="itemStyle(idx)"
             >
-              <h3 class="dc__strip-name">{{ item.name }}</h3>
-              <p class="dc__strip-meta">
-                <Utensils :size="14" aria-hidden="true" />
-                <span>{{ ITEM_TAGS[item.id] ?? item.categoryName }}</span>
-              </p>
-              <p class="dc__strip-price">
-                {{ item.price.toLocaleString("vi-VN") }}₫
-              </p>
-              <div class="dc__img-wrap" aria-hidden="true">
-                <img
-                  :src="item.image"
-                  :alt="item.name"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            </li>
-          </ul>
+              <img
+                :src="item.image"
+                :alt="item.name"
+                :title="item.name"
+                decoding="async"
+                width="400"
+                height="300"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
       </Transition>
     </div>
 
-    <!-- Scrolling ticker -->
-    <div class="dc__ticker" aria-hidden="true">
-      <div class="dc__ticker-track">
-        <span
-          >DOP MIX · LOVE PRICE · DOP MIX · LOVE PRICE · DOP MIX · LOVE PRICE
-          &nbsp;&nbsp;&nbsp;&nbsp;</span
-        >
-        <span
-          >DOP MIX · LOVE PRICE · DOP MIX · LOVE PRICE · DOP MIX · LOVE PRICE
-          &nbsp;&nbsp;&nbsp;&nbsp;</span
-        >
+    <!-- Thanh mua hàng dưới poster -->
+    <Transition name="fp-fade" mode="out-in">
+      <div :key="index" class="fp-combo__bar">
+        <div class="fp-combo__bar-info">
+          <p class="fp-combo__desc">{{ current.copy }}</p>
+          <ul class="fp-combo__items" aria-label="Combo gồm">
+            <li v-for="item in current.items" :key="item.id">
+              <strong>{{ item.name }}</strong> {{ vnd(item.price) }}
+            </li>
+          </ul>
+        </div>
+        <div class="fp-combo__bar-buy">
+          <p class="fp-combo__meta">
+            Mua lẻ {{ vnd(current.old) }} període
+            <span class="fp-combo__save"
+              >Tiết kiệm {{ vnd(current.save) }}</span
+            >
+          </p>
+          <button
+            type="button"
+            class="fp-combo__cta"
+            :class="{ 'is-added': addedFeedback }"
+            aria-live="polite"
+            @click="add"
+          >
+            <template v-if="addedFeedback"
+              ><CheckCircle2 :size="18" /> Đã thêm vào giỏ</template
+            >
+            <template v-else
+              ><ShoppingBag :size="18" /> Thêm combo vào giỏ</template
+            >
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <div class="fp-combo__ticker" aria-hidden="true">
+      <div class="fp-combo__ticker-track">
+        <span v-for="n in 2" :key="n">{{ tickerText }}</span>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-/* No local web font any more: the section used Barlow Condensed italic 900 for its
-   display lines, which is neither of the two families the project keeps (and italic
-   condensed has no Vietnamese mark coverage worth trusting). It now uses the same
-   --font-display as every other headline. */
+.fp-combo {
+  --fp-red: var(--red, #e52521);
+  --fp-cream: var(--cream, #fff7ed);
+  --fp-cream-light: #fffdf7;
+  --fp-ink: var(--ink, #18181b);
+  --fp-yellow: var(--yellow, #ffd233);
+  --fp-display: var(--font-display, "Bricolage Grotesque", sans-serif);
+  max-width: 100%;
+  margin: 0;
+  padding: clamp(12px, 3vw, 32px) var(--edge, 20px);
+  color: var(--fp-ink);
+  font-family: var(--font-ui, "Be Vietnam Pro", sans-serif);
+  outline: none;
+}
+.fp-combo:focus-visible .fp-combo__stage {
+  outline: 3px solid var(--fp-red);
+  outline-offset: 4px;
+}
 
-/* ─── Shell ─── */
-.dc {
-  --cc: #b81f2b;
+/* ---------- Section branding ---------- */
+.fp-combo__eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.fp-combo__kicker {
+  font-family: var(--fp-display);
+  font-size: max(11px, 0.9cqw);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fp-red);
+  line-height: 1;
+}
+.fp-combo__section-title {
+  margin: 0;
+  font-family: var(--fp-display);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--fp-ink);
+}
+
+/* ---------- Poster ---------- */
+.fp-combo__stage {
   position: relative;
+  container-type: inline-size;
+  aspect-ratio: 16 / 9;
+  background: var(--fp-cream);
+  border-radius: clamp(16px, 2.4vw, 28px);
   overflow: hidden;
-  background:
-    radial-gradient(
-      ellipse at 88% 12%,
-      color-mix(in srgb, var(--cc) 18%, transparent),
-      transparent 42%
-    ),
-    linear-gradient(132deg, #ffd22d 0%, #ffad1b 54%, #f47718 100%);
-  color: #fff;
-  isolation: isolate;
-  transition: background-color 0.55s ease;
 }
-
-/* ─── Sunburst rays ─── */
-.dc__rays {
+.fp-combo__bg svg {
   position: absolute;
-  z-index: -1;
-  top: 56%;
-  left: 50%;
-  width: min(100%, 820px);
-  aspect-ratio: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.fp-combo__blob {
+  position: absolute;
+  top: -9cqw;
+  right: -7cqw;
+  width: 26cqw;
+  height: 19cqw;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background:
-    radial-gradient(circle, rgb(255 244 220 / 0.2), transparent 62%),
-    repeating-conic-gradient(
-      from -4deg at 50% 50%,
-      rgb(92 37 10 / 0.055) 0deg 5deg,
-      transparent 5deg 12deg
-    );
-  opacity: 0.82;
-  pointer-events: none;
-  animation: dc-rays-rotation 72s linear infinite;
+  background: var(--fp-red);
+  transition: background-color 0.4s ease;
 }
 
-@keyframes dc-rays-rotation {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
+/* ---------- Nav ---------- */
+.fp-combo__nav {
+  position: absolute;
+  top: 2cqw;
+  right: 3.2cqw;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  padding: 0.5cqw;
+  border-radius: var(--r-pill);
+  background: var(--fp-cream-light);
+  box-shadow: 0 0.4cqw 1.2cqw rgb(24 24 27 / 0.25);
+}
+.fp-combo__nav-btn {
+  display: grid;
+  place-items: center;
+  width: max(44px, 3.4cqw);
+  height: max(44px, 3.4cqw);
+  border: 0;
+  border-radius: 50%;
+  background: var(--fp-red);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.4s ease;
+}
+.fp-combo__nav-btn:hover {
+  transform: scale(1.1);
+}
+.fp-combo__nav-btn svg {
+  width: 62%;
+  height: 62%;
+}
+.fp-combo__nav-count {
+  min-width: 5.2em;
+  text-align: center;
+  font-size: max(11px, 1.2cqw);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--fp-red);
+}
+
+/* ---------- Slide ---------- */
+.fp-combo__slide {
+  position: absolute;
+  inset: 0;
+}
+.fp-combo__title {
+  position: absolute;
+  top: 8cqw;
+  left: 4.2cqw;
+  z-index: 2;
+  margin: 0;
+  font-family: var(--fp-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--fp-red);
+  transition: color 0.4s ease;
+}
+.fp-combo__kicker {
+  display: block;
+  font-size: 8.2cqw;
+  line-height: 0.9;
+}
+.fp-combo__kicker-line {
+  display: block;
+}
+.fp-combo__name {
+  display: block;
+  margin-top: 1.3cqw;
+  font-size: 2.6cqw;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  color: var(--fp-ink);
+}
+
+/* ---------- Red price card ---------- */
+.fp-combo__red-card {
+  position: absolute;
+  top: 29cqw;
+  left: 4.2cqw;
+  right: 4.2cqw;
+  height: 23cqw;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 3.6cqw;
+  border-radius: 4cqw;
+  background: var(--fp-red);
+  color: #fff;
+  box-shadow:
+    0 1.2cqw 0 #fff,
+    0 2.6cqw 3.2cqw rgb(120 20 15 / 0.22);
+  transition: background-color 0.4s ease;
+}
+.fp-combo__price-line {
+  display: block;
+  font-family: var(--fp-display);
+  font-size: 5.4cqw;
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.fp-combo__white-bar {
+  display: block;
+  width: 9cqw;
+  height: 1.15cqw;
+  margin-top: 1.3cqw;
+  border-radius: 0.2cqw;
+  background: #fff;
+}
+
+/* ---------- Product cluster ---------- */
+.fp-combo__glow {
+  position: absolute;
+  top: 4cqw;
+  left: 38cqw;
+  width: 60cqw;
+  height: 50cqw;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 0.35),
+    transparent 72%
+  );
+}
+.fp-combo__cluster {
+  position: absolute;
+  top: 2.5cqw;
+  left: 38cqw;
+  width: 60cqw;
+  height: 52cqw;
+  z-index: 3;
+  pointer-events: none;
+}
+.fp-combo__product {
+  position: absolute;
+  transform: rotate(var(--r, 0deg));
+  pointer-events: auto;
+  animation: fp-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+  transition: transform 0.3s ease;
+}
+.fp-combo__product:hover {
+  transform: rotate(var(--r, 0deg)) scale(1.04);
+}
+.fp-combo__product img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 1.4cqw 1.6cqw rgb(24 24 27 / 0.35));
+}
+@keyframes fp-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8%) rotate(var(--r, 0deg)) scale(0.9);
   }
 }
 
-.dc--rays-paused .dc__rays {
-  animation-play-state: paused;
-}
-
-.dc__right {
-  position: relative;
-  isolation: isolate;
-}
-
-.dc__defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-/* ─── Layout grid: two columns on the page measure ─── */
-.dc__layout {
-  position: relative;
-  z-index: 1;
+/* ---------- Buy bar ---------- */
+.fp-combo__bar {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: clamp(24px, 3.5vw, 64px);
-  /* same 12px edge as the shelves, the grids and the bestseller band, so the combo
-     copy starts on the same line as every other section */
-  padding: var(--sp-6) var(--edge) var(--sp-5);
-  min-height: 440px;
+  gap: 16px 28px;
+  margin-top: 14px;
+  padding: 16px 22px;
+  border-radius: var(--radius);
+  background: var(--fp-cream-light);
+  border: 2px solid color-mix(in srgb, var(--fp-red) 18%, transparent);
 }
-
-/* ─── Left panel ─── */
-.dc__left {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.9rem, 1.5vw, 1.3rem);
-  padding-inline: clamp(12px, 1.4vw, 20px);
+.fp-combo__desc {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.45;
 }
-
-.dc__eyebrow {
+.fp-combo__items {
   display: flex;
-  width: fit-content;
-  align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0;
   padding: 0;
-  color: #57260f;
-  font-size: var(--fs-xs);
-  font-weight: 800;
-  letter-spacing: var(--tracking-kicker);
-  line-height: 1.2;
-  text-transform: uppercase;
+  list-style: none;
 }
-
-.dc__section-title {
-  margin: 0;
-  color: #54220e;
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 800;
-  letter-spacing: var(--tracking-display);
-  line-height: var(--lh-display);
-  text-wrap: balance;
+.fp-combo__items li {
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--fp-red) 25%, transparent);
+  font-size: 0.82rem;
 }
-
-.dc__section-title em {
-  color: var(--cream);
-  font-style: normal;
-  text-shadow: 1px 2px 0 rgb(82 34 13 / 0.14);
-}
-
-.dc__copy {
-  margin: 0;
-  max-width: min(100%, 45ch);
-  color: #63381f;
-  font-family: var(--font-ui);
-  font-size: 1rem;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-
-.dc__pricing {
+.fp-combo__bar-buy {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  align-items: flex-end;
+  gap: 10px;
 }
-
-.dc__save-pill {
-  display: inline-flex;
-  align-items: center;
-  background: rgb(0 0 0 / 0.35);
-  border-radius: 100px;
-  padding: 0.3rem 0.9rem;
-  font-size: var(--fs-xs);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  width: fit-content;
-}
-
-.dc__save-pill strong {
-  font-size: var(--fs-md);
-  font-weight: 800;
-  margin-left: 2px;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.dc__price-line {
+.fp-combo__meta {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.9rem;
 }
-
-.dc__price-line s {
-  font-size: var(--fs-sm);
-  color: #713e24;
-  text-decoration-thickness: 2px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.fp-combo__meta s {
+  color: color-mix(in srgb, var(--fp-ink) 50%, transparent);
 }
-
-.dc__price-new {
-  font-family: var(--font-display);
-  color: #52220d;
-  font-size: clamp(28px, 2.4vw, 36px);
+.fp-combo__save {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--fp-yellow);
+  color: #5a4400;
   font-weight: 800;
-  letter-spacing: var(--tracking-display);
-  line-height: var(--lh-display);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  font-size: 0.82rem;
 }
-
-/* CTA — the card's plate language: ink rule, cream fill, hard shadow, 48px tall */
-.dc__cta {
+.fp-combo__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  background: var(--cream);
-  color: var(--ink);
-  border: var(--bw-bold) solid var(--ink);
+  min-width: max(180px, 24cqw);
+  padding: max(10px, 1.4cqw) max(20px, 2.6cqw);
+  border: 0;
   border-radius: var(--r-pill);
-  padding: 0 20px;
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
+  background: var(--fp-red);
+  color: #fff;
+  font: inherit;
   font-weight: 800;
   cursor: pointer;
-  width: fit-content;
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: var(--shadow);
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    background-color 0.3s ease;
+}
+.fp-combo__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--fp-ink);
+}
+.fp-combo__cta:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--fp-ink);
+}
+.fp-combo__cta.is-added {
+  background: var(--green-ink, #156b3d);
 }
 
-.dc__cta:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--ink);
-}
-
-.dc__cta:active {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-
-.dc__cta:focus-visible,
-.dc__nav button:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px var(--cream);
-}
-
-/* Nav — 44px targets, the project's touch floor (the brief asks for 40+) */
-.dc__nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.dc__nav button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: var(--bw-bold) solid #57260f;
-  background: transparent;
-  color: #57260f;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.dc__nav button:hover {
-  background: rgb(255 253 247 / 0.6);
-}
-
-.dc__nav-label {
-  font-size: var(--fs-sm);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #57260f;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ─── Right panel ─── */
-.dc__right {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: min(100%, 820px);
-  justify-self: start;
-}
-
-.dc__tag {
-  margin: 0;
-  color: #57260f;
-  font-size: var(--fs-meta);
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-/* Big headline — the shared display face, no local condensed italic */
-.dc__name {
-  font-family: var(--font-display);
-  color: #54220e;
-  font-weight: 800;
-  font-style: normal;
-  font-size: clamp(2.5rem, 4.5vw, 4rem);
-  line-height: var(--lh-display);
-  letter-spacing: var(--tracking-display);
-  text-transform: uppercase;
-  margin: 0 0 0.6rem;
-  padding-top: 0.06em;
-  overflow-wrap: break-word;
-  text-wrap: balance;
-  text-shadow: 2px 2px 0 rgb(255 253 247 / 0.28);
-}
-
-/* ─── Product strips – REDESIGNED ─── */
-.dc__strips {
-  position: relative;
-  list-style: none;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 820px;
-  row-gap: 7px;
-  align-items: stretch;
-  padding: 4px 3px;
-  border-radius: 30px 12px 30px 12px;
-}
-
-.dc__strip {
-  --dc-image-size: clamp(176px, 15vw, 232px);
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: repeat(3, max-content);
-  align-content: center;
-  align-items: center;
-  row-gap: 0.3rem;
-  padding-right: calc(var(--dc-image-size) + 1rem);
-  background: transparent;
-  color: #552510;
-  border: 0;
-  border-radius: 18px 8px;
-  min-height: 152px;
-  width: 100%;
-  overflow: visible;
-  animation: strip-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--n, 0) * 0.07s + 0.14s);
-}
-
-.dc__strip::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  clip-path: url(#dc-trapezoid-shape);
-  background: radial-gradient(
-    ellipse 78% 120% at 82% 50%,
-    rgb(255 253 244 / 0.99) 0%,
-    color-mix(in srgb, var(--bc) 9%, #fff1dc) 54%,
-    color-mix(in srgb, var(--bc) 24%, #f3c77a) 100%
-  );
-  filter: drop-shadow(0 6px 12px rgb(64 28 8 / 0.2));
-  opacity: 0.97;
-  pointer-events: none;
-  transition:
-    opacity 0.25s ease,
-    filter 0.25s ease;
-}
-
-.dc__strip--flip::before {
-  transform: scaleX(-1);
-  background: radial-gradient(
-    ellipse 78% 120% at 18% 50%,
-    rgb(255 253 244 / 0.99) 0%,
-    color-mix(in srgb, var(--bc) 9%, #fff1dc) 54%,
-    color-mix(in srgb, var(--bc) 24%, #f3c77a) 100%
-  );
-}
-
-.dc__strip:hover::before {
-  opacity: 1;
-  filter: drop-shadow(0 9px 16px rgb(64 28 8 / 0.25));
-}
-
-.dc__strip--solo {
-  border-radius: 28px 10px 28px 10px;
-}
-
-.dc__strip--flip {
-  padding-right: 0;
-  padding-left: calc(var(--dc-image-size) + 1rem);
-}
-
-.dc__strip--flip .dc__strip-meta {
-  justify-content: flex-end;
-}
-
-.dc__strip-name {
-  grid-column: 1;
-  grid-row: 1;
-  padding-inline: 1.5rem;
-  text-align: left;
-}
-
-.dc__strip-meta {
-  grid-column: 1;
-  grid-row: 2;
-  padding-inline: 1.5rem;
-}
-
-.dc__strip-price {
-  grid-column: 1;
-  grid-row: 3;
-  justify-self: start;
-  margin-inline: 1.5rem 0;
-}
-
-.dc__strip--flip .dc__strip-name {
-  text-align: right;
-}
-
-.dc__strip--flip .dc__strip-price {
-  justify-self: end;
-  margin-inline: 0 1.5rem;
-}
-
-@keyframes strip-enter {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.97);
-  }
-}
-
-/* ── Floating image ── */
-.dc__img-wrap {
-  position: absolute;
-  top: 50%;
-  right: -0.25rem;
-  z-index: 1;
-  flex-shrink: 0;
-  width: var(--dc-image-size);
-  height: var(--dc-image-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-  transform: translateY(-50%);
-}
-
-.dc__strip--flip .dc__img-wrap {
-  right: auto;
-  left: -0.25rem;
-}
-
-.dc__img-wrap img {
-  width: 100%;
-  height: 100%;
-  max-height: 130%;
-  object-fit: contain;
-  transform: scale(1.3) translateY(-5%);
-  filter: drop-shadow(0 10px 13px rgb(63 27 9 / 0.28));
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.dc__strip:hover .dc__img-wrap img {
-  transform: scale(1.4) translateY(-8%);
-}
-
-/* Item line 1 — name, in the display face */
-.dc__strip-name {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-style: normal;
-  font-size: clamp(1rem, 1.25vw, 1.125rem);
-  color: #642811;
-  text-transform: uppercase;
-  line-height: var(--lh-h2);
-  letter-spacing: var(--tracking-display);
-  margin: 0;
-  padding: 0 1.5rem;
-  text-wrap: balance;
-}
-
-/* Item line 2 — what it tastes like, with a 14px plate icon so the line reads as
-   "a thing you eat", not as a third tier of type */
-.dc__strip-meta {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding-inline: 1.5rem;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  color: #8f4c2b;
-}
-
-.dc__strip-meta svg {
-  flex-shrink: 0;
-}
-
-/* Item line 3 — price */
-.dc__strip-price {
-  position: relative;
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-height: 34px;
-  margin: 4px 1.5rem 0;
-  padding: 5px 15px;
-  border: 0;
-  border-radius: var(--r-pill);
-  background: #52220d;
-  color: var(--cream);
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-  white-space: nowrap;
-  box-shadow: 0 4px 0 rgb(64 28 8 / 0.18);
-}
-
-.dc__strip--flip .dc__strip-price {
-  justify-self: end;
-}
-
-/* ─── Ticker: a 34px band with 12px type, not a 22px sliver of 10px caps ─── */
-.dc__ticker {
-  position: relative;
-  z-index: 1;
+/* ---------- Ticker ---------- */
+.fp-combo__ticker {
+  margin-top: 14px;
   overflow: hidden;
-  background: rgb(0 0 0 / 0.35);
-  padding: 0.6rem 0;
-}
-
-.dc__ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: dc-ticker 26s linear infinite;
-}
-
-.dc__ticker-track span {
-  flex-shrink: 0;
-  font-size: var(--fs-xs);
+  border-radius: var(--r-pill);
+  background: var(--fp-ink);
+  color: var(--fp-cream);
+  font-size: 0.78rem;
   font-weight: 800;
-  line-height: 1.2; /* stacked diacritics need the extra baseline room */
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--cream);
+  letter-spacing: 0.1em;
 }
-
-@keyframes dc-ticker {
+.fp-combo__ticker-track {
+  display: flex;
+  width: max-content;
+  padding: 8px 0;
+  animation: fp-marquee 40s linear infinite;
+}
+.fp-combo__ticker-track span {
+  white-space: nowrap;
+}
+@keyframes fp-marquee {
   to {
     transform: translateX(-50%);
   }
 }
 
-/* ─── Combo swap transition ─── */
-.combo-swap-enter-active,
-.combo-swap-leave-active {
-  transition: opacity 0.22s ease;
+/* ---------- Transitions ---------- */
+.fp-fade-enter-active,
+.fp-fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
-
-.combo-swap-enter-from,
-.combo-swap-leave-to {
+.fp-fade-enter-from {
   opacity: 0;
+  transform: translateY(8px);
+}
+.fp-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
-/* ─── Reduced motion: the marquee stops dead, strips are already in place ─── */
+/* ---------- Màn hình nhỏ ---------- */
+@container (max-width: 560px) {
+  .fp-combo__eyebrow,
+  .fp-combo__nav-count {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .fp-combo__bar {
+    grid-template-columns: 1fr;
+  }
+  .fp-combo__bar-buy {
+    align-items: stretch;
+  }
+  .fp-combo__meta {
+    justify-content: space-between;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .dc__rays {
+  .fp-combo__product,
+  .fp-combo__ticker-track {
     animation: none;
   }
-  .dc__ticker-track {
-    animation: none;
-  }
-  .dc__strip {
-    animation: none;
-  }
-  .dc__strip,
-  .dc__img-wrap img,
-  .dc__cta,
-  .combo-swap-enter-active,
-  .combo-swap-leave-active {
+  .fp-fade-enter-active,
+  .fp-fade-leave-active {
     transition: none;
   }
 }
-
-/* ─── Responsive ─── */
-@media (max-width: 960px) {
-  .dc__layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--sp-3);
-    padding: var(--sp-5) var(--edge) var(--sp-4);
-    min-height: 0;
-  }
-
-  /* Name + strips lên trước, copy/pricing xuống sau */
-  .dc__right {
-    order: -1;
-  }
-
-  .dc__name {
-    font-size: clamp(2rem, 8vw, 3.25rem);
-  }
-
-  .dc__right {
-    width: 100%;
-  }
-
-  .dc__strips {
-    max-width: 820px;
-  }
-
-  .dc__copy {
-    max-width: min(100%, 45ch);
-  }
+.fp-combo__nav-btn:focus-visible,
+.fp-combo__cta:focus-visible {
+  outline: 3px solid var(--fp-ink, #18181b);
+  outline-offset: 2px;
 }
-
-@media (max-width: 600px) {
-  .dc__strip {
-    min-height: 112px;
-    border-radius: 15px 6px 15px 6px;
-  }
-
-  .dc__strips {
-    row-gap: 5px;
-    padding: 3px 2px;
-  }
-
-  .dc__img-wrap {
-    width: 96px;
-    height: 96px;
-  }
-
-  .dc__strip,
-  .dc__strips--2 .dc__strip,
-  .dc__strips--3 .dc__strip,
-  .dc__strips--4 .dc__strip {
-    --dc-image-size: 96px;
-    min-height: 112px;
-  }
-
-  .dc__strip-name,
-  .dc__strip-meta {
-    padding-inline: 0.8rem;
-  }
-
-  .dc__strip-meta {
-    font-size: var(--fs-xs);
-  }
-
-  .dc__strip-price {
-    min-height: 27px;
-    margin-top: 2px;
-    margin-inline: 0.8rem 0;
-    padding: 4px 11px;
-    font-size: var(--fs-xs);
-  }
-
-  .dc__strip--flip .dc__strip-price {
-    margin-inline: 0 0.8rem;
-  }
+.fp-combo__kicker,
+.fp-combo__section-title,
+.fp-combo__title,
+.fp-combo__name {
+  line-height: 1.05;
 }
-
-@media (min-width: 601px) {
-  .dc__strips--2 {
-    row-gap: 12px;
-  }
-
-  .dc__strips--2 .dc__strip {
-    --dc-image-size: clamp(180px, 16.8vw, 240px);
-    min-height: clamp(196px, 16vw, 238px);
-    width: 97%;
-  }
-
-  .dc__strips--2 .dc__strip--flip {
-    width: 93%;
-  }
-
-  .dc__strips--2 .dc__img-wrap {
-    width: var(--dc-image-size);
-    height: var(--dc-image-size);
-  }
-
-  .dc__strips--3 .dc__strip {
-    --dc-image-size: clamp(154px, 14.4vw, 206px);
-    min-height: clamp(160px, 13vw, 194px);
-    width: 97%;
-  }
-
-  .dc__strips--3 .dc__strip--flip {
-    width: 94%;
-  }
-
-  .dc__strips--3 .dc__img-wrap {
-    width: var(--dc-image-size);
-    height: var(--dc-image-size);
-  }
-
-  .dc__strips--4 .dc__strip {
-    --dc-image-size: clamp(136px, 12.4vw, 184px);
-    min-height: clamp(138px, 11.3vw, 172px);
-    width: 97%;
-  }
-
-  .dc__strips--4 .dc__strip--flip {
-    width: 94%;
-  }
-
-  .dc__strips--4 .dc__img-wrap {
-    width: var(--dc-image-size);
-    height: var(--dc-image-size);
-  }
+.fp-combo__desc {
+  line-height: 1.5;
+  max-width: 60ch;
+  text-wrap: pretty;
 }
 </style>

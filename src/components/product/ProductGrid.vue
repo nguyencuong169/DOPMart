@@ -13,6 +13,8 @@ defineProps({
   loading: { type: Boolean, default: false },
   skeletonCount: { type: Number, default: 8 },
   variant: { type: String, default: "grid" },
+  /* khi bật: ẩn thẻ thông tin dưới ảnh trên các card lưới (dùng tại ProductsView) */
+  hideCardInfo: { type: Boolean, default: false },
 });
 
 const store = useProductStore();
@@ -38,6 +40,7 @@ const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
       :product="p"
       :index="i"
       :variant="variant"
+      :hide-info="hideCardInfo"
       :favorited="favorites.has(p.id)"
       :stock="stockOf(p)"
       :floor="floor.floor"

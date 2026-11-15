@@ -44,7 +44,7 @@ function move(d) {
       <article class="favorite-main" :style="{ '--favorite-color': current.color }">
         <div class="favorite-image">
           <div class="favorite-giant">LOVE IT</div>
-          <img :src="current.image" :alt="current.name" loading="lazy" decoding="async" />
+          <img :src="current.image" :alt="current.name" loading="lazy" decoding="async" width="560" height="560" />
         </div>
         <div class="favorite-copy">
           <span>{{ current.categoryName }}</span>
@@ -65,7 +65,7 @@ function move(d) {
       </article>
       <button v-if="next" class="favorite-peek" @click="move(1)">
         <small>TIẾP THEO</small
-        ><img :src="next.image" :alt="next.name" loading="lazy" decoding="async" /><b>{{
+        ><img :src="next.image" :alt="next.name" loading="lazy" decoding="async" width="240" height="240" /><b>{{
           next.name
         }}</b
         ><span>{{ next.price.toLocaleString("vi-VN") }} ₫</span>
@@ -92,3 +92,24 @@ function move(d) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.favorite-peek:focus-visible,
+.favorite-controls button:focus-visible,
+.favorite-empty .primary:focus-visible {
+  outline: 3px solid var(--ink, #1a1a1a);
+  outline-offset: 2px;
+}
+.favorite-empty div {
+  width: 48px;
+  height: 48px;
+}
+.favorite-empty h3 {
+  line-height: 1.1;
+}
+.favorite-empty p {
+  line-height: 1.5;
+  max-width: 45ch;
+  text-wrap: pretty;
+}
+</style>

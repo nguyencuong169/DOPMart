@@ -129,7 +129,7 @@ function goTo(target) {
     left -= 1;
     go(current.value + 1);
     if (left > 0) {
-      stepTimer = setTimeout(beat, 400);
+      stepTimer = setTimeout(beat, 250);
     } else {
       stepTimer = null;
       settleTimer = setTimeout(() => {
@@ -380,6 +380,8 @@ onBeforeUnmount(() => {
           :loading="s.slot === 0 ? 'eager' : 'lazy'"
           :fetchpriority="s.slot === 0 ? 'high' : 'auto'"
           decoding="async"
+          width="560"
+          height="560"
         />
       </button>
     </div>
@@ -431,3 +433,27 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Focus-visible cho nút điều khiển hero (không bị včko bởi style.css global) */
+.hero-controls > button:focus-visible,
+.hero-dots button:focus-visible,
+.hero-controls .play:focus-visible,
+.hero-ring__item:focus-visible {
+  outline: 3px solid var(--dop-ink, #1a1a1a);
+  outline-offset: 2px;
+}
+
+/* Line-height thoải mái cho chữ in hoa lớn, tránh cắt dấu tiếng Việt */
+.hero-kicker,
+.hero-product-name,
+.hero-kicker-line,
+.hero-price {
+  line-height: 1.05;
+}
+.hero-desc {
+  line-height: 1.5;
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+</style>

@@ -6,7 +6,7 @@ import MiniCart from "./components/cart/MiniCart.vue";
 import ProductQuickView from "./components/product/ProductQuickView.vue";
 </script>
 <template>
-  <div id="top" class="app-shell">
+  <div id="top" class="app-shell" role="application">
     <AppHeader /><RouterView /><AppFooter /><MobileNav /><MiniCart /><ProductQuickView />
   </div>
 </template>

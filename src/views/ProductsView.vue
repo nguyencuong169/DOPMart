@@ -180,7 +180,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <ProductGrid :products="list" />
+      <ProductGrid :products="list" hide-card-info />
       <Pagination :page="page" :pages="pages" @change="page = $event" />
     </div>
   </main>

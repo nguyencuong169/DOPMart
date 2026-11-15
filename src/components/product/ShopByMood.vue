@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, shallowRef } from "vue";
 import { ArrowRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
 import CatalogCard from "./CatalogCard.vue";
@@ -7,7 +7,7 @@ import { useProductStore } from "../../stores/productStore";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
 const store = useProductStore();
-const active = ref("all");
+const active = shallowRef("all");
 const uid = Math.random().toString(36).slice(2, 7);
 
 const bySold = (arr) => [...arr].sort((a, b) => b.sold - a.sold);
@@ -47,6 +47,21 @@ const link = computed(() =>
     ? "/products"
     : `/category/${current.value.slug}`,
 );
+
+function select(slug) {
+  active.value = slug;
+}
+
+function onTabKeydown(e, slug) {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  e.preventDefault();
+  const list = Array.from(e.currentTarget.parentElement.children);
+  const idx = list.indexOf(e.currentTarget);
+  const dir = e.key === "ArrowRight" ? 1 : -1;
+  const nextTab = list[(idx + dir + list.length) % list.length];
+  nextTab.focus();
+  select(nextTab.dataset.slug);
+}
 </script>
 
 <template>
@@ -70,12 +85,19 @@ const link = computed(() =>
           :aria-controls="`${uid}-panel`"
           :aria-selected="t.slug === active"
           :style="{ '--c': t.color, '--on': onColor(t.color) }"
-          @click="active = t.slug"
+          :data-slug="t.slug"
+          @click="select(t.slug)"
+          @keydown="onTabKeydown($event, t.slug)"
         >
-          <b>{{ t.name }}</b>
-          <small>{{ t.items.length }} món</small>
+          <span class="cat-tab__name">{{ t.name }}</span>
+          <span class="cat-tab__count">{{ t.items.length }} món</span>
           <span class="cat-tab__pop" aria-hidden="true">
-            <img v-for="(src, i) in t.imgs" :key="i" :src="src" alt="" />
+            <img
+              v-for="(src, i) in t.imgs"
+              :key="i"
+              :src="src"
+              alt=""
+            />
           </span>
         </button>
       </div>
@@ -100,7 +122,7 @@ const link = computed(() =>
             v-for="(p, i) in shown"
             :key="p.id ?? p.slug"
             :product="p"
-            :index="i"
+            :index="i"
             @quick="store.openQuick(p)"
           />
         </div>
@@ -111,32 +133,25 @@ const link = computed(() =>
 
 <style scoped>
 .cat-strip {
-  --ink: #1a1a1a;
-  --cream: #fffaf0;
-  --fd: var(--font-display, "Bricolage Grotesque", system-ui, sans-serif);
+  --fd: var(--font-display);
   width: 100vw;
   margin-left: calc(50% - 50vw);
-  padding: 48px 0 0;
+  padding: var(--sp-4) 0 0;
 }
 .cat-inner {
-  /* one measure for the whole page: the tokens are the source, these numbers are it */
   max-width: var(--container, 1920px);
   margin: 0 auto;
   padding: 0 var(--gutter, 12px);
 }
 .cat-tabs {
   display: flex;
-  gap: 24px;
+  gap: var(--sp-3);
   overflow-x: auto;
-  /* full bleed: the row runs the whole viewport even inside the container, with its
-     first chip on the page edge, so no chip is cut by an invisible margin. the fade on
-     the right says "there is more", and the spacer after the last chip lets it scroll
-     clear of the fade */
   width: 100vw;
   margin-inline: calc(50% - 50vw);
-  padding: 58px
+  padding: var(--sp-4)
     max(var(--gutter, 12px), calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px)))
-    26px;
+    var(--sp-3);
   scroll-padding-inline: max(
     var(--gutter, 12px),
     calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
@@ -162,8 +177,8 @@ const link = computed(() =>
   width: clamp(212px, 13vw, 264px);
   height: clamp(88px, 5.2vw, 104px);
   border: 0;
-  border-radius: 24px;
-  padding: 0 0 0 20px;
+  border-radius: var(--radius);
+  padding: 0 0 0 var(--sp-2);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -185,6 +200,11 @@ const link = computed(() =>
 .cat-tab:hover {
   transform: translateY(-3px);
 }
+.cat-tab:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: var(--radius);
+}
 .cat-tab[aria-selected="true"] {
   transform: translateY(-8px);
   box-shadow:
@@ -197,31 +217,31 @@ const link = computed(() =>
   content: "";
   position: absolute;
   left: 50%;
-  top: calc(100% + 16px);
+  top: calc(100% + var(--sp-2));
   transform: translateX(-50%);
   border: 15px solid transparent;
   border-bottom: 0;
   border-top: 18px solid var(--c);
 }
-.cat-tab > b,
-.cat-tab > small {
+.cat-tab__name,
+.cat-tab__count {
   position: relative;
   z-index: 4;
 }
-.cat-tab > b {
-  font: 800 clamp(17px, 1.15vw, 21px)/1.1 var(--fd);
+.cat-tab__name {
+  font: 800 var(--fs-lg) / 1.1 var(--font-display);
   max-width: 46%;
 }
-.cat-tab > small {
-  font-size: 13px;
+.cat-tab__count {
+  font-size: var(--fs-xs);
   opacity: 0.9;
-  margin-top: 3px;
+  margin-top: var(--sp-1);
 }
 .cat-tab__pop {
   position: absolute;
   isolation: isolate;
-  right: 8px;
-  bottom: 7px;
+  right: var(--sp-1);
+  bottom: var(--sp-1);
   width: 50%;
   height: 150%;
   pointer-events: none;
@@ -265,43 +285,40 @@ const link = computed(() =>
   transform: rotate(-16deg);
 }
 .cat-stage {
-  --ac: #ffc72c;
+  --ac: var(--yellow);
   background: color-mix(in srgb, var(--ac) 13%, var(--cream));
   border-top: 6px solid var(--ac);
-  /* ... tiếp nối phần CSS ở trên ... */
-  padding: 22px 0 88px;
+  padding: var(--sp-2) 0 var(--sp-6);
   transition:
     background 0.45s,
     border-color 0.45s;
 }
 .cat-bar {
   display: flex;
-  /* the stage lost its "Tất cả / 4-of-8" line: only the action is left, so it docks
-     to the right and the grid moves up to meet the tabs */
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 12px;
+  gap: var(--sp-1);
   flex-wrap: wrap;
 }
-.cat-bar h3 {
+.cat-bar__title {
   margin: 0;
-  font: 800 26px/1.1 var(--fd);
-  letter-spacing: -0.02em;
+  font: 800 var(--fs-xl) / 1.1 var(--font-display);
+  letter-spacing: var(--tracking-display);
 }
-.cat-bar p {
-  margin: 4px 0 0;
+.cat-bar__lead {
+  margin: var(--sp-1) 0 0;
   color: #5b554b;
-  font-size: 14px;
+  font-size: var(--fs-sm);
 }
 .cat-more {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-1);
   background: #fff;
   color: var(--ink);
-  border: 2.5px solid var(--ink);
-  border-radius: 999px;
-  padding: 10px 20px;
+  border: var(--bw-bold) solid var(--ink);
+  border-radius: var(--r-pill);
+  padding: 10px var(--sp-2);
   font-weight: 700;
   text-decoration: none;
   box-shadow: 3px 3px 0 var(--ink);
@@ -317,18 +334,18 @@ const link = computed(() =>
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 456px));
   justify-content: center;
-  gap: 24px;
-  padding: 24px 0 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0 var(--sp-1);
 }
 @media (max-width: 980px) {
   .cat-grid {
     grid-template-columns: repeat(2, minmax(0, 456px));
-    gap: 96px 24px;
+    gap: 96px var(--sp-3);
   }
 }
 @media (max-width: 520px) {
   .cat-grid {
-    gap: 84px 14px;
+    gap: 84px var(--sp-2);
   }
   .cat-tab {
     width: 196px;

@@ -44,7 +44,7 @@ const steps = [
       >
         <b class="process-node__n" aria-hidden="true">{{ step.n }}</b>
         <div class="node-orb">
-          <component :is="step.icon" /><span>{{ step.n }}</span>
+          <component :is="step.icon" width="24" height="24" /><span>{{ step.n }}</span>
         </div>
         <h3>{{ step.title }}</h3>
         <p>{{ step.text }}</p>
@@ -52,4 +52,19 @@ const steps = [
     </div>
   </section>
 </template>
+
+<style scoped>
+.process-node:focus-visible {
+  outline: 3px solid var(--ink, #1a1a1a);
+  outline-offset: 2px;
+}
+.process-node h3 {
+  line-height: 1.1;
+}
+.process-node p {
+  line-height: 1.5;
+  max-width: 45ch;
+  text-wrap: pretty;
+}
+</style>
 

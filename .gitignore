@@ -25,3 +25,14 @@ Thumbs.db
 backup/
 # before/after review screenshots
 docs/review/
+
+# AI agent / tool skill directories (not project source)
+.agents/
+.continue/
+.forge/
+.qwen/
+.taste-skill/
+agents/
+codestudio/
+data/
+skills/

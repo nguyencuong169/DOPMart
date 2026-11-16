@@ -411,10 +411,10 @@ watch(tabs, () => nextTick(updateScrollState));
     0 24px 28px -8px rgba(0, 0, 0, 0.4);
 }
 .cat-tab:active {
-  transform: translateY(-1px);
+  transform: translateY(2px);
   box-shadow:
     0 2px 0 var(--cd),
-    0 8px 12px -4px rgba(0, 0, 0, 0.3);
+    0 14px 16px -6px rgba(0, 0, 0, 0.4);
 }
 .cat-tab:focus-visible {
   outline: 3px solid var(--ink);
@@ -525,7 +525,7 @@ watch(tabs, () => nextTick(updateScrollState));
   color: var(--ink);
   border: var(--bw-bold) solid var(--ink);
   border-radius: var(--r-pill);
-  padding: 10px var(--sp-2);
+  padding: 10px 48px 10px var(--sp-2);
   font-weight: 700;
   text-decoration: none;
   box-shadow: 3px 3px 0 var(--ink);
@@ -533,6 +533,10 @@ watch(tabs, () => nextTick(updateScrollState));
   position: relative;
 }
 .cat-more__down {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  transform: translateY(0);
   transition: transform 0.15s;
   display: inline-block;
 }
@@ -541,11 +545,11 @@ watch(tabs, () => nextTick(updateScrollState));
   box-shadow: 4px 4px 0 var(--ink);
 }
 .cat-more:active {
-  transform: translate(2px, 4px);
-  box-shadow: 6px 6px 0 var(--ink);
+  transform: translate(2px, 8px);
+  box-shadow: 10px 10px 0 var(--ink);
 }
 .cat-more:active .cat-more__down {
-  transform: translateY(4px);
+  transform: translateY(8px);
 }
 .cat-grid {
   display: grid;

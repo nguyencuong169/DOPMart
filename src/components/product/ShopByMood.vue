@@ -10,7 +10,7 @@ import {
 } from "vue";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
-import CatalogCard from "./CatalogCard.vue";
+import NewCatalogCard from "./NewCatalogCard.vue";
 import { useProductStore } from "../../stores/productStore";
 
 const MAX = 4; // số món đại diện tối đa mỗi category
@@ -255,7 +255,7 @@ watch(tabs, () => nextTick(updateScrollState));
         :id="`${uid}-panel`"
         :aria-labelledby="`${uid}-tab-${current.slug}`"
       >
-        <CatalogCard
+          <NewCatalogCard
           v-for="(p, i) in shown"
           :key="p.id ?? p.slug"
           :product="p"

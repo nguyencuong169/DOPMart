@@ -306,10 +306,10 @@ watch(tabs, () => nextTick(updateScrollState));
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
   transition: transform 0.15s;
-}
-.cat-scroll:hover {
-  transform: translateY(-50%) translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 .cat-scroll:focus-visible {
   outline: 3px solid var(--ink);
@@ -392,6 +392,10 @@ watch(tabs, () => nextTick(updateScrollState));
   text-align: left;
   color: var(--on);
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   background: var(--c);
   background: linear-gradient(
     160deg,
@@ -403,12 +407,6 @@ watch(tabs, () => nextTick(updateScrollState));
     0 16px 18px -6px rgba(0, 0, 0, 0.35);
   transition:
     transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-.cat-tab:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 8px 0 var(--cd),
-    0 24px 28px -8px rgba(0, 0, 0, 0.4);
 }
 .cat-tab:active {
   transform: translateY(2px);
@@ -540,10 +538,6 @@ watch(tabs, () => nextTick(updateScrollState));
   transition: transform 0.15s;
   display: inline-block;
 }
-.cat-more:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
-}
 .cat-more:active {
   transform: translate(2px, 8px);
   box-shadow: 10px 10px 0 var(--ink);
@@ -605,6 +599,24 @@ watch(tabs, () => nextTick(updateScrollState));
   }
   .cat-more:active .cat-more__down {
     transform: none;
+  }
+}
+
+/* Hover only on devices that can actually hover (mouse/trackpad). Touch devices use :active instead. */
+@media (hover: hover) and (pointer: fine) {
+  .cat-scroll:hover {
+    transform: translateY(-50%) translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .cat-tab:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 8px 0 var(--cd),
+      0 24px 28px -8px rgba(0, 0, 0, 0.4);
+  }
+  .cat-more:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
   }
 }
 </style>

@@ -1,6 +1,14 @@
 <script setup>
-import { computed, shallowRef } from "vue";
-import { ArrowRight } from "lucide-vue-next";
+import {
+  computed,
+  shallowRef,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
 import CatalogCard from "./CatalogCard.vue";
 import { useProductStore } from "../../stores/productStore";
@@ -8,6 +16,7 @@ import { useProductStore } from "../../stores/productStore";
 const MAX = 4; // số món đại diện tối đa mỗi category
 const store = useProductStore();
 const active = shallowRef("all");
+const focusedSlug = shallowRef("all"); // roving tabindex: tracks which tab is keyboard-reachable
 const uid = Math.random().toString(36).slice(2, 7);
 
 const bySold = (arr) => [...arr].sort((a, b) => b.sold - a.sold);
@@ -18,6 +27,71 @@ const onColor = (hex) => {
     (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   return l > 0.62 ? "#1a1a1a" : "#ffffff";
 };
+
+// --- accent color handling ---------------------------------------------
+// Raw product-art colors vary wildly in saturation/lightness (a pale latte
+// vs. a neon soda can), so using them directly made every tab compete for
+// attention at a different volume. Clamping into a fixed sat/light band
+// keeps every category reading at the same visual "weight" no matter which
+// product happens to be this week's bestseller. Pin a slug in BRAND_COLORS
+// to lock an exact color instead of the auto-normalized one.
+const BRAND_COLORS = {
+  all: "#ffc72c",
+};
+const ACCENT_SAT = [58, 74]; // %
+const ACCENT_LIGHT = [46, 58]; // %
+
+const hexToHsl = (hex) => {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  let h = 0;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  if (d !== 0) {
+    switch (max) {
+      case r:
+        h = ((g - b) / d) % 6;
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      default:
+        h = (r - g) / d + 4;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return [h, s * 100, l * 100];
+};
+
+const hslToHex = (h, s, l) => {
+  s /= 100;
+  l /= 100;
+  const k = (n) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = (x) =>
+    Math.round(255 * x)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+};
+
+const clamp = (v, [min, max]) => Math.min(max, Math.max(min, v));
+
+const toAccent = (hex) => {
+  const [h, s, l] = hexToHsl(hex);
+  return hslToHex(h, clamp(s, ACCENT_SAT), clamp(l, ACCENT_LIGHT));
+};
+
+const resolveColor = (slug, fallbackHex) =>
+  BRAND_COLORS[slug] ?? toAccent(fallbackHex);
 
 const tabs = computed(() => {
   const cats = store.categories
@@ -34,7 +108,7 @@ const tabs = computed(() => {
   };
   return [all, ...cats].map((t) => ({
     ...t,
-    color: t.slug === "all" ? "#ffc72c" : t.items[0].color,
+    color: resolveColor(t.slug, t.items[0]?.color),
     imgs: t.items.slice(0, t.slug === "all" ? 3 : 2).map((p) => p.image),
   }));
 });
@@ -50,18 +124,64 @@ const link = computed(() =>
 
 function select(slug) {
   active.value = slug;
+  focusedSlug.value = slug;
 }
 
-function onTabKeydown(e, slug) {
-  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+function onTabFocus(slug) {
+  focusedSlug.value = slug;
+}
+
+function onTabKeydown(e) {
+  const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+  if (!keys.includes(e.key)) return;
   e.preventDefault();
   const list = Array.from(e.currentTarget.parentElement.children);
   const idx = list.indexOf(e.currentTarget);
-  const dir = e.key === "ArrowRight" ? 1 : -1;
-  const nextTab = list[(idx + dir + list.length) % list.length];
-  nextTab.focus();
-  select(nextTab.dataset.slug);
+  let nextIdx = idx;
+  if (e.key === "ArrowRight") nextIdx = (idx + 1) % list.length;
+  else if (e.key === "ArrowLeft")
+    nextIdx = (idx - 1 + list.length) % list.length;
+  else if (e.key === "Home") nextIdx = 0;
+  else if (e.key === "End") nextIdx = list.length - 1;
+  list[nextIdx].focus(); // fires @focus -> onTabFocus, which moves the roving tabindex
 }
+
+// --- scroll affordance ---------------------------------------------------
+// The row fades at the edge when it overflows, which is too subtle for
+// mouse/trackpad users (no natural horizontal-scroll gesture). Chevron
+// buttons appear only when there's somewhere to scroll to; touch devices
+// already have swipe, so the buttons hide themselves there (see CSS).
+const tabsEl = ref(null);
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
+
+function updateScrollState() {
+  const el = tabsEl.value;
+  if (!el) return;
+  canScrollLeft.value = el.scrollLeft > 4;
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+}
+
+function scrollByTabs(dir) {
+  const el = tabsEl.value;
+  if (!el) return;
+  el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+}
+
+let resizeObserver;
+onMounted(() => {
+  updateScrollState();
+  tabsEl.value?.addEventListener("scroll", updateScrollState, {
+    passive: true,
+  });
+  resizeObserver = new ResizeObserver(updateScrollState);
+  if (tabsEl.value) resizeObserver.observe(tabsEl.value);
+});
+onBeforeUnmount(() => {
+  tabsEl.value?.removeEventListener("scroll", updateScrollState);
+  resizeObserver?.disconnect();
+});
+watch(tabs, () => nextTick(updateScrollState));
 </script>
 
 <template>
@@ -70,35 +190,55 @@ function onTabKeydown(e, slug) {
       <SectionHeader
         kicker="CHỌN NHANH THEO DANH MỤC"
         title="Hôm nay bạn thèm gì?"
-        lead="Chọn một danh mục để xem món nổi bật. Muốn xem hết thì bấm Xem toàn bộ."
+        lead="Lướt nhanh các món đang được yêu thích nhất theo từng danh mục."
         cta="Xem tủ snack"
         to="/products"
       />
-      <div class="cat-tabs" role="tablist">
+
+      <div class="cat-tabs-wrap">
         <button
-          v-for="t in tabs"
-          :key="t.slug"
+          v-if="canScrollLeft"
           type="button"
-          class="cat-tab"
-          role="tab"
-          :id="`${uid}-tab-${t.slug}`"
-          :aria-controls="`${uid}-panel`"
-          :aria-selected="t.slug === active"
-          :style="{ '--c': t.color, '--on': onColor(t.color) }"
-          :data-slug="t.slug"
-          @click="select(t.slug)"
-          @keydown="onTabKeydown($event, t.slug)"
+          class="cat-scroll cat-scroll--left"
+          aria-label="Xem danh mục trước đó"
+          @click="scrollByTabs(-1)"
         >
-          <span class="cat-tab__name">{{ t.name }}</span>
-          <span class="cat-tab__count">{{ t.items.length }} món</span>
-          <span class="cat-tab__pop" aria-hidden="true">
-            <img
-              v-for="(src, i) in t.imgs"
-              :key="i"
-              :src="src"
-              alt=""
-            />
-          </span>
+          <ChevronLeft :size="20" />
+        </button>
+
+        <div class="cat-tabs" role="tablist" ref="tabsEl">
+          <button
+            v-for="t in tabs"
+            :key="t.slug"
+            type="button"
+            class="cat-tab"
+            role="tab"
+            :id="`${uid}-tab-${t.slug}`"
+            :aria-controls="`${uid}-panel`"
+            :aria-selected="t.slug === active"
+            :tabindex="focusedSlug === t.slug ? 0 : -1"
+            :style="{ '--c': t.color, '--on': onColor(t.color) }"
+            :data-slug="t.slug"
+            @click="select(t.slug)"
+            @focus="onTabFocus(t.slug)"
+            @keydown="onTabKeydown($event)"
+          >
+            <span class="cat-tab__name">{{ t.name }}</span>
+            <span class="cat-tab__count">{{ t.items.length }} món</span>
+            <span class="cat-tab__pop" aria-hidden="true">
+              <img v-for="(src, i) in t.imgs" :key="i" :src="src" alt="" />
+            </span>
+          </button>
+        </div>
+
+        <button
+          v-if="canScrollRight"
+          type="button"
+          class="cat-scroll cat-scroll--right"
+          aria-label="Xem danh mục tiếp theo"
+          @click="scrollByTabs(1)"
+        >
+          <ChevronRight :size="20" />
         </button>
       </div>
     </div>
@@ -143,6 +283,71 @@ function onTabKeydown(e, slug) {
   margin: 0 auto;
   padding: 0 var(--gutter, 12px);
 }
+.cat-tabs-wrap {
+  position: relative;
+  isolation: isolate;
+}
+.cat-scroll {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: var(--bw-bold) solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.15s;
+}
+.cat-scroll:hover {
+  transform: translateY(-50%) translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.cat-scroll:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+.cat-scroll--left {
+  left: var(--gutter, 12px);
+}
+.cat-scroll--right {
+  right: var(--gutter, 12px);
+}
+/* Touch devices already scroll this row by swipe; the buttons exist to help
+   mouse/trackpad users discover that it scrolls at all. */
+@media (hover: none) {
+  .cat-scroll {
+    display: none;
+  }
+}
+/* Atmospheric noise texture to remove digital sterility */
+.cat-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at 25% 25%,
+    rgba(255, 255, 255, 0.03),
+    transparent 40%
+  ),
+  repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.02),
+    rgba(0, 0, 0, 0.02) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: overlay;
+}
 .cat-tabs {
   display: flex;
   gap: var(--sp-3);
@@ -150,13 +355,21 @@ function onTabKeydown(e, slug) {
   width: 100vw;
   margin-inline: calc(50% - 50vw);
   padding: var(--sp-4)
-    max(var(--gutter, 12px), calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px)))
+    max(
+      var(--gutter, 12px),
+      calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
+    )
     var(--sp-3);
   scroll-padding-inline: max(
     var(--gutter, 12px),
     calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
   );
-  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 72px), transparent 100%);
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 72px),
+    transparent 100%
+  );
   scroll-snap-type: x proximity;
   scrollbar-width: none;
 }
@@ -170,6 +383,7 @@ function onTabKeydown(e, slug) {
 }
 .cat-tab {
   --cd: color-mix(in srgb, var(--c) 60%, #000);
+  --cd: var(--cd, #000);
   position: relative;
   isolation: isolate;
   flex: none;
@@ -185,6 +399,7 @@ function onTabKeydown(e, slug) {
   text-align: left;
   color: var(--on);
   cursor: pointer;
+  background: var(--c);
   background: linear-gradient(
     160deg,
     color-mix(in srgb, var(--c) 90%, #fff),
@@ -194,8 +409,7 @@ function onTabKeydown(e, slug) {
     0 6px 0 var(--cd),
     0 16px 18px -6px rgba(0, 0, 0, 0.35);
   transition:
-    transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
-    box-shadow 0.3s;
+    transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .cat-tab:hover {
   transform: translateY(-3px);
@@ -286,12 +500,11 @@ function onTabKeydown(e, slug) {
 }
 .cat-stage {
   --ac: var(--yellow);
+  background: var(--cream);
   background: color-mix(in srgb, var(--ac) 13%, var(--cream));
   border-top: 6px solid var(--ac);
   padding: var(--sp-2) 0 var(--sp-6);
-  transition:
-    background 0.45s,
-    border-color 0.45s;
+  transition: border-color 0.45s;
 }
 .cat-bar {
   display: flex;
@@ -322,9 +535,7 @@ function onTabKeydown(e, slug) {
   font-weight: 700;
   text-decoration: none;
   box-shadow: 3px 3px 0 var(--ink);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+  transition: transform 0.15s;
 }
 .cat-more:hover {
   transform: translate(-1px, -1px);
@@ -349,6 +560,30 @@ function onTabKeydown(e, slug) {
   }
   .cat-tab {
     width: 196px;
+  }
+}
+
+/* Respect reduced-motion preference: disable transitions/animations */
+@media (prefers-reduced-motion: reduce) {
+  .cat-scroll,
+  .cat-tab,
+  .cat-tab__pop,
+  .cat-more,
+  .cat-stage {
+    transition: none !important;
+    animation: none !important;
+  }
+  .cat-tab:hover {
+    transform: none;
+  }
+  .cat-tab[aria-selected="true"] {
+    transform: none;
+  }
+  .cat-tab[aria-selected="true"] .cat-tab__pop {
+    transform: none;
+  }
+  .cat-scroll:hover {
+    transform: translateY(-50%);
   }
 }
 </style>

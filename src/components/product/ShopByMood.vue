@@ -185,7 +185,7 @@ watch(tabs, () => nextTick(updateScrollState));
 </script>
 
 <template>
-  <section class="cat-strip">
+  <section class="cat-stage" :style="{ '--ac': current.color }">
     <div class="cat-inner">
       <SectionHeader
         kicker="CHỌN NHANH THEO DANH MỤC"
@@ -241,42 +241,43 @@ watch(tabs, () => nextTick(updateScrollState));
           <ChevronRight :size="20" />
         </button>
       </div>
-    </div>
 
-    <div class="cat-stage" :style="{ '--ac': current.color }">
-      <div class="cat-inner">
-        <div v-if="current.items.length > MAX" class="cat-bar">
-          <RouterLink :to="link" class="cat-more">
-            Xem toàn bộ ({{ current.items.length }}) <ArrowRight :size="16" />
-          </RouterLink>
-        </div>
+      <div v-if="current.items.length > MAX" class="cat-bar">
+        <RouterLink :to="link" class="cat-more">
+          Xem toàn bộ ({{ current.items.length }}) <ArrowRight :size="16" />
+        </RouterLink>
+      </div>
 
-        <div
-          class="cat-grid"
-          :key="current.slug"
-          role="tabpanel"
-          :id="`${uid}-panel`"
-          :aria-labelledby="`${uid}-tab-${current.slug}`"
-        >
-          <CatalogCard
-            v-for="(p, i) in shown"
-            :key="p.id ?? p.slug"
-            :product="p"
-            :index="i"
-            @quick="store.openQuick(p)"
-          />
-        </div>
+      <div
+        class="cat-grid"
+        :key="current.slug"
+        role="tabpanel"
+        :id="`${uid}-panel`"
+        :aria-labelledby="`${uid}-tab-${current.slug}`"
+      >
+        <CatalogCard
+          v-for="(p, i) in shown"
+          :key="p.id ?? p.slug"
+          :product="p"
+          :index="i"
+          @quick="store.openQuick(p)"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.cat-strip {
+.cat-stage {
   --fd: var(--font-display);
   width: 100vw;
   margin-left: calc(50% - 50vw);
-  padding: var(--sp-4) 0 0;
+  position: relative;
+  background: var(--cream);
+  background: color-mix(in srgb, var(--ac) 10%, var(--cream));
+  border-top: 6px solid var(--ac);
+  padding: var(--sp-4) 0 var(--sp-6);
+  transition: border-color 0.45s;
 }
 .cat-inner {
   max-width: var(--container, 1920px);
@@ -327,7 +328,7 @@ watch(tabs, () => nextTick(updateScrollState));
   }
 }
 /* Atmospheric noise texture to remove digital sterility */
-.cat-strip::after {
+.cat-stage::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -352,18 +353,9 @@ watch(tabs, () => nextTick(updateScrollState));
   display: flex;
   gap: var(--sp-3);
   overflow-x: auto;
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
-  padding: var(--sp-4)
-    max(
-      var(--gutter, 12px),
-      calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
-    )
-    var(--sp-3);
-  scroll-padding-inline: max(
-    var(--gutter, 12px),
-    calc((100vw - var(--container, 1920px)) / 2 + var(--gutter, 12px))
-  );
+  width: 100%;
+  padding: var(--sp-4) 0 var(--sp-3);
+  scroll-padding-inline: var(--gutter, 12px);
   mask-image: linear-gradient(
     to right,
     #000 0,
@@ -497,14 +489,6 @@ watch(tabs, () => nextTick(updateScrollState));
   height: 42%;
   z-index: 1;
   transform: rotate(-16deg);
-}
-.cat-stage {
-  --ac: var(--yellow);
-  background: var(--cream);
-  background: color-mix(in srgb, var(--ac) 13%, var(--cream));
-  border-top: 6px solid var(--ac);
-  padding: var(--sp-2) 0 var(--sp-6);
-  transition: border-color 0.45s;
 }
 .cat-bar {
   display: flex;

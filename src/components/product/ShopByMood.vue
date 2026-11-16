@@ -8,7 +8,7 @@ import {
   nextTick,
   watch,
 } from "vue";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from "lucide-vue-next";
 import SectionHeader from "../common/SectionHeader.vue";
 import NewCatalogCard from "./NewCatalogCard.vue";
 import { useProductStore } from "../../stores/productStore";
@@ -245,6 +245,7 @@ watch(tabs, () => nextTick(updateScrollState));
       <div v-if="current.items.length > MAX" class="cat-bar">
         <RouterLink :to="link" class="cat-more">
           Xem toàn bộ ({{ current.items.length }}) <ArrowRight :size="16" />
+          <ChevronDown :size="14" class="cat-more__down" />
         </RouterLink>
       </div>
 
@@ -404,7 +405,16 @@ watch(tabs, () => nextTick(updateScrollState));
     transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .cat-tab:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 0 var(--cd),
+    0 24px 28px -8px rgba(0, 0, 0, 0.4);
+}
+.cat-tab:active {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 0 var(--cd),
+    0 8px 12px -4px rgba(0, 0, 0, 0.3);
 }
 .cat-tab:focus-visible {
   outline: 3px solid var(--ink);
@@ -519,11 +529,23 @@ watch(tabs, () => nextTick(updateScrollState));
   font-weight: 700;
   text-decoration: none;
   box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.cat-more__down {
   transition: transform 0.15s;
+  display: inline-block;
 }
 .cat-more:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--ink);
+}
+.cat-more:active {
+  transform: translate(2px, 4px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.cat-more:active .cat-more__down {
+  transform: translateY(4px);
 }
 .cat-grid {
   display: grid;
@@ -553,11 +575,15 @@ watch(tabs, () => nextTick(updateScrollState));
   .cat-tab,
   .cat-tab__pop,
   .cat-more,
+  .cat-more__down,
   .cat-stage {
     transition: none !important;
     animation: none !important;
   }
   .cat-tab:hover {
+    transform: none;
+  }
+  .cat-tab:active {
     transform: none;
   }
   .cat-tab[aria-selected="true"] {
@@ -568,6 +594,13 @@ watch(tabs, () => nextTick(updateScrollState));
   }
   .cat-scroll:hover {
     transform: translateY(-50%);
+  }
+  .cat-more:active {
+    transform: none;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .cat-more:active .cat-more__down {
+    transform: none;
   }
 }
 </style>

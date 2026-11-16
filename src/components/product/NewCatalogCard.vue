@@ -273,7 +273,7 @@ onMounted(async () => {
 .cat-card__shot {
   position: absolute;
   left: 50%;
-  top: 19cqw;
+  top: 24cqw;
   z-index: 2;
   width: 75%;
   padding: 0;

@@ -27,6 +27,7 @@ const primaryLinks = [
     match: (path) =>
       path === "/products" || path.startsWith("/category/") || path.startsWith("/product/"),
   },
+  { label: "Shop", to: "/shop", match: (path) => path === "/shop" },
   { label: "Mới", to: "/new", match: (path) => path === "/new" },
   { label: "Bán chạy", to: "/best-sellers", match: (path) => path === "/best-sellers" },
   { label: "Khuyến mãi", to: "/deals", match: (path) => path === "/deals" },

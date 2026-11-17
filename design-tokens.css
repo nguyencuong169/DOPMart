@@ -1,0 +1,61 @@
+/*
+  DOP Mart — design tokens (nền tảng chung cho mọi trang)
+  Import một lần: import "./styles/design-tokens.css"  (main.js)
+
+  ĐỊNH HƯỚNG STYLE
+  1. Khung trung tính + MỘT màu nhấn: ink / trắng làm khung, màu nhấn duy nhất
+     là màu của sản phẩm (--accent). Không thêm màu trang trí khác.
+  2. Một chữ, một vai trò: Be Vietnam Pro cho cả UI lẫn tiêu đề. Viết hoa
+     đầu câu (sentence case), không in hoa toàn bộ, không tracking rộng.
+  3. Mỗi section chỉ có MỘT khoảnh khắc nổi bật (hero: tên sản phẩm + màu nền).
+     Phần còn lại giữ yên, đúng khoảng cách, đúng căn lề.
+  4. Bo góc 3 bậc (sm / md / pill). Một bóng đổ duy nhất. Không gradient trang trí.
+  5. Chuyển động chỉ để báo "cái gì vừa đổi" (đổi slide, mở, thêm giỏ).
+     Không hạt bay, không glow, không parallax. Luôn tôn trọng reduced-motion.
+  6. Icon: lucide, stroke mặc định, kích thước 16/18/20. Link không thêm mũi tên "→".
+  7. Thông tin phụ (giờ mở cửa, đánh giá...) dùng icon + khoảng cách,
+     không nối bằng dấu chấm giữa "·".
+*/
+
+:root {
+  /* ---- Color ---- */
+  --ds-ink: #1a1a1a;
+  --ds-paper: #ffffff;
+  --ds-brand: #ffd338; /* màu nhấn mặc định khi chưa có màu sản phẩm */
+  --ds-ok: #1b7f45; /* trạng thái "Đang mở" (trắng trên nền này ≥ 5:1) */
+  --ds-off: #595959; /* trạng thái "Đã đóng" */
+
+  /* ---- Type ---- */
+  --ds-font-sans: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-text-sm: 0.875rem;
+  --ds-text-md: 1rem;
+  --ds-text-lg: 1.25rem;
+  --ds-text-xl: 1.75rem;
+  --ds-text-display: clamp(2.25rem, 4.6vw, 4.5rem);
+  --ds-weight-regular: 400;
+  --ds-weight-medium: 500;
+  --ds-weight-semibold: 600;
+  --ds-weight-heavy: 800; /* chỉ dùng cho tiêu đề display */
+
+  /* ---- Shape ---- */
+  --ds-radius-sm: 0.5rem;
+  --ds-radius-md: 0.875rem;
+  --ds-radius-pill: 999px;
+  --ds-shadow-1: 0 0.75rem 2rem rgb(0 0 0 / 0.18);
+
+  /* ---- Space (bậc 4px) ---- */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-12: 3rem;
+  --ds-gutter: clamp(1.25rem, 5vw, 5rem);
+
+  /* ---- Motion ---- */
+  --ds-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ds-dur-fast: 0.18s;
+  --ds-dur-base: 0.35s;
+  --ds-dur-slow: 0.7s;
+}

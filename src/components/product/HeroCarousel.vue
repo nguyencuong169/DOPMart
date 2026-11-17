@@ -390,7 +390,7 @@ onBeforeUnmount(() => {
       <div class="hero-fx" :class="`fx-${fx.kind}`" aria-hidden="true">
         <i
           v-for="n in fx.bits"
-          :key="`${slides[current].id}-${n}`"
+          :key="`${slides[current]?.id ?? 'placeholder'}-${n}`"
           :style="{ '--i': n - 1 }"
         />
       </div>

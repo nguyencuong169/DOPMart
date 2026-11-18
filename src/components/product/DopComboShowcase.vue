@@ -166,7 +166,7 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
     @keydown.right.prevent="move(1)"
     @touchstart="onTouchStart"
     @touchend="onTouchEnd"
-    touch-action="pan-x"
+    touch-action="pan-y"
   >
     <!-- Branding đơn giản của khu vực (kicker + title), không dùng SectionHeader -->
     <header class="fp-combo__eyebrow">

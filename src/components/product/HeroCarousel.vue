@@ -172,6 +172,7 @@ function preloadNext() {
 }
 let rafId = 0;
 const pointer = { x: 0, y: 0 };
+let introPlayed = false;
 
 function applyParallax() {
   rafId = 0;
@@ -200,6 +201,14 @@ function applyParallax() {
     ease: "power2.out",
     overwrite: "auto",
   });
+}
+
+function maybePlayIntro() {
+  if (introPlayed) return;
+  if (prefersReduced) return;
+  if (!slides.value.length) return;
+  introPlayed = true;
+  nextTick(playIntro);
 }
 function parallax(event) {
   if (prefersReduced) return;
@@ -271,6 +280,14 @@ watch(current, () =>
     );
   })
 );
+/* intro chỉ chạy khi có slide để hiển thị (dữ liệu sau khi load từ Supabase) */
+watch(
+  () => slides.value.length,
+  (n) => {
+    if (n) maybePlayIntro();
+  },
+  { immediate: true }
+);
 onMounted(() => {
   runTimer();
   clockTimer = setInterval(() => {
@@ -278,7 +295,7 @@ onMounted(() => {
   }, 60000);
   /* wipe anything a hot-reloaded previous instance may have left inline */
   clearRingInline();
-  playIntro();
+  maybePlayIntro();
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
   idle(() => preloadNext());
   document.addEventListener("visibilitychange", onVisibility);

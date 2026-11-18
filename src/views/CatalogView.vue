@@ -359,9 +359,9 @@ const fmt = (n) => (n || 0).toLocaleString("vi-VN") + " ₫";
 .shelf-sortnote { font-size: 12px; font-weight: 700; transform: rotate(2deg); display: inline-block; }
 @media (max-width: 700px) { .shelf-sortnote { display: none; } }
 .shelf-rule { border-top: 2px dashed var(--ink); margin-bottom: 20px; }
-.shelf-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 18px; align-items: stretch; grid-auto-rows: 280px; }
+.shelf-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 18px; align-items: stretch; grid-auto-rows: auto; }
 @media (max-width: 1280px) { .shelf-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 980px) { .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 260px; } }
+@media (max-width: 980px) { .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; } }
 @media (max-width: 600px) { .shelf-grid { grid-template-columns: 1fr; grid-auto-rows: auto; } }
 @media (min-width: 981px) {
   .shelf-grid__feat { grid-column: span 2; grid-row: span 2; }

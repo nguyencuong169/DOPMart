@@ -301,6 +301,7 @@ const lastWordHollow = computed(() => {
   border: var(--bw-bold) solid var(--ink);
   border-radius: 26px;
   box-shadow: 4px 4px 0 var(--ink);
+  overflow: hidden;
   transition:
     transform 0.28s cubic-bezier(0.3, 1.15, 0.5, 1),
     box-shadow 0.28s;

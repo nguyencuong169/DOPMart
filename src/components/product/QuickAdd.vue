@@ -20,6 +20,7 @@ const cart = useCartStore();
 const qty = ref(1);
 const soldOut = computed(() => props.stock !== null && props.stock <= 0);
 const ceiling = computed(() => (props.stock === null ? 99 : Math.max(1, props.stock)));
+const added = ref(false);
 
 /* a new product means a new quantity */
 watch(
@@ -34,7 +35,9 @@ const add = () => {
   if (soldOut.value) return;
   cart.add(props.product, qty.value);
   emit("added", qty.value);
+  added.value = true;
   qty.value = 1;
+  setTimeout(() => { added.value = false; }, 1500);
 };
 </script>
 <template>
@@ -69,9 +72,13 @@ const add = () => {
       "
       @click="add"
     >
-      <Plus v-if="variant === 'icon'" :size="20" />
-      <template v-else
-        >{{ soldOut ? "Hết hàng" : label }}<ShoppingBag :size="16"
+      <template v-if="added && variant === 'icon'">
+        <span class="qa__check">✓</span>
+      </template>
+      <template v-else-if="added && variant === 'row'">Đã thêm</template>
+      <template v-else>
+        <Plus v-if="variant === 'icon'" :size="20" />
+        <span v-else>{{ soldOut ? "Hết hàng" : label }}</span><ShoppingBag :size="16"
       /></template>
     </button>
   </div>
@@ -158,6 +165,15 @@ const add = () => {
   color: color-mix(in srgb, var(--ink) 45%, transparent);
   box-shadow: none;
   cursor: not-allowed;
+}
+.qa__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-ink);
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
 }
 .qa__go:focus-visible,
 .qa__step:focus-visible {

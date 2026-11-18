@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger.js";
 import { ArrowRight, Clock3, Tag } from "lucide-vue-next";
@@ -12,22 +12,38 @@ const products = useProductStore(),
   root = ref();
 const offers = computed(() => products.offers.slice(0, 3));
 let animation;
-onMounted(() => {
+let played = false;
+function play() {
+  if (played) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  animation = gsap.context(() => {
-    gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: root.value,
-          start: "top 78%",
-          end: "center 48%",
-          scrub: 0.8,
-        },
-      })
-      .from(".promo-copy > *", { x: -100, opacity: 0, stagger: 0.12 })
-      .from(".promo-card", { y: 100, rotation: 6, opacity: 0, stagger: 0.12 }, 0);
-  }, root.value);
-});
+  if (!offers.value.length) return;
+  played = true;
+  animation?.revert();
+  nextTick(() => {
+    if (!root.value) return;
+    animation = gsap.context(() => {
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: root.value,
+            start: "top 78%",
+            end: "center 48%",
+            scrub: 0.8,
+          },
+        })
+        .from(".promo-copy > *", { x: -100, opacity: 0, stagger: 0.12 })
+        .from(".promo-card", { y: 100, rotation: 6, opacity: 0, stagger: 0.12 }, 0);
+    }, root.value);
+  });
+}
+onMounted(play);
+watch(
+  () => offers.value.length,
+  (n) => {
+    if (n) play();
+  },
+  { immediate: true }
+);
 onBeforeUnmount(() => animation?.revert());
 </script>
 <template>
@@ -56,10 +72,11 @@ onBeforeUnmount(() => animation?.revert());
         <div class="promo-body">
           <small>{{ offer.categoryName }}</small>
           <h3>{{ offer.name }}</h3>
-          <span class="promo-price"
-            ><s>{{ offer.oldPrice.toLocaleString("vi-VN") }} ₫</s
-            ><b>{{ offer.price.toLocaleString("vi-VN") }} ₫</b></span
-          >
+<span class="promo-price"
+  ><s>{{ offer.oldPrice.toLocaleString("vi-VN") }} ₫</s
+  ><b>{{ offer.price.toLocaleString("vi-VN") }} ₫</b></span
+>
+          <div class="promo-save">Tiết kiệm {{ (offer.oldPrice - offer.price).toLocaleString("vi-VN") }} ₫</div>
           <button
             type="button"
             :aria-label="`Thêm ${offer.name} vào giỏ`"
@@ -87,5 +104,27 @@ onBeforeUnmount(() => animation?.revert());
   line-height: 1.5;
   max-width: 45ch;
   text-wrap: pretty;
+}
+.promo-copy h2 {
+  font-family: "Anton", "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.promo-copy h2 em {
+  font-family: "Anton", "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-style: normal;
+  color: var(--red-ink);
+}
+.promo-price b {
+  font-size: 28px;
+  color: var(--red-ink);
+}
+.promo-save {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-ink);
 }
 </style>

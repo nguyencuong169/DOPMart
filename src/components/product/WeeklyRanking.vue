@@ -1,546 +1,426 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
-import { ArrowLeft, ArrowRight, Trophy } from "lucide-vue-next";
-import QuickAdd from "./QuickAdd.vue";
+import { computed, onMounted, ref } from "vue";
+import { ArrowRight, Flame, ShoppingBag } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
+import { useCartStore } from "../../stores/cartStore";
 import { useFloorStore } from "../../stores/floorStore";
 
 const store = useProductStore();
+const cart = useCartStore();
 const floor = useFloorStore();
-const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
 
 const ranked = computed(() => [...store.products].sort((a, b) => b.sold - a.sold));
 const topSix = computed(() => ranked.value.slice(0, 6));
 
-const root = ref(null);
-const track = ref(null);
-const index = ref(0);
-const perView = ref(3);
+const fmt = (n) => Number(n || 0).toLocaleString("vi-VN");
 
-const canPrev = computed(() => index.value > 0);
-const canNext = computed(() => index.value + perView.value < topSix.value.length);
+const onColor = (hex) => {
+  const n = parseInt(String(hex || "#000000").replace("#", ""), 16);
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return l > 0.62 ? "#0f172a" : "#ffffff";
+};
 
-const maxIndex = Math.max(0, topSix.value.length - perView.value);
-
-function prev() {
-  if (!canPrev.value) return;
-  index.value--;
-  scrollTrack();
-}
-
-function next() {
-  if (!canNext.value) return;
-  index.value++;
-  scrollTrack();
-}
-
-function scrollTrack() {
-  nextTick(() => {
-    const el = track.value;
-    if (!el) return;
-    const cards = el.children;
-    const target = cards[index.value];
-    if (!target) return;
-    const containerWidth = el.parentElement?.clientWidth ?? 0;
-    const offset = target.offsetLeft - (containerWidth - target.offsetWidth) / 2;
-    el.scrollTo({ left: Math.max(0, offset), behavior: "smooth" });
-  });
+function addToCart(product) {
+  cart.add(product, 1);
 }
 
 onMounted(() => {
-  window.addEventListener("resize", () => perView.value = window.innerWidth > 900 ? 3 : 2);
-  scrollTrack();
+  store.init();
+  cart.init();
+  floor.init();
 });
-onBeforeUnmount(() => window.removeEventListener("resize", () => {}));
 </script>
 
 <template>
-  <section ref="root" class="wr-section">
-    <div class="wr-inner">
-      <header class="wr-header">
-        <div class="wr-kicker">
-          <Trophy :size="13" /> BẢNG XẾP HẠNG TUẦN NÀY
-        </div>
-        <h2 class="wr-title">Top sản phẩm<br />bán chạy tuần này</h2>
-        <p class="wr-lead">
-          Những món mọi người đang săn nhất tại DOP Mart — cập nhật theo số lượng bán ra thực tế.
-        </p>
-      </header>
-
-      <div class="wr-nav-wrap">
-        <button
-          v-if="canPrev"
-          type="button"
-          class="wr-nav wr-nav--prev"
-          @click="prev"
-          :aria-label="`Xem hạng trước`"
-        >
-          <ArrowLeft :size="18" />
-        </button>
-
-        <div class="wr-track-wrap" ref="root">
-          <div ref="track" class="wr-track" aria-label="Top sản phẩm bán chạy">
-            <article
-              v-for="(product, i) in topSix"
-              :key="product.id"
-              class="wr-card"
-              :class="{ 'wr-card--champ': i === 0 }"
-              :style="{ '--c': product.color, '--rank': i + 1 }"
-            >
-              <span class="wr-rank">
-                #{{ i + 1 }}
-                <span class="wr-rank__dot"></span>
-              </span>
-
-              <div class="wr-media">
-                <img
-                  class="wr-img"
-                  :src="product.image"
-                  :alt="product.name"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div class="wr-shine"></div>
-              </div>
-
-              <div class="wr-info">
-                <span class="wr-cat">{{ product.categoryName }}</span>
-                <h3 class="wr-name">{{ product.name }}</h3>
-                <div class="wr-meta">
-                  <span class="wr-rating">★ {{ product.rating }}</span>
-                  <span class="wr-sold">{{ product.sold }} đã bán</span>
-                </div>
-                <strong class="wr-price">
-                  {{ product.price.toLocaleString("vi-VN") }}
-                  <small>₫</small>
-                </strong>
-              </div>
-
-              <div class="wr-action">
-                <QuickAdd :product="product" :stock="stockOf(product)" variant="icon" />
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <button
-          v-if="canNext"
-          type="button"
-          class="wr-nav wr-nav--next"
-          @click="next"
-          :aria-label="`Xem hạng sau`"
-        >
-          <ArrowRight :size="18" />
-        </button>
+  <main class="wr-page">
+    <!-- Header (left) -->
+    <header class="wr-header">
+      <div class="wr-header__ghost" aria-hidden="true">
+        <h1 class="wr-ghost-title">DOP MART</h1>
       </div>
+      <div class="wr-header__content">
+        <div class="wr-header__rule">
+          <div class="wr-header__line"></div>
+          <span class="wr-header__kicker">DOP MART EXCLUSIVE</span>
+          <div class="wr-header__line"></div>
+        </div>
+        <span class="wr-header__badge">Món ngon mỗi ngày</span>
+        <h2 class="wr-header__title">
+          TOP <span class="wr-header__glow">SNACK</span> BÁN CHẠY
+        </h2>
+        <p class="wr-header__lead">
+          Khám phá những hương vị độc bản tại DOP Mart. Mỗi sản phẩm là một hành trình cảm xúc từ nguyên liệu tự nhiên nhất.
+        </p>
+      </div>
+    </header>
 
-      <a href="/best-sellers" class="wr-cta">
-        Xem bảng xếp hạng đầy đủ <ArrowRight :size="14" />
-      </a>
-    </div>
-  </section>
+    <!-- Leaderboard (right, full height) -->
+    <section aria-label="Danh sách sản phẩm bán chạy" class="wr-shelf">
+      <div class="wr-track carousel-scrollbar">
+        <article
+          v-for="(product, i) in topSix"
+          :key="product.id"
+          class="wr-card skew-card group stagger-in"
+          :style="{
+            '--card-color': product.tint || product.color,
+            '--card-text': onColor(product.tint || product.color),
+            animationDelay: `${(i + 1) * 0.1}s`,
+          }"
+        >
+          <div class="wr-card__divider" aria-hidden="true"></div>
+          <div class="wr-card__pattern" aria-hidden="true"></div>
+          <div v-if="product.hot" class="wr-card__badge">
+            <span class="wr-card__badge-inner">
+              <Flame class="wr-card__flame" /> BEST SELLER
+            </span>
+          </div>
+          <h3 class="wr-card__name font-display">{{ product.name }}</h3>
+          <div class="wr-card__price-block">
+            <span class="wr-card__price font-display">{{ fmt(product.price) }} ₫</span>
+            <button
+              type="button"
+              class="wr-card__cta"
+              :aria-label="`Mua ${product.name} giá ${fmt(product.price)} đồng`"
+              @click="addToCart(product)"
+            >
+              MUA NGAY
+            </button>
+          </div>
+          <div class="wr-card__media shine-effect">
+            <img
+              :src="product.image"
+              :alt="product.name"
+              loading="lazy"
+              decoding="async"
+              class="wr-card__img floating"
+              :style="{ animationDelay: `${(i + 1) * 0.5}s` }"
+            />
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-/* ── Section ── */
-.wr-section {
-  position: relative;
-  isolation: isolate;
+.wr-page {
+  display: flex;
+  flex-direction: row;
+  min-height: 650px;
+  background-color: #0b1120;
   overflow: hidden;
-  background: var(--cream);
-  color: var(--ink);
-  padding: var(--section-y) var(--edge);
+  color: #fff;
+  font-family: "Archivo", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  padding: 4rem 1rem;
+  gap: 2rem;
+  align-items: stretch;
 }
-
-.wr-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.10;
-  background-image:
-    radial-gradient(#1a1a1a 1.2px, transparent 1.6px),
-    radial-gradient(#1a1a1a 1.2px, transparent 1.6px);
-  background-size: 170px 210px, 200px 240px;
-  background-position: top left, bottom right;
+@media (max-width: 1023px) {
+  .wr-page { flex-direction: column; }
 }
-
-.wr-inner {
-  position: relative;
-  z-index: 1;
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: 0 var(--gutter, 12px);
+.font-display {
+  font-family: "Anton", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-
-/* ── Header ── */
+/* Header (left) */
 .wr-header {
-  margin-bottom: var(--s5);
+  flex: 0 0 320px;
   position: relative;
-  z-index: 2;
-}
-
-.wr-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--fs-meta);
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--sun);
-  margin-bottom: 10px;
-}
-
-.wr-title {
-  margin: 0 0 8px;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(44px, 7vw, 72px);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-wrap: balance;
-}
-
-.wr-lead {
-  margin: 0;
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body, 1.5);
-  color: var(--on-cream);
-  max-width: 48ch;
-}
-
-/* ── Track ── */
-.wr-nav-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  margin-top: var(--s4);
+  justify-content: center;
+  text-align: center;
+  padding: 0 1rem;
 }
-
-.wr-track-wrap {
-  position: relative;
-  flex: 1;
+.wr-header__ghost {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.wr-ghost-title {
+  font-family: "Anton", sans-serif;
+  font-size: 8rem;
+  color: #fff;
+  letter-spacing: -0.05em;
+  margin: 0;
+  line-height: 1;
+}
+.wr-header__content { position: relative; z-index: 10; }
+.wr-header__rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.wr-header__line { height: 1px; width: 2rem; background: rgba(255, 255, 255, 0.2); }
+.wr-header__kicker {
+  font-family: "Anton", sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.6);
+}
+.wr-header__badge {
+  display: inline-block;
+  background: linear-gradient(to right, #dc2626, #f97316);
+  color: #fff;
+  padding: 0.25rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 15px -3px rgba(127, 29, 29, 0.2);
+}
+.wr-header__title {
+  font-family: "Anton", sans-serif;
+  font-size: 3rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-shadow: 0 10px 0 rgba(0, 0, 0, 0.8), 0 20px 30px rgba(0, 0, 0, 0.4);
+}
+.wr-header__glow {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.2);
+  letter-spacing: 0.05em;
+}
+.wr-header__lead {
+  color: #94a3b8;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+/* Shelf */
+.wr-shelf {
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  padding: 0 60px;
+  display: flex;
+  align-items: stretch;
 }
-
 .wr-track {
   display: flex;
-  gap: var(--s3);
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-bottom: 20px;
+  scroll-behavior: smooth;
+  gap: 0;
+  padding-bottom: 1rem;
 }
-
-.wr-track::-webkit-scrollbar {
-  display: none;
+.carousel-scrollbar::-webkit-scrollbar { height: 4px; }
+.carousel-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+.carousel-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+/* Card */
+.skew-card {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
-
 .wr-card {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  width: min(320px, calc((100% - 48px) / 3));
-  height: 460px;
-  position: relative;
-  isolation: isolate;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--paper);
-  border: var(--bw-bold) solid var(--ink);
-  box-shadow: 8px 8px 0 var(--cd, #000);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-
-.wr-card--champ {
-  width: min(430px, calc((100% - 48px) / 2.4));
-  z-index: 10;
-  box-shadow: 14px 14px 0 var(--cd, #000);
-  filter: drop-shadow(10px 10px 0 var(--cd, #000));
-}
-
-.wr-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 12px 12px 0 var(--cd, #000);
-}
-
-.wr-card--champ:hover {
-  transform: translateY(-6px);
-  box-shadow: 18px 18px 0 var(--cd, #000);
-}
-
-.wr-card:active {
-  transform: translateY(2px);
-  box-shadow: 4px 4px 0 var(--cd, #000);
-}
-
-/* ── Rank badge ── */
-.wr-rank {
-  position: absolute;
-  top: var(--s3);
-  left: var(--s3);
-  z-index: 20;
-  background: var(--c, var(--sun));
-  color: var(--on, var(--ink));
-  border: var(--bw-bold) solid var(--ink);
-  border-radius: var(--r-pill);
-  padding: 7px 16px;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(18px, 3.2cqw, 24px);
-  letter-spacing: -0.02em;
-  box-shadow: 4px 4px 0 var(--ink);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wr-rank__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 2px solid var(--c, var(--sun));
-  box-shadow: 0 0 0 2px var(--paper);
-}
-
-/* ── Media ── */
-.wr-media {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--c, #000) 12%, var(--cream));
-}
-
-.wr-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  padding: 16px;
-  filter: drop-shadow(0 16px 16px #0004);
-  transition: transform 0.4s ease;
-}
-
-.wr-card:hover .wr-img {
-  transform: scale(1.05);
-}
-
-.wr-shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    transparent 0%,
-    color-mix(in srgb, #fff 35%, transparent) 40%,
-    transparent 60%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
-.wr-card:hover .wr-shine {
-  transform: translateX(200%);
-}
-
-/* ── Info ── */
-.wr-info {
-  padding: var(--s3) var(--s3) var(--s2);
+  flex: 1 1 0%;
+  min-width: 260px;
+  background: var(--card-color, #E91E63);
+  background-image: radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.15) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.1) 0px, transparent 50%);
+  color: var(--card-text, #fff);
+  padding: 2rem;
+  padding-top: 3rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.wr-cat {
-  font-size: var(--fs-xs);
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--on-cream);
-}
-
-.wr-name {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(17px, 2.6vw, 20px);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.wr-meta {
-  display: flex;
-  gap: 10px;
-  margin-top: 4px;
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  color: var(--on-cream);
-}
-
-.wr-price {
-  margin-top: var(--s1);
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(20px, 3.4vw, 26px);
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.wr-price small {
-  font-size: 0.55em;
-  font-weight: 800;
-  color: var(--on-cream);
-}
-
-/* ── Action ── */
-.wr-action {
-  position: absolute;
-  bottom: var(--s3);
-  left: var(--s3);
-  right: var(--s3);
-  z-index: 15;
-  display: flex;
-  justify-content: center;
-}
-
-.wr-action .qa--icon .qa__go {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  font-size: 0;
-}
-
-/* ── Nav buttons ── */
-.wr-nav {
-  position: relative;
-  z-index: 30;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: var(--bw-bold) solid var(--ink);
-  background: var(--paper);
-  color: var(--ink);
-  cursor: pointer;
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.15s, box-shadow 0.15s;
-  flex-shrink: 0;
+  scroll-snap-align: center;
+  animation: fadeInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+  height: 100%;
 }
-
-.wr-nav:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
-}
-
-.wr-nav:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-
-.wr-nav--prev {
-  margin-left: -52px;
-}
-
-.wr-nav--next {
-  margin-right: -52px;
-}
-
-/* ── CTA ── */
-.wr-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: var(--s5);
-  min-height: 52px;
-  padding: 0 26px;
-  border: var(--bw-bold) solid var(--ink);
-  border-radius: var(--r-pill);
-  background: var(--sun);
-  color: var(--ink);
-  font-weight: 900;
-  text-decoration: none;
-  box-shadow: 4px 4px 0 var(--ink);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.wr-cta:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--ink);
-}
-
-.wr-cta:active {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-
-/* ── Responsive ── */
-@media (max-width: 1100px) {
+@media (min-width: 1024px) {
   .wr-card {
-    width: min(300px, calc((100% - 48px) / 2.6));
-  }
-  .wr-card--champ {
-    width: min(380px, calc((100% - 48px) / 2.2));
-  }
-}
-
-@media (max-width: 750px) {
-  .wr-section {
-    padding: var(--sp-5) var(--edge);
-  }
-  .wr-title {
-    font-size: clamp(34px, 14vw, 56px);
-  }
-  .wr-card {
-    width: min(290px, calc(100% - 48px));
-    height: 420px;
-  }
-  .wr-card--champ {
-    width: min(340px, calc(100% - 48px));
-  }
-  .wr-nav-wrap {
-    gap: var(--s2);
-  }
-  .wr-track-wrap {
-    padding: 0 52px;
-  }
-  .wr-nav--prev {
-    margin-left: -44px;
-  }
-  .wr-nav--next {
-    margin-right: -44px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wr-card,
-  .wr-img,
-  .wr-shine {
-    transition: none !important;
-    animation: none !important;
+    clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+    margin-left: -2.5%;
+    margin-right: -2.5%;
   }
   .wr-card:hover {
-    transform: none;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    z-index: 50;
+    transform: scale(1.04) translateY(-10px);
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.7);
   }
-  .wr-img {
-    transform: none !important;
+}
+.wr-card__divider {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .wr-card__divider {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7), transparent);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    z-index: 10;
+    pointer-events: none;
   }
+}
+.wr-card__pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0.05) 1px, transparent 0, transparent 50%);
+  background-size: 15px 15px;
+  animation: pulse-overlay 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.wr-card__badge {
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  z-index: 30;
+}
+.wr-card__badge-inner {
+  background: linear-gradient(to right, #facc15, #f97316);
+  color: #0f172a;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+.wr-card__flame { width: 0.875rem; height: 0.875rem; }
+.wr-card__name {
+  font-size: 1.75rem;
+  line-height: 1;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  transition: transform 0.5s;
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.3));
+}
+.group:hover .wr-card__name { transform: scale(1.05); }
+@media (min-width: 1024px) {
+  .wr-card__name { font-size: 2.25rem; }
+}
+.wr-card__price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.wr-card__price {
+  font-size: 1.25rem;
+  color: var(--card-text, #fff);
+  opacity: 0.9;
+  letter-spacing: 0.05em;
+}
+@media (min-width: 1024px) {
+  .wr-card__price { font-size: 1.5rem; }
+}
+.wr-card__cta {
+  margin-top: 1rem;
+  background: #fff;
+  color: var(--card-color, #E91E63);
+  font-weight: 700;
+  padding: 0.625rem 2rem;
+  border-radius: 9999px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s;
+  transform: scale(1);
+  border: none;
+  cursor: pointer;
+  font-family: "Archivo", sans-serif;
+}
+.wr-card__cta:hover { transform: scale(1.05); background: #f8fafc; }
+.wr-card__cta:active { transform: scale(0.95); }
+.wr-card__media {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  flex: 1;
+  min-height: 120px;
+}
+.shine-effect::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.3) 50%, transparent 55%);
+  transform: rotate(-45deg);
+  animation: shine 6s infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+.wr-card__img {
+  display: block;
+  width: 12rem;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.65));
+  z-index: 20;
+  margin: 0 auto;
+  transform: translateX(-0.5rem);
+}
+@media (min-width: 1024px) {
+  .wr-card__img { width: 16rem; }
+}
+.floating {
+  animation: float 4s ease-in-out infinite;
+}
+/* Animations */
+.stagger-in { animation: fadeInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(-45deg); }
+  20% { transform: translateX(100%) rotate(-45deg); }
+  100% { transform: translateX(100%) rotate(-45deg); }
+}
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+@keyframes pulse-overlay {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wr-card, .wr-card__img, .wr-card__pattern, .shine-effect::before {
+    animation: none !important;
+    transition: none !important;
+  }
+  .wr-card:hover { transform: none; }
+  .wr-card__img { transform: none !important; }
+}
+@media (max-width: 767px) {
+  .wr-header { flex: 0 0 auto; width: 100%; }
+  .wr-ghost-title { font-size: 5rem; }
 }
 </style>

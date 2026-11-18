@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, nextTick } from "vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SlidersHorizontal } from "lucide-vue-next";
@@ -75,9 +75,9 @@ watch(pages, (v) => {
 const entrance = ref();
 const fullBleed = ref(false);
 
-onMounted(() => {
-  s.init();
-  floor.init();
+onMounted(async () => {
+  await Promise.all([s.init(), floor.init()]);
+  await nextTick();
   if (!entrance.value) return;
   const tl = gsap.timeline({
     scrollTrigger: {

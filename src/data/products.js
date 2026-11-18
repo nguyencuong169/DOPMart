@@ -160,6 +160,7 @@ export const photoSubjects = Object.fromEntries(
   formats.map((f) => [f.slug, { file: `${f.slug}.webp`, ...f.photo }])
 )
 const imageOfFormat = Object.fromEntries(formats.map((f) => [f.slug, f.image]))
+export { imageOfFormat }
 const shelfOfFormat = Object.fromEntries(shelves.flatMap((s) => s.formats.map((f) => [f, s])))
 
 /* the dominant colour of each packshot — used by the deal card so the info block

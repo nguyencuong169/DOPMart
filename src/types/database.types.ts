@@ -95,7 +95,53 @@ export interface FavoriteRow {
 export interface ProfileRow {
   id: string;
   floor: number;
+  role: 'admin' | 'customer';
   updated_at: string;
+}
+
+export interface OrderRow {
+  id: string;
+  user_id: string;
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  total: number;
+  shipping_address: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItemRow {
+  id: string;
+  order_id: string;
+  product_id: number;
+  qty: number;
+  price_snapshot: number;
+  created_at: string;
+  products?: ProductRow; // nested via foreign-table select
+}
+
+export interface PromotionRow {
+  id: string;
+  code: string;
+  description: string;
+  discount_type: 'percent' | 'fixed';
+  discount_value: number;
+  min_order: number;
+  max_uses: number;
+  used_count: number;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PromotionUsageRow {
+  id: string;
+  promotion_id: string;
+  user_id: string;
+  order_id: string | null;
+  used_at: string;
 }
 
 // ============================================================
@@ -186,5 +232,68 @@ export interface FavoritesRow {
 export interface UserProfile {
   id: string;
   floor: number;
+  role: 'admin' | 'customer';
   updated_at: string;
+}
+
+// ============================================================
+// Admin client-facing shapes (camelCase for Vue components)
+// ============================================================
+
+export interface Order {
+  id: string;
+  userId: string;
+  userName?: string;
+  status: OrderRow['status'];
+  total: number;
+  shippingAddress: string;
+  notes: string | null;
+  items?: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId: number;
+  productName?: string;
+  qty: number;
+  priceSnapshot: number;
+  createdAt: string;
+}
+
+export interface Promotion {
+  id: string;
+  code: string;
+  description: string;
+  discountType: PromotionRow['discount_type'];
+  discountValue: number;
+  minOrder: number;
+  maxUses: number;
+  usedCount: number;
+  startsAt: string;
+  endsAt: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PromotionUsage {
+  id: string;
+  promotionId: string;
+  promotionCode?: string;
+  userId: string;
+  userName?: string;
+  orderId: string | null;
+  usedAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  floor: number;
+  role: 'admin' | 'customer';
+  updatedAt: string;
+  orderCount?: number;
+  totalSpent?: number;
 }

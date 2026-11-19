@@ -3,5 +3,17 @@
   "commit_message": {
     "prompt": ""
   },
-  "snapshot": false
+  "snapshot": false,
+  "mcp": {
+    "supabase": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@supabase/mcp-server-supabase@0.5.5",
+        "--access-token",
+        "sbp_fc0c8142a6cbcaec21c59ba0648c7bf1808302a7"
+      ]
+    }
+  }
 }

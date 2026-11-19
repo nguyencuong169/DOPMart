@@ -13,6 +13,7 @@ import BestSellerSpotlight from "../components/product/BestSellerSpotlight.vue";
 import OrderProcess from "../components/common/OrderProcess.vue";
 import AboutTeaser from "../components/common/AboutTeaser.vue";
 import WeeklyRanking from "@/components/product/WeeklyRanking.vue";
+import SuperDesignPreview from "@/components/product/SuperDesignPreview.vue";
 
 const store = useProductStore();
 const favorites = useFavoriteStore();
@@ -32,6 +33,7 @@ const homeNewProducts = computed(() => store.newProducts.slice(0, 4));
     <DropComboShowcaseNew />
     <BestSellerSpotlight />
     <WeeklyRanking />
+    <SuperDesignPreview />
     <OrderProcess />
     <AboutTeaser />
     <FavoriteFocus v-if="favorites.ids.length > 1" />

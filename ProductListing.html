@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Flavor Foundry // Artisan Snacks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;800&family=Satoshi:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /*
+        =================================================
+        1. GLOBAL RESET & CORE STYLES (Neo-Brutalism - Polished)
+        =================================================
+        */
+        :root {
+            /* Colors */
+            --color-primary-bg: #ffe17c; /* Yellow */
+            --color-deep-bg: #171e19;  /* Charcoal */
+            --color-accent: #b7c6c2;    /* Sage */
+            --color-ui-surface: #ffffff; /* White */
+            --color-text: #000000;     /* Black */
+
+            /* Typography */
+            --font-heading: 'Cabinet Grotesk', Impact, sans-serif;
+            --font-body: 'Satoshi', sans-serif;
+
+            /* Box Shadow Defaults */
+            --shadow-standard: 4px 4px 0px 0px var(--color-text);
+            --shadow-large: 8px 8px 0px 0px var(--color-text);
+
+            /* Dot Pattern */
+            --dot-pattern-opacity: 0.1;
+
+            /* Rhythm */
+            --section-padding-v: 80px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-body);
+            background-color: var(--color-deep-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .heading-cabinet {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        /* Utility classes */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+        .card {
+            border: 2px solid var(--color-text);
+            box-shadow: var(--shadow-standard);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            background-color: var(--color-ui-surface);
+            border-radius: 0;
+            cursor: pointer;
+            /* Focus State - Accessibility Improvement (Finding 7) */
+            outline: none;
+            box-shadow: var(--shadow-standard); /* Ensure default shadow is visible */
+        }
+
+        /*
+        =================================================
+        2. COMPONENTS STYLING
+        =================================================
+        */
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            padding-bottom: 80px;
+        }
+
+        .product-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: box-shadow 0.15s ease, transform 0.15s ease;
+            /* Adding a pseudo-class for visual type differentiation */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Product Type Differentiation (Finding 2) */
+        .product-card[data-type="drink"] {
+            background-color: var(--color-accent); /* Light Sage Wash */
+        }
+
+        .product-card[data-type="drink"] .heading-cabinet {
+            color: var(--color-text);
+        }
+
+        /* Hover/Focus States */
+        .product-card:hover, .product-card:focus-visible {
+            box-shadow: 6px 6px 0px 0px var(--color-text);
+            transform: translate(2px, 2px);
+        }
+
+        /* Button Style - The core interactive element */
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid var(--color-text);
+            background-color: var(--color-ui-surface);
+            color: var(--color-text);
+            font-family: var(--font-heading);
+            cursor: pointer;
+            box-shadow: var(--shadow-standard);
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            user-select: none;
+            /* Focus state implementation (Finding 7) */
+            outline: 3px solid var(--color-text);
+            outline-offset: 2px;
+        }
+
+        /* The Core Interaction: Hover Press */
+        .btn:hover {
+            background-color: var(--color-text);
+            color: var(--color-ui-surface);
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px 0px var(--color-text);
+        }
+
+        .btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px var(--color-text);
+        }
+
+        /* Section Styling */
+        .section-header {
+            /* Background yellow primary background */
+            background-color: var(--color-primary-bg);
+            text-align: center;
+            padding: 80px 0; /* Increased padding (Finding 4) */
+        }
+
+        /* Philosophy Section */
+        .philosophy-section {
+            /* Increased padding (Finding 4) */
+            padding: 120px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden; /* Contain dot pattern */
+        }
+
+        .dot-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at center, rgba(0, 0, 0, var(--dot-pattern-opacity)) 1px, transparent 1.5px);
+            background-size: 40px 40px;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        /* Constrain pattern visibility (Finding 6) */
+        .dot-background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at center, rgba(0, 0, 0, var(--dot-pattern-opacity)) 1px, transparent 1.5px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .philosophy-section > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Typography (Finding 1) */
+        .headline-group {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .headline-group h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            margin-bottom: 10px;
+        }
+        .headline-group .subtitle-block {
+            font-family: var(--font-body);
+            font-size: 1.4rem;
+            letter-spacing: 0.05em;
+            padding: 10px 20px;
+            background-color: var(--color-accent); /* Stylistic container */
+            border: 2px solid var(--color-text);
+            display: inline-block;
+        }
+
+        /* Product List Header Styling */
+        .product-list-header {
+            text-align: center;
+            padding-bottom: 40px;
+        }
+
+        .product-list-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+
+        /* General Paragraph/Description Styling (Finding 5) */
+        .product-description {
+            font-size: 1rem; /* Increased size (Finding 5) */
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* Footer CTA Block */
+        .cta-block {
+            background-color: var(--color-ui-surface);
+            box-shadow: var(--shadow-large);
+            padding: 60px;
+            border: 3px solid var(--color-text);
+            text-align: center;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 0;
+            }
+            .product-grid {
+                gap: 20px;
+            }
+            .product-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body id="root">
+
+    <!-- Hero Section: High Impact Statement -->
+    <header class="section-header">
+        <div class="container">
+            <div class="headline-group">
+                <h1 class="heading-cabinet">
+                    THE FLAVOR FOUNDRY.<br>
+                    <span style="font-size: 0.7em; font-weight: 400; display: block; margin-top: 10px;">
+                        A collection of aggressively delicious, thoughtfully made snacks.
+                    </span>
+                </h1>
+                <div class="subtitle-block">
+                    Gourmet Snacks & Beverages | Artisan Quality
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Philosophy Section: Showing Brand Story -->
+    <section class="philosophy-section">
+        <div class="dot-background-overlay"></div>
+        <div class="container" style="max-width: 900px;">
+            <h2 class="heading-cabinet" style="color: var(--color-text); font-size: 2.5rem; margin-bottom: 30px; position: relative; z-index: 2;">
+                FOOD IS NOT FUEL. IT IS A STATEMENT.
+            </h2>
+            <p style="max-width: 700px; margin: 0 auto 40px auto; font-size: 1.1rem; position: relative; z-index: 2;">
+                We craft snacks and drinks that challenge expectations. Every bite is designed to deliver an unexpected pop of flavor and a visual punch that screams, "I have excellent taste." We believe food should be an event, not a chore.
+            </p>
+            <a href="#catalog" class="btn" style="font-size: 1rem; padding: 12px 40px;">DISCOVER THE FLAVOR</a>
+        </div >
+    </section>
+
+    <!-- Catalog Section -->
+    <section class="container" id="catalog">
+        <div class="product-list-header">
+            <h2 class="heading-cabinet">FEATURED CATALOG</h2>
+            <p style="font-size: 1.1rem; color: var(--color-accent);">Mixing shelf-stable intensity with fresh, local sourcing.</p>
+        </div>
+
+        <div class="product-grid">
+
+            <!-- Product Card 1: Shelf-Stable (Default) -->
+            <div class="product-card" data-type="shelf-stable">
+                <img src="https://via.placeholder.com/32x32/b7c6c2/171e19?text=SEA+SALT" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">SMOKED SEA SALT FINGERS</h3>
+                <p class="product-description">Crispy, addictive, infused with mesquite smoke and pure sea salt. Perfect for everything.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+            <!-- Product Card 2: Drink (Differentiated) -->
+            <div class="product-card" data-type="drink">
+                <img src="https://via.placeholder.com/32x32/171e19/ffe17c?text=LIME+ADE" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">MANGO-LIME ELIXIR</h3>
+                <p class="product-description">Hand-pressed, cold-filtered, and mixed with local lime zest. Refreshing shockwave in a bottle.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+            <!-- Product Card 3: Mix (Default) -->
+            <div class="product-card" data-type="mix">
+                <img src="https://via.placeholder.com/32x32/ffe17c/171e19?text=CHILI+CHIPS" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">GUACAMOLE CHIP FRENZY</h3>
+                <p class="product-description">Bold, bright, and dangerously addictive. The perfect pairing for everything bad.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+            <!-- Product Card 4: Shelf-Stable (Default) -->
+            <div class="product-card" data-type="shelf-stable">
+                <img src="https://via.placeholder.com/32x32/171e19/b7c6c2?text=PEPPERONI" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">PEPPERONI CRUST BITS</h3>
+                <p class="product-description">The snack that defies snack rules. High-impact flavor, incredible crunch.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+            <!-- Product Card 5: Mix (Default) -->
+            <div class="product-card" data-type="mix">
+                <img src="https://via.placeholder.com/32x32/b7c6c2/171e19?text=SPICE+DIP" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">SECRET SPICE DIP MIX</h3>
+                <p class="product-description">Our proprietary mix for dips, sauces, and sheer enjoyment. Use sparingly.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+            <!-- Product Card 6: Drink (Differentiated) -->
+            <div class="product-card" data-type="drink">
+                <img src="https://via.placeholder.com/32x32/ffe17c/171e19?text=SMOKY+TEA" alt="Product image">
+                <h3 class="heading-cabinet" style="font-size: 1.7rem; margin: 5px 0;">MIDNIGHT SMOKY TEA</h3>
+                <p class="product-description">An intense, smoky black tea blend, perfect for a late-night craving. Brewed dark.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="alert('DISCOVERING...')">DISCOVER</button>
+                </div>
+            </div>
+
+        </div >
+    </section>
+
+    <!-- Call to Action / Footer Style Block -->
+    <section class="container" style="padding: 80px 0; text-align: center;">
+        <div class="cta-block">
+            <h2 class="heading-cabinet" style="font-size: 2.8rem; margin-bottom: 15px;">READY TO GET FLAVORED?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 40px; color: #555;">
+                Explore the full catalog or sign up for our monthly flavor dispatch.
+            </p>
+            <button class="btn" style="padding: 15px 45px; font-size: 1.2rem;">BROWSE FULL COLLECTION</button>
+        </div>
+    </section>
+
+</body >
+</html>

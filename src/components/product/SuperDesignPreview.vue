@@ -3,12 +3,6 @@ import { onMounted } from 'vue'
 
 // Load external scripts on mount
 onMounted(() => {
-  // Load Tailwind CSS
-  if (!document.querySelector('script[src="https://cdn.tailwindcss.com"]')) {
-    const tw = document.createElement('script')
-    tw.src = 'https://cdn.tailwindcss.com'
-    document.head.appendChild(tw)
-  }
   // Load Iconify
   if (!document.querySelector('script[src="https://code.iconify.design"]')) {
     const ic = document.createElement('script')

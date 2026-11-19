@@ -95,12 +95,14 @@ END $$;
 
 -- 7. Row Level Security cho các bảng mới
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "orders: own" ON orders;
 CREATE POLICY "orders: own" ON orders
   FOR ALL
   USING (auth.uid() IS NULL OR (auth.uid())::text = user_id)
   WITH CHECK (auth.uid() IS NULL OR (auth.uid())::text = user_id);
 
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "order_items: own via orders" ON order_items;
 CREATE POLICY "order_items: own via orders" ON order_items
   FOR ALL
   USING (
@@ -119,11 +121,13 @@ CREATE POLICY "order_items: own via orders" ON order_items
   );
 
 ALTER TABLE promotions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "promotions: public read" ON promotions;
 CREATE POLICY "promotions: public read" ON promotions
   FOR SELECT
   USING (is_active = true);
 
 ALTER TABLE promotion_usage ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "promotion_usage: own" ON promotion_usage;
 CREATE POLICY "promotion_usage: own" ON promotion_usage
   FOR ALL
   USING (auth.uid() IS NULL OR (auth.uid())::text = user_id)

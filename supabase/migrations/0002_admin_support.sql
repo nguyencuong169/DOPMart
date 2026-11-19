@@ -137,6 +137,7 @@ CREATE POLICY "promotion_usage: own" ON promotion_usage
 --    Admin quản lý profiles qua Supabase Dashboard trực tiếp
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "profiles: own" ON profiles;
+DROP POLICY IF EXISTS "admin: all profiles" ON profiles;
 CREATE POLICY "profiles: own" ON profiles
   FOR ALL
   USING (auth.uid() IS NULL OR (auth.uid())::text = id)

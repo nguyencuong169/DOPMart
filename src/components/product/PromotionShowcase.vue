@@ -2,9 +2,10 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger.js";
-import { ArrowRight, Tag, Flame } from "lucide-vue-next";
+import { ArrowRight, Tag, Flame, Clock3 } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
 import { useCartStore } from "../../stores/cartStore";
+import { surfaceTone } from "../../utils/color";
 gsap.registerPlugin(ScrollTrigger);
 
 const products = useProductStore(),

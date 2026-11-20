@@ -61,7 +61,7 @@ const updateStatus = async (id, newStatus) => {
 
 const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
 
-onMounted(() => { loadOrders(); });
+onMounted(() => { loadOrders().then(filterOrders); });
 </script>
 
 <template>
@@ -72,7 +72,7 @@ onMounted(() => { loadOrders(); });
 
     <div class="filters">
       <div class="search-bar">
-        <Search size={18} class="search-icon" />
+        <Search :size="18" class="search-icon" />
         <input v-model="searchQuery" @input="filterOrders" placeholder="Tìm đơn hàng..." class="search-input" />
       </div>
       <select v-model="statusFilter" @change="filterOrders" class="form-select">

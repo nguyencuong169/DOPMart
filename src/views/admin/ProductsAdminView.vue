@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { supabase } from "@/lib/supabase";
+import { supabase, uploadProductImage, getProductImageUrl } from "@/lib/supabase";
+import { imageOfFormat } from "@/data/products";
 import { Search, Plus, Edit, Trash2, Save, X, Package } from "lucide-vue-next";
 
 const products = ref([]);
@@ -11,7 +12,7 @@ const editing = ref(null);
 const form = ref({
   name: "", slug: "", category: "", categoryName: "", price: null,
   format: "chips", shelf: "snack-man", color: "#ffb82e", tint: "#f5a623",
-  description: "", isNew: false, hot: false, stock14: 0, stock20: 0,
+  description: "", isNew: false, hot: false, stock14: 0, stock20: 0, image: null, rating: 0,
 });
 
 const formats = [
@@ -32,7 +33,7 @@ const loadProducts = async () => {
   try {
     const { data, error } = await supabase.from("products").select("*").order("id", { ascending: true });
     if (error) throw error;
-    products.value = (data || []).map((p) => ({ ...p, isNew: Boolean(p.is_new), hot: Boolean(p.hot) }));
+    products.value = (data || []).map((p) => ({ ...p, isNew: Boolean(p.is_new), hot: Boolean(p.hot), image: imageOfFormat[p.format_slug] }));
   } catch (e) {
     alert("Lỗi tải sản phẩm: " + e.message);
   } finally { loading.value = false; }
@@ -46,7 +47,7 @@ const filterProducts = () => {
 
 const openCreate = () => {
   editing.value = null;
-  form.value = { name: "", slug: "", category: "", categoryName: "", price: null, format: "chips", shelf: "snack-man", color: "#ffb82e", tint: "#f5a623", description: "", isNew: false, hot: false, stock14: 0, stock20: 0 };
+  form.value = { name: "", slug: "", category: "", categoryName: "", price: null, format: "chips", shelf: "snack-man", color: "#ffb82e", tint: "#f5a623", description: "", isNew: false, hot: false, stock14: 0, stock20: 0, image: null };
   showForm.value = true;
 };
 
@@ -55,12 +56,19 @@ const openEdit = (p) => {
   form.value = {
     name: p.name, slug: p.slug, category: p.shelf_slug, categoryName: p.category_name, price: p.price,
     format: p.format_slug, shelf: p.shelf_slug, color: p.color, tint: p.tint, description: p.description,
-    isNew: Boolean(p.is_new), hot: Boolean(p.hot), stock14: p.stock_floor_14, stock20: p.stock_floor_20,
+    isNew: Boolean(p.is_new), hot: Boolean(p.hot), stock14: p.stock_floor_14, stock20: p.stock_floor_20, image: p.image, rating: p.rating,
   };
   showForm.value = true;
 };
 
 const saveProduct = async () => {
+  let imageUrl = form.value.image;
+  if (imageFile.value) {
+    const filePath = `products/${Date.now()}_${imageFile.value.name.replace(/\s+/g, "_")}`;
+    const { error: upErr } = await uploadProductImage(filePath, imageFile.value);
+    if (upErr) throw upErr;
+    imageUrl = getProductImageUrl(filePath);
+  }
   const payload = {
     name: form.value.name,
     slug: form.value.slug || form.value.name.toLowerCase().replace(/\s+/g, "-"),
@@ -68,8 +76,10 @@ const saveProduct = async () => {
     category_name: form.value.categoryName || form.value.shelf,
     price: Number(form.value.price) || 0, color: form.value.color, tint: form.value.tint,
     description: form.value.description, is_new: Boolean(form.value.isNew), hot: Boolean(form.value.hot),
+    rating: Number(form.value.rating) || 0,
     stock_floor_14: Number(form.value.stock14) || 0, stock_floor_20: Number(form.value.stock20) || 0,
     tags: [], notes: [],
+    image: imageUrl,
   };
   try {
     if (editing.value) {
@@ -95,7 +105,23 @@ const deleteProduct = async (id) => {
 
 const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
 
-onMounted(() => { loadProducts(); });
+const imageFile = ref(null);
+const imagePreview = ref(null);
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    alert("Vui lòng chọn file ảnh (jpg, png, webp)");
+    return;
+  }
+  imageFile.value = file;
+  imagePreview.value = URL.createObjectURL(file);
+};
+
+onMounted(() => {
+  loadProducts().then(filterProducts);
+});
 </script>
 
 <template>
@@ -103,12 +129,12 @@ onMounted(() => { loadProducts(); });
     <div class="page-header">
       <h1 class="page-title">Quản lý sản phẩm</h1>
       <button class="btn btn--primary" @click="openCreate">
-        <Plus size={18} /> Thêm sản phẩm
+        <Plus :size="18" /> Thêm sản phẩm
       </button>
     </div>
 
     <div class="search-bar">
-      <Search size={18} class="search-icon" />
+      <Search :size="18" class="search-icon" />
       <input v-model="searchQuery" @input="filterProducts" placeholder="Tìm sản phẩm..." class="search-input" />
     </div>
 
@@ -129,7 +155,8 @@ onMounted(() => { loadProducts(); });
           <tr v-for="p in filteredProducts" :key="p.id">
             <td>
               <div class="product-avatar" :style="{ backgroundColor: p.color }">
-                <Package size={16} />
+                <img v-if="p.image" :src="p.image" :alt="p.name" class="product-image" />
+                <Package v-else :size="16" />
               </div>
             </td>
             <td>{{ p.name }}</td>
@@ -142,8 +169,8 @@ onMounted(() => { loadProducts(); });
               <span v-else class="badge text-muted">—</span>
             </td>
             <td class="text-center actions">
-              <button class="icon-btn" @click="openEdit(p)" title="Sửa"><Edit size={16} /></button>
-              <button class="icon-btn icon-btn--danger" @click="deleteProduct(p.id)" title="Xóa"><Trash2 size={16} /></button>
+              <button class="icon-btn" @click="openEdit(p)" title="Sửa"><Edit :size="16" /></button>
+              <button class="icon-btn icon-btn--danger" @click="deleteProduct(p.id)" title="Xóa"><Trash2 :size="16" /></button>
             </td>
           </tr>
           <tr v-if="filteredProducts.length === 0"><td colspan="7" class="empty">Không tìm thấy sản phẩm nào</td></tr>
@@ -158,7 +185,7 @@ onMounted(() => { loadProducts(); });
       <div v-if="showForm" class="modal" @click.stop>
         <div class="modal-header">
           <h3>{{ editing ? "Sửa sản phẩm" : "Thêm sản phẩm mới" }}</h3>
-          <button class="modal-close" @click="showForm = false"><X size={20} /></button>
+          <button class="modal-close" @click="showForm = false"><X :size="20" /></button>
         </div>
         <div class="modal-body">
           <div class="form-grid">
@@ -187,6 +214,10 @@ onMounted(() => { loadProducts(); });
               <input type="number" v-model.number="form.price" class="form-input" />
             </div>
             <div class="form-field">
+              <label class="form-label">Đánh giá (0–5)</label>
+              <input type="number" v-model.number="form.rating" min="0" max="5" step="0.1" class="form-input" />
+            </div>
+            <div class="form-field">
               <label class="form-label">Màu sắc</label>
               <input type="color" v-model="form.color" class="form-color" />
             </div>
@@ -206,6 +237,14 @@ onMounted(() => { loadProducts(); });
               <label class="form-label">Mô tả</label>
               <textarea v-model="form.description" class="form-input" rows="3"></textarea>
             </div>
+            <div class="form-field span-2">
+              <label class="form-label">Ảnh sản phẩm</label>
+              <input type="file" accept="image/*" @change="handleImageChange" class="form-input" />
+              <div v-if="imagePreview || form.image" class="image-preview-wrap">
+                <img :src="imagePreview || form.image" :alt="form.name" class="preview-img" />
+              </div>
+              <p class="form-hint">Chọn ảnh mới để upload (jpg, png, webp)</p>
+            </div>
             <div class="form-field span-2 form-toggle">
               <label class="form-label">Trạng thái</label>
               <div class="toggle-row">
@@ -217,7 +256,7 @@ onMounted(() => { loadProducts(); });
         </div>
         <div class="modal-footer">
           <button class="btn" @click="showForm = false">Hủy</button>
-          <button class="btn btn--primary" @click="saveProduct"><Save size={16} /> {{ editing ? "Cập nhật" : "Tạo mới" }}</button>
+          <button class="btn btn--primary" @click="saveProduct"><Save :size="16" /> {{ editing ? "Cập nhật" : "Tạo mới" }}</button>
         </div>
       </div>
     </Transition>
@@ -337,6 +376,14 @@ onMounted(() => { loadProducts(); });
   align-items: center;
   justify-content: center;
   color: #ffffff;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .text-center { text-align: center; }
@@ -504,5 +551,22 @@ onMounted(() => { loadProducts(); });
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border, #e5e7eb);
   background: var(--muted, #f9fafb);
+}
+
+.image-preview-wrap {
+  margin-top: 0.5rem;
+}
+.preview-img {
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--muted, #f3f4f6);
+}
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--muted-foreground, #9ca3af);
+  margin-top: 0.25rem;
 }
 </style>

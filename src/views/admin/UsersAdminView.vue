@@ -60,7 +60,7 @@ const roleOptions = [
   { value: "admin", label: "Quản trị" },
 ];
 
-onMounted(() => { loadUsers(); });
+onMounted(() => { loadUsers().then(filterUsers); });
 </script>
 
 <template>
@@ -71,7 +71,7 @@ onMounted(() => { loadUsers(); });
 
     <div class="filters">
       <div class="search-bar">
-        <Search size={18} class="search-icon" />
+        <Search :size="18" class="search-icon" />
         <input v-model="searchQuery" @input="filterUsers" placeholder="Tìm người dùng..." class="search-input" />
       </div>
       <select v-model="roleFilter" @change="filterUsers" class="form-select">

@@ -9,6 +9,7 @@ const router = useRouter();
 
 const sidebarOpen = ref(true);
 const userMenuOpen = ref(false);
+const avatarError = ref(false);
 const user = ref(null);
 const isMobile = ref(window.innerWidth < 768);
 
@@ -69,12 +70,9 @@ window.addEventListener("resize", () => {
         <button class="topbar-icon-btn" aria-label="Thông báo">
           <Bell :size="20" />
         </button>
-        <button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
-        { user?.user_metadata?.avatar_url ? (
-          <img class="avatar" :src="user?.user_metadata?.avatar_url" alt="" />
-        ) : (
-            <Store :size="20" />
-          )}
+<button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
+          <img v-if="user?.user_metadata?.avatar_url && !avatarError" class="avatar" :src="user?.user_metadata?.avatar_url" alt="" @error="avatarError = true" />
+          <Store v-else :size="20" />
         </button>
       </div>
     </header>

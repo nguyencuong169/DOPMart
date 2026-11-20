@@ -98,7 +98,7 @@ const toggleActive = async (id, current) => {
 
 const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
 
-onMounted(() => { loadPromotions(); });
+onMounted(() => { loadPromotions().then(filterPromotions); });
 </script>
 
 <template>
@@ -106,12 +106,12 @@ onMounted(() => { loadPromotions(); });
     <div class="page-header">
       <h1 class="page-title">Quản lý khuyến mãi</h1>
       <button class="btn btn--primary" @click="openCreate">
-        <Plus size={18} /> Tạo mã giảm giá
+        <Plus :size="18" /> Tạo mã giảm giá
       </button>
     </div>
 
     <div class="search-bar">
-      <Search size={18} class="search-icon" />
+      <Search :size="18" class="search-icon" />
       <input v-model="searchQuery" @input="filterPromotions" placeholder="Tìm mã giảm giá..." class="search-input" />
     </div>
 
@@ -148,8 +148,8 @@ onMounted(() => { loadPromotions(); });
               </label>
             </td>
             <td class="text-center actions">
-              <button class="icon-btn" @click="openEdit(p)" title="Sửa"><Edit size={16} /></button>
-              <button class="icon-btn icon-btn--danger" @click="deletePromotion(p.id)" title="Xóa"><Trash2 size={16} /></button>
+              <button class="icon-btn" @click="openEdit(p)" title="Sửa"><Edit :size="16" /></button>
+              <button class="icon-btn icon-btn--danger" @click="deletePromotion(p.id)" title="Xóa"><Trash2 :size="16" /></button>
             </td>
           </tr>
           <tr v-if="filteredPromotions.length === 0"><td colspan="9" class="empty">Không tìm thấy khuyến mãi nào</td></tr>
@@ -164,7 +164,7 @@ onMounted(() => { loadPromotions(); });
       <div v-if="showForm" class="modal" @click.stop>
         <div class="modal-header">
           <h3>{{ editing ? "Sửa mã giảm giá" : "Tạo mã giảm giá mới" }}</h3>
-          <button class="modal-close" @click="showForm = false"><X size={20} /></button>
+          <button class="modal-close" @click="showForm = false"><X :size="20" /></button>
         </div>
         <div class="modal-body">
           <div class="form-grid">
@@ -215,7 +215,7 @@ onMounted(() => { loadPromotions(); });
         </div>
         <div class="modal-footer">
           <button class="btn" @click="showForm = false">Hủy</button>
-          <button class="btn btn--primary" @click="savePromotion"><Save size={16} /> {{ editing ? "Cập nhật" : "Tạo mới" }}</button>
+          <button class="btn btn--primary" @click="savePromotion"><Save :size="16" /> {{ editing ? "Cập nhật" : "Tạo mới" }}</button>
         </div>
       </div>
     </Transition>

@@ -70,9 +70,9 @@ window.addEventListener("resize", () => {
           <Bell size={20} />
         </button>
         <button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
-{ user.value?.user_metadata?.avatar_url ? (
-    <img class="avatar" :src="user.value?.user_metadata?.avatar_url" alt="" />
-  ) : (
+        { user.value?.user_metadata?.avatar_url ? (
+          <img class="avatar" :src="user.value?.user_metadata?.avatar_url" alt="" />
+        ) : (
             <Store size={20} />
           )}
         </button>
@@ -110,7 +110,7 @@ window.addEventListener("resize", () => {
           :class="{ active: isActive(link.name) }"
           @click="closeSidebar"
         >
-          <link.icon size={18} class="sidebar-link-icon" />
+          <component :is="link.icon" size={18} class="sidebar-link-icon" />
           <span class="sidebar-link-label">{{ link.label }}</span>
         </RouterLink>
       </nav>

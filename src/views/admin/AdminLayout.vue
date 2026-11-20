@@ -70,8 +70,8 @@ window.addEventListener("resize", () => {
           <Bell size={20} />
         </button>
         <button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
-        { user.value?.user_metadata?.avatar_url ? (
-          <img class="avatar" :src="user.value?.user_metadata?.avatar_url" alt="" />
+        { user?.user_metadata?.avatar_url ? (
+          <img class="avatar" :src="user?.user_metadata?.avatar_url" alt="" />
         ) : (
             <Store size={20} />
           )}

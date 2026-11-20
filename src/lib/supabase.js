@@ -82,8 +82,7 @@ export async function fetchOrders() {
           format_slug,
           shelf_slug,
           category_name,
-          price,
-          image_url
+          price
         )
       ),
       profiles (

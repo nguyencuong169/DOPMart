@@ -58,22 +58,22 @@ window.addEventListener("resize", () => {
   <div class="admin-layout" :class="{ 'is-mobile': isMobile }">
     <header class="admin-topbar">
       <button class="topbar-toggle" @click="toggleSidebar" aria-label="Mở menu">
-        <Menu size={20} />
+        <Menu :size="20" />
       </button>
       <div class="topbar-brand">
-        <Store size={24} class="brand-icon" />
+        <Store :size="24" class="brand-icon" />
         <span class="brand-name">DOP<span class="brand-name-accent">Mart</span> Admin</span>
       </div>
       <div class="topbar-spacer" />
       <div class="topbar-actions">
         <button class="topbar-icon-btn" aria-label="Thông báo">
-          <Bell size={20} />
+          <Bell :size="20" />
         </button>
         <button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
         { user?.user_metadata?.avatar_url ? (
           <img class="avatar" :src="user?.user_metadata?.avatar_url" alt="" />
         ) : (
-            <Store size={20} />
+            <Store :size="20" />
           )}
         </button>
       </div>
@@ -98,7 +98,7 @@ window.addEventListener("resize", () => {
     >
       <div class="sidebar-header">
         <button class="sidebar-close" @click="closeSidebar" aria-label="Đóng sidebar">
-          <ChevronLeft size={20} />
+          <ChevronLeft :size="20" />
         </button>
       </div>
       <nav class="sidebar-nav">
@@ -110,7 +110,7 @@ window.addEventListener("resize", () => {
           :class="{ active: isActive(link.name) }"
           @click="closeSidebar"
         >
-          <component :is="link.icon" size={18} class="sidebar-link-icon" />
+          <component :is="link.icon" :size="18" class="sidebar-link-icon" />
           <span class="sidebar-link-label">{{ link.label }}</span>
         </RouterLink>
       </nav>

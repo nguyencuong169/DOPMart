@@ -68,52 +68,52 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
     <div class="stat-grid">
       <div class="stat-card stat-card--revenue">
         <div class="stat-icon stat-icon--revenue">
-          <CreditCard size={20} />
+          <CreditCard :size="20" />
         </div>
         <div class="stat-content">
           <div class="stat-label">Tổng doanh thu</div>
           <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
           <div class="stat-trend positive">
-            <TrendingUp size={14} /> +12% so với tháng trước
+            <TrendingUp :size="14" /> +12% so với tháng trước
           </div>
         </div>
-        <ArrowRight size={16} class="stat-arrow" />
+        <ArrowRight :size="16" class="stat-arrow" />
       </div>
 
       <div class="stat-card stat-card--orders">
         <div class="stat-icon stat-icon--orders">
-          <Package size={20} />
+          <Package :size="20" />
         </div>
         <div class="stat-content">
           <div class="stat-label">Đơn hàng hôm nay</div>
           <div class="stat-value">{{ todayOrders }}</div>
           <div class="stat-trend neutral">8 đơn chờ xử lý</div>
         </div>
-        <ArrowRight size={16} class="stat-arrow" />
+        <ArrowRight :size="16" class="stat-arrow" />
       </div>
 
       <div class="stat-card stat-card--products">
         <div class="stat-icon stat-icon--products">
-          <User size={20} />
+          <User :size="20" />
         </div>
         <div class="stat-content">
           <div class="stat-label">Sản phẩm đang bán</div>
           <div class="stat-value">{{ activeProducts }}</div>
           <div class="stat-trend neutral">Cập nhật kho hàng</div>
         </div>
-        <ArrowRight size={16} class="stat-arrow" />
+        <ArrowRight :size="16" class="stat-arrow" />
       </div>
 
       <div class="stat-card stat-card--customers">
         <div class="stat-icon stat-icon--customers">
-          <Clock size={20} />
+          <Clock :size="20" />
         </div>
         <div class="stat-content">
           <div class="stat-label">Khách hàng mới</div>
           <div class="stat-value">{{ newCustomers }}</div>
           <div class="stat-trend positive">+5 khách hàng tuần này</div>
         </div>
-        <ArrowRight size={16} class="stat-arrow" />
+        <ArrowRight :size="16" class="stat-arrow" />
       </div>
     </div>
 
@@ -122,19 +122,19 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
       <h2 class="section-title">Hành động nhanh</h2>
       <div class="action-grid">
         <button class="action-btn action-btn--add" @click="router.push({ name: 'admin-products' })">
-          <Package size={18} />
+          <Package :size="18" />
           <span>Thêm sản phẩm</span>
         </button>
         <button class="action-btn action-btn--orders" @click="router.push({ name: 'admin-orders' })">
-          <ShoppingBag size={18} />
+          <ShoppingBag :size="18" />
           <span>Xem đơn hàng</span>
         </button>
         <button class="action-btn action-btn--promo" @click="router.push({ name: 'admin-promotions' })">
-          <Tag size={18} />
+          <Tag :size="18" />
           <span>Tạo khuyến mãi</span>
         </button>
         <button class="action-btn action-btn--users" @click="router.push({ name: 'admin-users' })">
-          <Users size={18} />
+          <Users :size="18" />
           <span>Quản lý người dùng</span>
         </button>
       </div>

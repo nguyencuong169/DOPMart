@@ -231,6 +231,8 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
 }
@@ -279,12 +281,13 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
   background: var(--muted, #f9fafb);
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;
-  width: 320px;
+  width: min(320px, 100%);
 }
 
 .search-icon { color: var(--muted-foreground, #9ca3af); flex-shrink: 0; }
 
 .search-input {
+  min-width: 0;
   flex: 1; border: none; background: transparent; outline: none;
   font-size: 0.875rem; color: var(--foreground, #1a1a1a);
 }
@@ -343,7 +346,7 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
 
 /* Form (modal) */
 .form-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
 }
 .form-field.span-2 { grid-column: span 2; }
 .form-label {
@@ -356,7 +359,7 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
   color: var(--foreground, #1a1a1a); font-size: 0.875rem; outline: none;
 }
 .form-input:focus, .form-select:focus { border-color: var(--flame, #ff5a1f); }
-.toggle-row { display: flex; gap: 1rem; margin-top: 0.25rem; }
+.toggle-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.25rem; }
 .toggle-item {
   display: flex; align-items: center; gap: 0.375rem;
   font-size: 0.875rem; color: var(--foreground, #1a1a1a); cursor: pointer;
@@ -371,6 +374,7 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: min(720px, 92vw); max-height: 85vh;
+  max-height: 85dvh;
   background: var(--popover, #ffffff); border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px; box-shadow: var(--shadow-2, 0 10px 15px -3px rgb(0 0 0 / 0.1));
   z-index: 51; display: flex; flex-direction: column; overflow: hidden;
@@ -396,5 +400,18 @@ onMounted(() => { loadPromotions().then(filterPromotions); });
   display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;
   padding: 0.75rem 1.25rem; border-top: 1px solid var(--border, #e5e7eb);
   background: var(--muted, #f9fafb);
+}
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-field.span-2 {
+    grid-column: 1;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+  }
 }
 </style>

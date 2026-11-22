@@ -248,7 +248,7 @@ onBeforeUnmount(() => ctx?.revert());
 .bs-rank__champ-card {
   background: var(--paper) !important;
   border: var(--bw-bold) solid var(--ink) !important;
-  border-radius: var(--radius) !important;
+  border-radius: var(--r-md) !important;
   box-shadow: 12px 12px 0 var(--ink) !important;
   overflow: visible !important;
 }
@@ -326,7 +326,7 @@ onBeforeUnmount(() => ctx?.revert());
   padding-top: 0 !important;
   border-top: none !important;
   background: transparent !important;
-  border-radius: 0 0 var(--radius) var(--radius) !important;
+  border-radius: 0 0 var(--r-md) var(--r-md) !important;
 }
 .bs-rank__champ-detail {
   min-height: 46px;
@@ -355,7 +355,7 @@ onBeforeUnmount(() => ctx?.revert());
 .bs-rank__runner-card {
   background: var(--paper) !important;
   border: var(--bw-bold) solid var(--ink) !important;
-  border-radius: var(--radius) !important;
+  border-radius: var(--r-md) !important;
   box-shadow: 7px 7px 0 var(--ink) !important;
   overflow: visible !important;
   transition:
@@ -426,7 +426,7 @@ onBeforeUnmount(() => ctx?.revert());
   padding-top: 0 !important;
   border-top: none !important;
   background: transparent !important;
-  border-radius: 0 0 var(--radius) var(--radius) !important;
+  border-radius: 0 0 var(--r-md) var(--r-md) !important;
   padding-bottom: 12px !important;
 }
 

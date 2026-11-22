@@ -219,7 +219,7 @@ const titleWords = computed(() =>
   align-items: center;
   gap: 10px;
   padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius);
+  border-radius: var(--r-md);
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: var(--fs-lg);
@@ -229,7 +229,7 @@ const titleWords = computed(() =>
 }
 
 .about-teaser__cta--story {
-  border: var(--border);
+  border: var(--storefront-border);
   background: var(--ink);
   color: #fff;
   box-shadow: var(--shadow);
@@ -274,7 +274,7 @@ const titleWords = computed(() =>
   img {
     width: 100%;
     height: auto;
-    border-radius: var(--radius);
+    border-radius: var(--r-md);
     box-shadow: var(--e3);
     display: block;
     transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1);

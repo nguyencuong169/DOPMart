@@ -160,8 +160,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .store-hero {
-  background: var(--cream, #fff7e3);
-  color: var(--ink, #1a1a1a);
+  background: var(--cream);
+  color: var(--ink);
 }
 .store-hero__inner {
   display: grid;
@@ -188,27 +188,29 @@ onBeforeUnmount(() => {
 }
 .store-hero__hours {
   margin: 0 0 20px;
-  font-size: .875rem;
+  color: var(--on-cream);
+  font-size: var(--fs-sm);
   font-weight: 650;
 }
 .store-hero__status {
   padding: 3px 9px;
   border: 1px solid currentColor;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
 }
-.store-hero__status.is-open { color: var(--green-ink, #156b3d); }
+.store-hero__status.is-open { color: var(--green-ink); }
 .store-hero h1 {
   margin: 0 0 22px;
-  font: 800 clamp(2.65rem, 5.55vw, 5.8rem)/1.04 var(--font-display, system-ui);
+  font: 800 clamp(2.5rem, 5.55vw, 5.5rem)/var(--lh-display) var(--font-display);
   letter-spacing: -.065em;
   text-wrap: balance;
 }
-.store-hero h1 span { color: var(--red-ink, #b81f2b); }
+.store-hero h1 span { color: var(--red-ink); }
 .store-hero__intro {
   margin: 0 0 22px;
   max-width: 37ch;
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
-  line-height: 1.55;
+  color: var(--on-cream);
+  font-size: clamp(var(--fs-md), 1.4vw, var(--fs-lg));
+  line-height: var(--lh-body);
 }
 .store-hero__links a {
   display: inline-flex;
@@ -219,9 +221,12 @@ onBeforeUnmount(() => {
 }
 .store-hero__primary {
   padding-inline: 18px;
-  border-radius: 999px;
-  background: var(--ink, #1a1a1a);
-  color: var(--cream, #fff7e3);
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--cream);
+}
+.store-hero__primary:hover {
+  background: var(--red-ink);
 }
 .store-hero__secondary,
 .store-hero__item h2 a:hover {
@@ -229,6 +234,7 @@ onBeforeUnmount(() => {
   text-underline-offset: 4px;
 }
 .store-hero__item {
+  --qa-step-size: var(--touch);
   grid-area: item;
   display: flex;
   align-self: start;
@@ -241,23 +247,28 @@ onBeforeUnmount(() => {
   border-top: 1px solid #1a1a1a40;
 }
 .store-hero__item > div:first-child { flex: 1 1 180px; }
-.store-hero__item h2 { margin: 0; font-size: 1.125rem; line-height: 1.25; }
-.store-hero__item p { margin: 4px 0; font-size: .875rem; }
+.store-hero__item h2 { margin: 0; font-size: var(--fs-lg); line-height: var(--lh-h2); }
+.store-hero__item p { margin: 4px 0; color: var(--on-cream); font-size: var(--fs-sm); }
 .store-hero__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  font-size: .875rem;
+  color: var(--on-cream);
+  font-size: var(--fs-sm);
+}
+.store-hero__meta strong {
+  color: var(--ink);
+  font-size: var(--fs-md);
 }
 .store-hero__stage {
   position: relative;
   overflow: hidden;
   aspect-ratio: 1.12;
-  border: 2px solid var(--ink, #1a1a1a);
-  border-radius: 24px;
-  background: radial-gradient(circle at center, #fff0a1 0 43%, transparent 43.4%), var(--yellow, #ffd233);
-  box-shadow: 5px 5px 0 var(--ink, #1a1a1a);
+  border: var(--storefront-border);
+  border-radius: var(--r-md);
+  background: radial-gradient(circle at center, #fff0a1 0 43%, transparent 43.4%), var(--yellow);
+  box-shadow: var(--e1);
 }
 .store-hero__stage img {
   position: absolute;
@@ -286,8 +297,8 @@ onBeforeUnmount(() => {
 .store-hero__controls button {
   display: grid;
   place-items: center;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--touch);
+  min-height: var(--touch);
   background: none;
   color: inherit;
   border: 0;
@@ -301,9 +312,10 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   border: 1px solid currentColor;
 }
+.store-hero__dots [aria-current="true"] { color: var(--red-ink); }
 .store-hero__dots [aria-current="true"] span { background: currentColor; }
 .store-hero :is(a, button):focus-visible {
-  outline: 3px solid var(--green-ink, #156b3d);
+  outline: 3px solid var(--green-ink);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: no-preference) {

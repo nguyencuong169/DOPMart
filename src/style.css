@@ -66,16 +66,15 @@
   --maxw: var(--container);
 
   /* --- card: one shape for every surface --- */
-  --radius: 16px;
-  --border: 2px solid var(--ink);
+  --storefront-border: 2px solid var(--ink);
   --shadow: 4px 4px 0 var(--ink);
   --touch: 44px;
   /* legacy radius names -> the one radius */
   --r-xs: 12px;
-  --r-sm: var(--radius);
-  --r-md: var(--radius);
-  --r-lg: var(--radius);
-  --r-xl: var(--radius);
+  --r-md: 16px;
+  --r-sm: var(--r-md);
+  --r-lg: var(--r-md);
+  --r-xl: var(--r-md);
   --r-pill: 999px;
   /* legacy border + elevation names */
   --bw: 1.5px;
@@ -11234,6 +11233,14 @@ html {
   .dop-nav-cats__toggle svg {
     transition: none;
   }
+}
+
+/* The homepage carousel starts below the sticky header. */
+.app-shell:has(> .dop-header.on-hero) {
+  background: linear-gradient(var(--cream), var(--cream)) top / 100% var(--sp-6) no-repeat;
+}
+.app-shell > .dop-header.on-hero {
+  margin-bottom: 0;
 }
 
 /* ===== V68 · transparent primary navigation ===== */

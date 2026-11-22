@@ -384,7 +384,7 @@ watch(tabs, () => nextTick(updateScrollState));
   width: clamp(212px, 13vw, 264px);
   height: clamp(88px, 5.2vw, 104px);
   border: 0;
-  border-radius: var(--radius);
+  border-radius: var(--r-md);
   padding: 0 0 0 var(--sp-2);
   display: flex;
   flex-direction: column;
@@ -417,7 +417,7 @@ watch(tabs, () => nextTick(updateScrollState));
 .cat-tab:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 4px;
-  border-radius: var(--radius);
+  border-radius: var(--r-md);
 }
 .cat-tab[aria-selected="true"] {
   transform: translateY(-8px);

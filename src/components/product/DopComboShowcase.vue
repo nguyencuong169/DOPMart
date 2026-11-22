@@ -547,7 +547,7 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
   gap: 16px 28px;
   margin-top: 14px;
   padding: 16px 22px;
-  border-radius: var(--radius);
+  border-radius: var(--r-md);
   background: var(--fp-cream-light);
   border: 2px solid color-mix(in srgb, var(--fp-red) 18%, transparent);
 }

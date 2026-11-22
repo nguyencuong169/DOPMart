@@ -1,476 +1,326 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
-import gsap from "gsap";
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-vue-next";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-vue-next";
 import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore";
-import { relativeLuminance, surfaceTone, tintOn } from "../../utils/color";
 
 const store = useProductStore();
-const emphasizedEndings = [
-  "bùng vị",
-  "nhiệt đới",
-  "ăn liền",
-  "trái cây",
-  "mini",
-  "mộc",
-  "cay",
-];
-const nameParts = computed(() => {
-  const name = slides.value[current.value]?.name || "";
-  const words = name.split(/\s+/).filter(Boolean);
-  const normalized = name.toLocaleLowerCase("vi-VN");
-  const ending =
-    emphasizedEndings.find((phrase) => normalized.endsWith(phrase)) ||
-    words[words.length - 1] ||
-    "";
-  return {
-    head: ending ? name.slice(0, -ending.length).trim() : name,
-    accent: ending ? name.slice(-ending.length) : "",
-  };
-});
-
-/* four packs on a ring: slot 0 = centre (focused), 1..3 = waiting points */
-const ringSlots = computed(() =>
-  slides.value.map((product, index) => ({
-    product,
-    index,
-    slot: (index - current.value + slides.value.length) % slides.value.length,
-  }))
-);
 const slides = computed(() => store.products.slice(0, 4));
-/* the depth layer that travels with the product: crumbs, grains, bubbles, steam */
-const fx = computed(() => {
-  const cat = slides.value[current.value]?.category ?? "";
-  if (cat === "noodles" || cat === "instant")
-    return { kind: "noodles", steam: true, bits: 8 };
-  if (cat === "drinks") return { kind: "drinks", steam: false, bits: 9 };
-  if (cat === "healthy") return { kind: "grain", steam: false, bits: 10 };
-  if (cat === "spicy") return { kind: "spicy", steam: false, bits: 9 };
-  return { kind: "chips", steam: false, bits: 8 };
-});
-const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 const current = ref(0);
-/* the plane the copy stands on is the current product's colour, so the tokens are
-   derived from that exact value — the same one that paints the left diagonal */
-const accent = computed(() => slides.value[current.value]?.color || "#ffd338");
-/* the right diagonal previews what is coming next: the ring order is the queue */
-const accentNext = computed(() => {
-  const list = slides.value;
-  if (!list.length) return accent.value;
-  return list[(current.value + 1) % list.length].color;
-});
-/* three tones, but the deep/mid split is measured (cream vs ink, whichever wins):
-   green and purple are "cream" planes, sun/orange/berry stay "ink" planes */
-const tone = computed(() => {
-  if (surfaceTone(accent.value) === "is-dark") return "tone-deep";
-  return relativeLuminance(accent.value) >= 0.45 ? "tone-sun" : "tone-mid";
-});
-/* secondary copy and the accent word keep the product hue, but only as far as the
-   contrast floor allows: 4.5:1 for 14px copy, 3:1 for the 84px name (WCAG large text) */
-const softInk = computed(() => tintOn(accent.value, accent.value, 4.5));
-const nameAccent = computed(() => tintOn(accent.value, accent.value, 3));
-/* opening hours: the introduction block is on screen for every slide */
+const product = computed(() => slides.value[current.value]);
+const playing = ref(false);
+const hovered = ref(false);
+const focused = ref(false);
 const clock = ref(new Date());
 const isOpen = computed(() => {
-  const h = clock.value.getHours() + clock.value.getMinutes() / 60;
-  return h >= 8.5 && h < 17.5;
+  const minutes = clock.value.getHours() * 60 + clock.value.getMinutes();
+  return minutes >= 510 && minutes < 1050;
 });
-let clockTimer = null;
+const price = new Intl.NumberFormat("vi-VN");
 
-const playing = ref(!prefersReduced);
-const paused = ref(false);
-let timer = null;
+let slideTimer;
+let clockTimer;
+let motion;
 
-function clearTimer() {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
-}
-function runTimer() {
-  clearTimer();
-  if (!playing.value || paused.value || document.hidden) return;
-  timer = setInterval(() => go(current.value + 1), 5600);
-}
-function go(i) {
+function go(index) {
   const total = slides.value.length;
   if (!total) return;
-  current.value = (i + total) % total;
-  runTimer();
+  current.value = (index + total) % total;
+  scheduleSlide();
 }
-/* a far pack must not teleport: clicking it walks the ring one slot per beat,
-   so the motion is exactly the one the ‹ › buttons produce */
-const spinning = ref(false);
-let stepTimer = null;
-let settleTimer = null;
 
-function clearSteps() {
-  if (stepTimer) clearTimeout(stepTimer);
-  if (settleTimer) clearTimeout(settleTimer);
-  stepTimer = null;
-  settleTimer = null;
-  spinning.value = false;
+function selectSlide(index) {
+  playing.value = false;
+  go(index);
 }
-function goTo(target) {
-  const total = slides.value.length;
-  if (!total) return;
-  clearSteps();
-  const steps = (((target - current.value) % total) + total) % total;
-  if (steps === 0) return;
-  if (steps === 1) {
-    go(current.value + 1);
-    return;
+
+function scheduleSlide() {
+  clearTimeout(slideTimer);
+  if (playing.value && !hovered.value && !focused.value && !document.hidden && slides.value.length > 1) {
+    slideTimer = setTimeout(() => go(current.value + 1), 5600);
   }
-  spinning.value = true;
-  let left = steps;
-  const beat = () => {
-    left -= 1;
-    go(current.value + 1);
-    if (left > 0) {
-      stepTimer = setTimeout(beat, 250);
-    } else {
-      stepTimer = null;
-      settleTimer = setTimeout(() => {
-        spinning.value = false;
-        settleTimer = null;
-      }, 460);
-    }
-  };
-  beat();
 }
-function onPackClick(s) {
-  /* the focused pack acts like › */
-  if (s.slot === 0) go(current.value + 1);
-  else goTo(s.index);
-}
-function toggle() {
-  playing.value = !playing.value;
-  runTimer();
-}
-function pause() {
-  paused.value = true;
-  clearTimer();
-}
-function resume() {
-  paused.value = false;
-  runTimer();
-}
-function onVisibility() {
-  if (document.hidden) clearTimer();
-  else runTimer();
-}
+
 function onFocusOut(event) {
-  if (!event.currentTarget.contains(event.relatedTarget)) resume();
-}
-function preloadNext() {
-  const next = slides.value[(current.value + 1) % slides.value.length];
-  if (!next) return;
-  const img = new Image();
-  img.src = next.image;
-}
-let rafId = 0;
-const pointer = { x: 0, y: 0 };
-let introPlayed = false;
-
-function applyParallax() {
-  rafId = 0;
-  const { x, y } = pointer;
-  gsap.to(".hero-ring__item.slot-0 img", {
-    x: x * 24,
-    y: y * 18 - 6,
-    rotation: y * 3,
-    duration: 0.7,
-    ease: "power2.out",
-    overwrite: "auto",
-  });
-  /* garnish travels further than the pack = depth */
-  gsap.to(".hero-fx", {
-    x: x * 46,
-    y: y * 34,
-    duration: 0.8,
-    ease: "power2.out",
-    overwrite: "auto",
-  });
-  /* keep a subtle vertical counter-motion without shifting text horizontally */
-  gsap.to(".hero-side-top", {
-    x: 0,
-    y: y * -6,
-    duration: 0.9,
-    ease: "power2.out",
-    overwrite: "auto",
-  });
+  focused.value = event.currentTarget.contains(event.relatedTarget);
 }
 
-function maybePlayIntro() {
-  if (introPlayed) return;
-  if (prefersReduced) return;
-  if (!slides.value.length) return;
-  introPlayed = true;
-  nextTick(playIntro);
-}
-function parallax(event) {
-  if (prefersReduced) return;
-  const box = event.currentTarget.getBoundingClientRect();
-  pointer.x = (event.clientX - box.left) / box.width - 0.5;
-  pointer.y = (event.clientY - box.top) / box.height - 0.5;
-  if (rafId) return;
-  rafId = requestAnimationFrame(applyParallax);
-}
-function resetParallax() {
-  if (prefersReduced) return;
-  pointer.x = 0;
-  pointer.y = 0;
-  gsap.to(".hero-ring__item.slot-0 img,.hero-side-top,.hero-fx", {
-    x: 0,
-    y: 0,
-    rotation: 0,
-    duration: 0.9,
-    ease: "power3.out",
-    overwrite: "auto",
-  });
-}
-/* the ring packs are positioned entirely by their .slot-N CSS transform —
-   an inline transform left behind by GSAP would override it and freeze the ring */
-function clearRingInline() {
-  document.querySelectorAll(".hero-ring__item").forEach((el) => {
-    el.style.transform = "";
-    el.style.opacity = "";
-  });
-}
-/* one orchestrated entrance instead of pieces popping in at random */
-function playIntro() {
-  if (prefersReduced) return;
-  gsap
-    .timeline({
-      defaults: { ease: "power3.out", overwrite: "auto" },
-      onComplete: clearRingInline,
-    })
-    .from(".hero-side-copy > *", { y: 40, opacity: 0, stagger: 0.1, duration: 0.7 })
-    .from(
-      ".hero-ring__item",
-      { opacity: 0, duration: 0.7, stagger: 0.1, clearProps: "opacity" },
-      "-=0.85"
-    )
-    .from(
-      ".hero-ring__item img",
-      {
-        scale: 0.92,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "back.out(1.4)",
-        clearProps: "transform",
-      },
-      "<"
-    )
-    .from(".hero-controls", { y: 18, opacity: 0, duration: 0.45 }, "-=0.45");
+function syncMotion() {
+  if (motion.matches) playing.value = false;
 }
 
-watch(current, () =>
-  nextTick(() => {
-    preloadNext();
-    /* the parallax offset must not stick to a pack that just changed slot */
-    gsap.set(".hero-ring__item img", { x: 0, y: 0, rotation: 0 });
-    if (prefersReduced) return;
-    gsap.fromTo(
-      ".hero-kicker, .hero-product-name, .hero-desc, .hero-price, .hero-specs",
-      { y: 34, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.66, stagger: 0.06, ease: "power3.out" }
-    );
-  })
-);
-/* intro chỉ chạy khi có slide để hiển thị (dữ liệu sau khi load từ Supabase) */
-watch(
-  () => slides.value.length,
-  (n) => {
-    if (n) maybePlayIntro();
-  },
-  { immediate: true }
-);
-onMounted(() => {
-  runTimer();
-  clockTimer = setInterval(() => {
-    clock.value = new Date();
-  }, 60000);
-  /* wipe anything a hot-reloaded previous instance may have left inline */
-  clearRingInline();
-  maybePlayIntro();
-  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
-  idle(() => preloadNext());
-  document.addEventListener("visibilitychange", onVisibility);
+watch([playing, hovered, focused, () => slides.value.length], () => {
+  if (current.value >= slides.value.length) current.value = 0;
+  scheduleSlide();
 });
+
+onMounted(() => {
+  motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  playing.value = !motion.matches;
+  motion.addEventListener("change", syncMotion);
+  clockTimer = setInterval(() => { clock.value = new Date(); }, 60000);
+  document.addEventListener("visibilitychange", scheduleSlide);
+});
+
 onBeforeUnmount(() => {
-  clearTimer();
-  clearSteps();
-  if (clockTimer) clearInterval(clockTimer);
-  if (rafId) cancelAnimationFrame(rafId);
-  document.removeEventListener("visibilitychange", onVisibility);
+  clearTimeout(slideTimer);
+  clearInterval(clockTimer);
+  motion?.removeEventListener("change", syncMotion);
+  document.removeEventListener("visibilitychange", scheduleSlide);
 });
 </script>
+
 <template>
   <section
-    class="brand-hero"
-    :class="tone"
+    class="store-hero"
     aria-roledescription="carousel"
     aria-label="Sản phẩm nổi bật tại DOP Mart"
-    @mousemove="parallax"
-    @mouseenter="pause"
-    @mouseleave="
-      resume();
-      resetParallax();
-    "
-    @focusin="pause"
+    @mouseenter="hovered = true"
+    @mouseleave="hovered = false"
+    @focusin="focused = true"
     @focusout="onFocusOut"
-    :style="{
-      '--accent': accent,
-      '--accent-next': accentNext,
-      '--hero-text-soft': softInk,
-      '--hero-name-accent': nameAccent,
-    }"
   >
-    <div class="hero-intro">
-      <h1 class="hero-intro__title">Món ngon, ngay trong văn phòng</h1>
-      <p class="hero-intro__meta">
-        <span>Tầng 14 &amp; 20 · 08:30–17:30</span>
-        <span class="hero-open" :class="{ closed: !isOpen }">{{
-          isOpen ? "Đang mở" : "Đã đóng"
-        }}</span>
-      </p>
-    </div>
-    <div class="hero-side-copy" v-if="slides[current]">
-      <div class="hero-side-top">
-        <span class="hero-kicker">
-          <b>DOP Mart</b> · {{ slides[current].categoryName }}
-        </span>
-        <h2 class="hero-product-name">
-          <RouterLink :to="`/product/${slides[current].slug}`"
-            ><span class="np-fill">{{ nameParts.head }}</span>
-            <span class="np-accent-badge">{{ nameParts.accent }}</span></RouterLink
-          >
-        </h2>
-        <p class="hero-desc">{{ slides[current].description }}</p>
-      </div>
-      <div class="hero-side-bottom">
-        <b class="hero-price">{{ slides[current].price.toLocaleString("vi-VN") }} ₫</b>
-        <p class="hero-specs">
-          <span>★ {{ slides[current].rating }}</span>
-          <span>{{ slides[current].sold }} đã bán</span>
+    <div class="store-hero__inner">
+      <div class="store-hero__copy">
+        <p class="store-hero__hours">
+          Tầng 14 &amp; 20 · 08:30–17:30
+          <span class="store-hero__status" :class="{ 'is-open': isOpen }">
+            {{ isOpen ? "Đang mở" : "Đã đóng" }}
+          </span>
         </p>
-        <div class="hero-actions">
-          <div class="hero-buy">
-            <QuickAdd :product="slides[current]" />
-          </div>
-          <RouterLink to="/deals" class="hero-deal"
-            >Khuyến mãi hôm nay <ArrowRight :size="13"
-          /></RouterLink>
+        <h1>Món ngon, <span>ngay trong văn phòng.</span></h1>
+        <p class="store-hero__intro">Snack và đồ uống cho giờ nghỉ. Chọn món bạn thích rồi ghé DOP Mart.</p>
+        <div class="store-hero__links">
+          <RouterLink to="/shop" class="store-hero__primary">
+            Khám phá cửa hàng <ArrowUpRight :size="18" aria-hidden="true" />
+          </RouterLink>
+          <RouterLink to="/deals" class="store-hero__secondary">Xem khuyến mãi</RouterLink>
         </div>
       </div>
-    </div>
-    <div
-      class="hero-ring"
-      :class="{ 'is-spinning': spinning }"
-      aria-label="Vòng sản phẩm nổi bật"
-    >
-      <div class="hero-orbit" aria-hidden="true" />
-      <div class="hero-plate" aria-hidden="true" />
-      <div class="hero-ground" aria-hidden="true" />
-      <div class="hero-ground hero-ground--s1" aria-hidden="true" />
-      <div class="hero-ground hero-ground--s2" aria-hidden="true" />
-      <div class="hero-ground hero-ground--s3" aria-hidden="true" />
-      <button
-        v-for="s in ringSlots"
-        :key="`ring-${s.product.id}`"
-        type="button"
-        class="hero-ring__item"
-        :class="`slot-${s.slot}`"
-        :aria-current="s.slot === 0 ? 'true' : undefined"
-        :aria-label="
-          s.slot === 0 ? `${s.product.name} — đang xem` : `Chuyển tới ${s.product.name}`
-        "
-        :tabindex="s.slot === 0 ? -1 : 0"
-        @click="onPackClick(s)"
-      >
-        <img
-          :src="s.product.image"
-          alt=""
-          :loading="s.slot === 0 ? 'eager' : 'lazy'"
-          :fetchpriority="s.slot === 0 ? 'high' : 'auto'"
-          decoding="async"
-          width="560"
-          height="560"
-        />
-      </button>
-    </div>
-    <div class="hero-product-zone">
-      <div class="hero-halo"></div>
-      <div class="hero-fx" :class="`fx-${fx.kind}`" aria-hidden="true">
-        <i
-          v-for="n in fx.bits"
-          :key="`${slides[current]?.id ?? 'placeholder'}-${n}`"
-          :style="{ '--i': n - 1 }"
-        />
-      </div>
-      <div v-if="fx.steam" class="hero-steam" aria-hidden="true"><i /><i /><i /></div>
-    </div>
 
-    <div class="hero-controls">
-      <button type="button" aria-label="Xem sản phẩm trước" @click="go(current - 1)">
-        <ChevronLeft />
-      </button>
-      <div class="hero-dots">
-        <button
-          v-for="(p, i) in slides"
-          :key="p.id"
-          type="button"
-          :class="{ active: i === current }"
-          :aria-label="`Xem sản phẩm: ${p.name}`"
-          :aria-current="i === current ? 'true' : undefined"
-          @click="goTo(i)"
-        >
-          <span></span>
-        </button>
+      <div class="store-hero__showcase">
+        <div class="store-hero__stage">
+          <Transition name="store-hero-pack">
+            <img
+              v-if="product?.image"
+              :key="product.id"
+              :src="product.image"
+              :alt="product.name"
+              width="560"
+              height="560"
+              :fetchpriority="current === 0 ? 'high' : 'auto'"
+              decoding="async"
+            />
+          </Transition>
+          <span v-if="product && !product.image" class="store-hero__image-fallback">{{ product.name }}</span>
+        </div>
+        <div v-if="slides.length > 1" class="store-hero__controls" role="group" aria-label="Điều khiển carousel">
+          <button
+            type="button"
+            :aria-label="playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'"
+            @click="playing = !playing"
+          >
+            <Pause v-if="playing" :size="18" aria-hidden="true" />
+            <Play v-else :size="18" aria-hidden="true" />
+          </button>
+          <button type="button" aria-label="Xem sản phẩm trước" @click="selectSlide(current - 1)">
+            <ChevronLeft aria-hidden="true" />
+          </button>
+          <button type="button" aria-label="Xem sản phẩm tiếp theo" @click="selectSlide(current + 1)">
+            <ChevronRight aria-hidden="true" />
+          </button>
+          <div class="store-hero__dots">
+            <button
+              v-for="(slide, index) in slides"
+              :key="slide.id"
+              type="button"
+              :aria-label="`Xem sản phẩm: ${slide.name}`"
+              :aria-current="index === current ? 'true' : undefined"
+              @click="selectSlide(index)"
+            ><span></span></button>
+          </div>
+        </div>
       </div>
-      <button type="button" aria-label="Xem sản phẩm tiếp theo" @click="go(current + 1)">
-        <ChevronRight /></button
-      ><span class="hero-count" aria-hidden="true"
-        ><b>0{{ current + 1 }}</b
-        >/0{{ slides.length }}</span
-      ><button
-        type="button"
-        class="play"
-        :aria-label="
-          playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'
-        "
-        :aria-pressed="!playing"
-        @click="toggle"
-      >
-        <Pause v-if="playing" /><Play v-else />
-      </button>
+
+      <div v-if="product" class="store-hero__item" :aria-live="playing && !hovered && !focused ? 'off' : 'polite'">
+        <div>
+          <h2><RouterLink :to="`/product/${product.slug}`">{{ product.name }}</RouterLink></h2>
+          <p>{{ product.description }}</p>
+          <div class="store-hero__meta">
+            <strong>{{ price.format(product.price) }} ₫</strong>
+            <span v-if="product.rating != null">★ {{ product.rating }}</span>
+            <span v-if="product.sold != null">{{ product.sold }} đã bán</span>
+          </div>
+        </div>
+        <QuickAdd :key="product.id" :product="product" />
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-/* Focus-visible cho nút điều khiển hero (không bị včko bởi style.css global) */
-.hero-controls > button:focus-visible,
-.hero-dots button:focus-visible,
-.hero-controls .play:focus-visible,
-.hero-ring__item:focus-visible {
-  outline: 3px solid var(--dop-ink, #1a1a1a);
-  outline-offset: 2px;
+.store-hero {
+  background: var(--cream, #fff7e3);
+  color: var(--ink, #1a1a1a);
 }
-
-/* Line-height thoải mái cho chữ in hoa lớn, tránh cắt dấu tiếng Việt */
-.hero-kicker,
-.hero-product-name,
-.hero-kicker-line,
-.hero-price {
-  line-height: 1.05;
+.store-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  grid-template-areas:
+    "copy showcase"
+    "item showcase";
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: center;
+  column-gap: clamp(28px, 5vw, 80px);
+  max-width: 1520px;
+  margin-inline: auto;
+  padding: clamp(24px, 5vw, 80px);
 }
-.hero-desc {
-  line-height: 1.5;
-  max-width: 60ch;
-  text-wrap: pretty;
+.store-hero__copy { grid-area: copy; align-self: end; }
+.store-hero__showcase { grid-area: showcase; }
+.store-hero__hours,
+.store-hero__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.store-hero__hours {
+  margin: 0 0 20px;
+  font-size: .875rem;
+  font-weight: 650;
+}
+.store-hero__status {
+  padding: 3px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+.store-hero__status.is-open { color: var(--green-ink, #156b3d); }
+.store-hero h1 {
+  margin: 0 0 22px;
+  font: 800 clamp(2.65rem, 5.55vw, 5.8rem)/1.04 var(--font-display, system-ui);
+  letter-spacing: -.065em;
+  text-wrap: balance;
+}
+.store-hero h1 span { color: var(--red-ink, #b81f2b); }
+.store-hero__intro {
+  margin: 0 0 22px;
+  max-width: 37ch;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.55;
+}
+.store-hero__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  font-weight: 750;
+}
+.store-hero__primary {
+  padding-inline: 18px;
+  border-radius: 999px;
+  background: var(--ink, #1a1a1a);
+  color: var(--cream, #fff7e3);
+}
+.store-hero__secondary,
+.store-hero__item h2 a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.store-hero__item {
+  grid-area: item;
+  display: flex;
+  align-self: start;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #1a1a1a40;
+}
+.store-hero__item > div:first-child { flex: 1 1 180px; }
+.store-hero__item h2 { margin: 0; font-size: 1.125rem; line-height: 1.25; }
+.store-hero__item p { margin: 4px 0; font-size: .875rem; }
+.store-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: .875rem;
+}
+.store-hero__stage {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1.12;
+  border: 2px solid var(--ink, #1a1a1a);
+  border-radius: 24px;
+  background: radial-gradient(circle at center, #fff0a1 0 43%, transparent 43.4%), var(--yellow, #ffd233);
+  box-shadow: 5px 5px 0 var(--ink, #1a1a1a);
+}
+.store-hero__stage img {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: drop-shadow(8px 16px 14px #65401352);
+}
+.store-hero__image-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  text-align: center;
+  font-weight: 800;
+}
+.store-hero__controls,
+.store-hero__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.store-hero__controls { margin-top: 16px; gap: 4px; flex-wrap: wrap; }
+.store-hero__controls button {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  color: inherit;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.store-hero__controls button:hover { background: #1a1a1a12; }
+.store-hero__dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+.store-hero__dots [aria-current="true"] span { background: currentColor; }
+.store-hero :is(a, button):focus-visible {
+  outline: 3px solid var(--green-ink, #156b3d);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .store-hero-pack-enter-active, .store-hero-pack-leave-active { transition: opacity .3s ease; }
+  .store-hero-pack-enter-from, .store-hero-pack-leave-to { opacity: 0; }
+}
+@media (max-width: 760px) {
+  .store-hero__inner {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "copy" "showcase" "item";
+    row-gap: 20px;
+  }
+  .store-hero__item { margin-top: 0; }
+  .store-hero__stage { aspect-ratio: 1.24; }
+}
+@media (max-width: 380px) {
+  .store-hero__dots { flex-basis: 100%; }
 }
 </style>

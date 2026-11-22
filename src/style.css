@@ -1038,17 +1038,35 @@ footer {
 .detail-page {
   min-height: calc(100vh - 88px);
   display: grid;
-  grid-template-columns: 55% 45%;
+  grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+  grid-template-rows: auto 1fr;
+  padding-top: 96px;
   position: relative;
 }
 .detail-page > .back {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 4;
+  position: static;
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: var(--touch);
+  margin: 0 var(--edge) 12px;
+  border: var(--storefront-border);
+  gap: 4px;
+  padding: 8px 14px 8px 9px;
 }
 .detail-page .detail-copy {
-  padding: 96px 7vw 60px 55px;
+  padding: 48px var(--edge) 48px clamp(28px, 4vw, 55px);
+}
+.detail-page .detail-price {
+  margin-block: 14px 8px;
+}
+.detail-page .buy-row .qa--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.detail-page .buy-row + small {
+  display: block;
+  margin-top: 8px;
 }
 .stock span {
   display: flex;
@@ -1197,10 +1215,40 @@ footer {
     place-items: center;
   }
   .detail-page {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    padding-top: 76px;
+  }
+  .detail-page .detail-image {
+    min-height: 0;
+    height: clamp(164px, 55vw, 340px);
+  }
+  .detail-page .detail-product {
+    width: 84%;
+    height: 90%;
   }
   .detail-page .detail-copy {
-    padding: 35px 22px 90px;
+    padding: 20px var(--edge) 32px;
+  }
+  .detail-page .detail-copy h1 {
+    font-size: clamp(28px, 8.5vw, 44px);
+  }
+  .detail-page .detail-price {
+    font-size: clamp(28px, 7vw, 36px);
+    line-height: 1.15;
+  }
+  .detail-page .buy-row .qa--row {
+    --qa-step-size: var(--touch);
+    width: 100%;
+  }
+  .detail-page .buy-row .qa__qty {
+    gap: 0;
+    padding: 0;
+  }
+  .detail-page .buy-row .qa__go {
+    flex: 1 1 auto;
+    padding-inline: 10px;
+    font-size: var(--fs-sm);
   }
   .checkout-page {
     grid-template-columns: 1fr;
@@ -1211,6 +1259,34 @@ footer {
   }
   footer {
     padding-bottom: 104px;
+  }
+}
+@media (max-width: 360px) and (max-height: 620px) {
+  .detail-page .detail-image {
+    height: 144px;
+  }
+  .detail-page .detail-copy {
+    padding-top: 16px;
+  }
+}
+@media (min-width: 761px) and (max-height: 520px) {
+  .detail-page .detail-image {
+    min-height: 0;
+    height: max(200px, calc(100dvh - 138px));
+  }
+  .detail-page .detail-product {
+    height: 90%;
+  }
+  .detail-page .detail-copy {
+    align-self: start;
+    padding-block: 12px 24px;
+  }
+  .detail-page .detail-copy h1 {
+    font-size: 32px;
+  }
+  .detail-page .detail-price {
+    font-size: 28px;
+    line-height: 1.15;
   }
 }
 /* DOP Mart immersive brand hero */
@@ -2269,15 +2345,18 @@ header nav a.router-link-active {
   width: min(1120px, 100%);
   height: min(720px, 90dvh);
   max-height: 100%;
-  display: grid;
-  grid-template-columns: 55% 45%;
-  grid-template-rows: minmax(0, 1fr);
   background: var(--cream);
   border: 3px solid #191919;
   border-radius: 34px;
   overflow: hidden;
   position: relative;
   box-shadow: 16px 16px 0 #0006;
+}
+.quick-content {
+  display: grid;
+  grid-template-columns: 55% 45%;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
 }
 .quick-close {
   position: absolute;
@@ -2635,7 +2714,7 @@ header nav a.router-link-active {
   .footer-top {
     grid-template-columns: 1fr 1fr;
   }
-  .quick-dialog {
+  .quick-content {
     grid-template-columns: 1fr 1fr;
   }
   .quick-info {
@@ -2694,10 +2773,13 @@ header nav a.router-link-active {
   }
   .quick-dialog {
     height: 92dvh;
+    border-radius: 24px;
+  }
+  .quick-content {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    overflow: auto;
-    border-radius: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .quick-visual {
     min-height: 355px;
@@ -9376,12 +9458,6 @@ li {
 .dop-header::after {
   content: none;
 }
-.dop-header .dop-nav {
-  position: absolute;
-  left: clamp(150px, 16vw, 220px);
-  width: calc(54% - clamp(150px, 16vw, 220px));
-  justify-content: center;
-}
 .dop-header.scrolled {
   background: #fff9eedb;
   border-color: #1919191c;
@@ -9403,12 +9479,6 @@ li {
   .dop-header .dop-nav__link {
     padding-inline: 8px;
     font-size: 12px;
-  }
-}
-@media (max-width: 1023px) {
-  .dop-header .dop-nav {
-    position: static;
-    width: auto;
   }
 }
 @media (max-width: 760px) {
@@ -11177,9 +11247,6 @@ html {
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
   backdrop-filter: blur(18px) saturate(1.12);
 }
-.dop-header.scrolled .dop-nav {
-  left: clamp(150px, 16vw, 220px);
-}
 .dop-header.scrolled .dop-nav-actions .search {
   flex: 0 0 clamp(168px, 15vw, 212px);
   width: clamp(168px, 15vw, 212px);
@@ -11190,8 +11257,8 @@ html {
     box-shadow 0.2s ease;
 }
 .dop-header .dop-nav-actions .search:focus-within {
-  flex-basis: min(320px, calc(100vw - 120px));
-  width: min(320px, calc(100vw - 120px));
+  flex-basis: clamp(168px, calc(100vw - 900px), 320px);
+  width: clamp(168px, calc(100vw - 900px), 320px);
   border-color: var(--ink);
   box-shadow: 0 0 0 3px var(--sun), 3px 3px 0 var(--ink);
 }
@@ -11256,7 +11323,7 @@ html {
 .dop-menu-scrim {
   z-index: 120;
 }
-.dop-menu {
+.dop-header.is-menu-open {
   z-index: 121;
 }
 .overlay {
@@ -11353,8 +11420,7 @@ html {
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
 .dop-header .dop-nav {
-  left: clamp(150px, 16vw, 220px);
-  width: calc(50% - clamp(150px, 16vw, 220px));
+  grid-column: 2;
   gap: 3px;
 }
 .dop-header .dop-nav-actions {

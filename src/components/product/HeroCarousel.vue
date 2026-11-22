@@ -410,4 +410,9 @@ onBeforeUnmount(() => {
   }
   .store-hero__stage { min-height: 112px; }
 }
+@media (max-width: 360px) and (max-height: 620px) {
+  .store-hero__intro { display: none; }
+  .store-hero__inner { row-gap: 6px; }
+  .store-hero__stage { min-height: 96px; }
+}
 </style>

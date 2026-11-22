@@ -1,5 +1,5 @@
 <script setup>
-import { Search, ShoppingBag, QrCode, PackageCheck } from "lucide-vue-next";
+import { Search, ShoppingBag, ClipboardList, MapPin } from "lucide-vue-next";
 const steps = [
   {
     n: "01",
@@ -15,15 +15,15 @@ const steps = [
   },
   {
     n: "03",
-    icon: QrCode,
-    title: "Quét QR",
-    text: "Quét QR và xác nhận thanh toán.",
+    icon: ClipboardList,
+    title: "Kiểm tra giỏ hàng",
+    text: "Xem lại món, số lượng và tổng tiền.",
   },
   {
     n: "04",
-    icon: PackageCheck,
-    title: "Nhận hàng",
-    text: "Nhận món tại Tầng 14 hoặc Tầng 20.",
+    icon: MapPin,
+    title: "Chọn điểm nhận",
+    text: "Chọn tầng 14 hoặc tầng 20 trên trang thanh toán.",
   },
 ];
 </script>
@@ -31,7 +31,7 @@ const steps = [
   <section id="how-it-works" class="process-lab">
     <div class="process-lab-head">
       <span>HOW IT WORKS</span>
-      <h2>Đói → chọn → quét → nhận.</h2>
+      <h2>Từ chọn món đến chọn tầng nhận</h2>
     </div>
     <div class="process-path">
       <svg viewBox="0 0 1200 260" preserveAspectRatio="none" aria-hidden="true">

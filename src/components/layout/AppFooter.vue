@@ -27,7 +27,7 @@ import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
       <div class="footer-col">
         <h4>Hỗ trợ</h4>
         <RouterLink to="/how-it-works">Cách đặt hàng</RouterLink
-        ><RouterLink to="/checkout">Thanh toán QR</RouterLink
+        ><RouterLink to="/checkout">Thanh toán</RouterLink
         ><RouterLink to="/about">Về DOP Mart</RouterLink>
       </div>
       <div class="footer-col footer-contact">

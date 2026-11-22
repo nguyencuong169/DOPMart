@@ -2260,14 +2260,18 @@ header nav a.router-link-active {
   background: #191919c9;
   backdrop-filter: blur(9px);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   place-items: center;
   padding: 28px;
 }
 .quick-dialog {
-  width: min(1120px, 94vw);
-  height: min(720px, 90vh);
+  width: min(1120px, 100%);
+  height: min(720px, 90dvh);
+  max-height: 100%;
   display: grid;
   grid-template-columns: 55% 45%;
+  grid-template-rows: minmax(0, 1fr);
   background: var(--cream);
   border: 3px solid #191919;
   border-radius: 34px;
@@ -2396,7 +2400,12 @@ header nav a.router-link-active {
   padding: 70px 48px 40px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.quick-info > * {
+  flex-shrink: 0;
 }
 .quick-info h2 {
   font-size: clamp(36px, 4vw, 60px);
@@ -2467,9 +2476,6 @@ header nav a.router-link-active {
 .quick-enter-from,
 .quick-leave-to {
   opacity: 0;
-}
-.quick-enter-from .quick-dialog {
-  transform: translateY(35px) scale(0.96);
 }
 /* Category polish */
 .category-strip {
@@ -2687,8 +2693,9 @@ header nav a.router-link-active {
     padding: 10px;
   }
   .quick-dialog {
-    height: 92vh;
+    height: 92dvh;
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
     overflow: auto;
     border-radius: 24px;
   }
@@ -2702,6 +2709,7 @@ header nav a.router-link-active {
   }
   .quick-info {
     padding: 35px 24px;
+    overflow: visible;
   }
   .quick-stock {
     grid-template-columns: 1fr;
@@ -2851,11 +2859,16 @@ body {
 @keyframes dialogPop {
   from {
     opacity: 0;
-    transform: translateY(22px) scale(0.975);
+    transform: translateY(10px) scale(0.975);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quick-dialog {
+    animation: none;
   }
 }
 .category-strip a:nth-of-type(2n) {
@@ -3690,7 +3703,7 @@ body {
 .about-dop {
   padding: 100px 6vw;
   display: grid;
-  grid-template-columns: 46% 54%;
+  grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
   gap: 6vw;
   align-items: center;
   background: var(--cream);
@@ -4013,7 +4026,7 @@ body {
   background: #ea5b34;
   color: #fff;
   display: grid;
-  grid-template-columns: 48% 52%;
+  grid-template-columns: minmax(0, 48fr) minmax(0, 52fr);
   gap: 7vw;
   align-items: center;
 }
@@ -5054,6 +5067,9 @@ body {
   top: calc(100% + 10px);
   right: 0;
   width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 12px;
   border: 1.5px solid #191919;
   border-radius: 22px;
@@ -10158,12 +10174,18 @@ html {
   display: none;
 }
 @media (max-width: 760px) {
-  .site-footer {
-    padding: 24px var(--edge) var(--mobile-nav-clearance) !important;
+  .app-shell:has(> .site-footer) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+  .app-shell > .site-footer {
+    margin-block-start: auto;
+    padding: 20px var(--edge) var(--mobile-nav-clearance) !important;
   }
   .footer-top {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px 12px;
+    gap: 14px 10px;
   }
   .footer-brand {
     grid-column: 1 / -1;
@@ -10181,24 +10203,33 @@ html {
     display: inline-flex;
     flex: none;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     min-height: var(--touch);
+    padding-inline: 8px;
+    border: 1px solid var(--on-black);
+    border-radius: var(--r-pill);
     color: var(--on-black);
     font-size: var(--fs-xs);
     text-decoration: none;
   }
-  .footer-mobile-top:hover { color: var(--sun); }
-  .footer-col { gap: 6px; }
-  .footer-col h4 { letter-spacing: 0.08em; }
+  .footer-mobile-top:hover {
+    border-color: var(--sun);
+    color: var(--sun);
+  }
+  .footer-col { gap: 4px; }
+  .footer-col h4 {
+    margin: 4px 0;
+    letter-spacing: 0.06em;
+  }
   .footer-col a,
   .footer-col span { font-size: var(--fs-xs); }
   .footer-contact a.footer-mail {
-    display: block;
+    display: inline-flex;
     overflow-wrap: anywhere;
   }
   .footer-contact svg { display: none; }
   .footer-bottom {
-    margin-top: 20px;
+    margin-top: 16px;
     padding-top: 12px;
   }
   .footer-bottom > a { display: none; }

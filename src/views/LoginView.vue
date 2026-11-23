@@ -62,7 +62,7 @@ async function handleLogin(e) {
       <div class="login-header">
         <div class="login-brand">
           <span class="brand-dop">DOP</span><span class="brand-mart">mart</span>
-          <small class="login-tagline">Mini mart · Big happy</small>
+          <small class="brand-tagline">Mini mart · Big happy</small>
         </div>
         <h1 class="login-title">Đăng nhập</h1>
       </div>
@@ -142,9 +142,7 @@ async function handleLogin(e) {
 .login-brand {
   display: inline-flex;
   align-items: baseline;
-  justify-content: center;
-  flex-wrap: wrap;
-  column-gap: 0.25rem;
+  gap: 0.25rem;
   margin-bottom: 1rem;
 }
 
@@ -166,8 +164,7 @@ async function handleLogin(e) {
   text-transform: uppercase;
 }
 
-.login-tagline {
-  flex-basis: 100%;
+.login-brand .brand-tagline {
   font-size: 0.75rem;
   color: rgba(26, 26, 26, 0.5);
   letter-spacing: 0.15em;

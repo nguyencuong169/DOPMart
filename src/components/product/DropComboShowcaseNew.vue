@@ -1,5 +1,4 @@
 <script setup>
-import { useImageSwipe } from "../../composables/useImageSwipe";
 import {
   computed,
   nextTick,
@@ -285,7 +284,6 @@ onBeforeUnmount(() => {
   rootObserver?.disconnect();
   ctaObserver?.disconnect();
 });
-const swipeSurface = useImageSwipe(move);
 </script>
 
 <template>
@@ -350,7 +348,7 @@ const swipeSurface = useImageSwipe(move);
             </div>
 
             <!-- Sân khấu sản phẩm -->
-            <div ref="swipeSurface" class="fp-combo__visual">
+            <div class="fp-combo__visual">
               <div class="fp-combo__burst" aria-hidden="true"></div>
               <div class="fp-combo__disc" aria-hidden="true"></div>
               <div class="fp-combo__ring" aria-hidden="true"></div>
@@ -1506,8 +1504,5 @@ const swipeSurface = useImageSwipe(move);
   .fp-combo__sticky {
     transition: none;
   }
-}
-.fp-combo__visual {
-  touch-action: pan-y pinch-zoom;
 }
 </style>

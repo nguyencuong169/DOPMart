@@ -242,7 +242,7 @@ onBeforeUnmount(() => {
     }"
     @focusin="reveal"
   >
-    <RouterLink to="/" class="dop-nav-logo" @click="closeMenu()">
+    <RouterLink v-if="!onHero || scrolled || menuOpen" to="/" class="dop-nav-logo" @click="closeMenu()">
       <span>DOP</span><b>mart</b><small>Small Money – Big Happy</small>
     </RouterLink>
     <nav ref="navEl" class="dop-nav" aria-label="Điều hướng chính">
@@ -385,3 +385,31 @@ onBeforeUnmount(() => {
   </header>
 </template>
 
+
+<style scoped>
+.dop-header.on-hero:not(.scrolled):not(.is-menu-open) .dop-nav-actions {
+  margin-inline-start:auto;
+  grid-column:-2 / -1;
+}
+.dop-header.on-hero:not(.scrolled):not(.is-menu-open) {
+  pointer-events:none;
+}
+.dop-header :is(.dop-nav,.dop-nav-actions,.dop-menu) { pointer-events:auto; }
+@media(min-width:1121px) {
+  .dop-header.on-hero:not(.scrolled) .dop-nav {
+    grid-column:1 / span 2;
+    justify-self:start;
+  }
+}
+.dop-nav-actions :is(.cart-button,.nav-toggle),
+.dop-nav-actions :deep(.search) {
+  box-sizing:border-box;
+  height:42px;
+  border:1.5px solid #242018;
+  border-radius:14px;
+  color:#242018;
+  background:#fff6df;
+  box-shadow:2px 2px 0 #242018;
+}
+.dop-nav-actions :is(.cart-button,.nav-toggle) { width:42px; }
+</style>

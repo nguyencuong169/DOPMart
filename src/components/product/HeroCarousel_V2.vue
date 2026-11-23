@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
     >
       <Transition name="copy" mode="out-in" appear>
         <div :key="active.id" class="dm-copy">
-          <p class="dm-copy__cat">DOP MART · {{ active.categoryName }}</p>
+          <p class="dm-copy__cat">DOP MART · <RouterLink :to="`/category/${active.category}`">{{ active.categoryName }} ↗</RouterLink></p>
           <h2 class="dm-copy__name">
             <RouterLink :to="`/product/${active.slug}`">{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink>
           </h2>
@@ -146,9 +146,6 @@ onBeforeUnmount(() => {
           </div>
           <div class="dm-copy__actions">
             <QuickAdd :product="active" />
-            <RouterLink to="/deals" class="dm-link"
-              >Khuyến mãi hôm nay →</RouterLink
-            >
           </div>
         </div>
       </Transition>
@@ -161,7 +158,7 @@ onBeforeUnmount(() => {
         v-for="(p, i) in slides"
         :key="p.id"
         class="dm-stage__img"
-        :class="{ 'is-active': i === current }"
+        :class="{ 'is-active': i === current, 'is-next': i !== current && i === (current + 1) % slides.length }"
         :src="p.image"
         :alt="i === current ? p.name : ''"
         :aria-hidden="i !== current"
@@ -188,7 +185,6 @@ onBeforeUnmount(() => {
     <!-- Danh sách nổi bật + điều khiển -->
     <aside class="dm-hero__queue" aria-label="Danh sách sản phẩm nổi bật">
       <div class="dm-queue__head">
-        <h3 class="dm-queue__title">Nổi bật hôm nay</h3>
         <div class="dm-queue__controls">
           <button
             type="button"
@@ -232,20 +228,6 @@ onBeforeUnmount(() => {
             :aria-current="i === current ? 'true' : undefined"
             @click="go(i)"
           >
-            <span class="dm-item__thumb" :style="{ background: p.color }">
-              <img
-                :src="p.image"
-                alt=""
-                width="96"
-                height="96"
-                loading="lazy"
-                decoding="async"
-              />
-            </span>
-            <span class="dm-item__body">
-              <span class="dm-item__name">{{ p.name }}</span>
-              <span class="dm-item__price">{{ vnd(p.price) }}</span>
-            </span>
             <span
               v-if="i === current"
               class="dm-item__bar"
@@ -255,6 +237,7 @@ onBeforeUnmount(() => {
           </button>
         </li>
       </ol>
+      <b class="slide-count">{{ String(current + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}</b>
     </aside>
   </section>
 </template>
@@ -642,122 +625,56 @@ onBeforeUnmount(() => {
   transform: translateY(-8px);
 }
 
-/* ---------- Tablet: ảnh to hơn ---------- */
-@media (min-width: 700px) {
-  .dm-hero__stage {
-    width: min(100%, 30rem);
-  }
-}
 
-/* ---------- Desktop: nền chia chéo, 3 cột ---------- */
-@media (min-width: 1100px) {
-  .dm-hero {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4.6fr) minmax(14rem, 2.2fr);
-    grid-template-rows: 1fr auto;
-    column-gap: clamp(1rem, 2vw, 2rem);
-    padding-top: clamp(2rem, 4vw, 3.5rem);
-  }
-  .dm-hero__plane {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    display: block;
-    width: 34%;
-    background: var(--ink);
-    clip-path: polygon(24% 0, 100% 0, 100% 100%, 0 100%);
-  }
-  .dm-hero__copy {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: center;
-  }
-  .dm-hero__intro {
-    grid-column: 1;
-    grid-row: 2;
-    order: 0;
-    margin-top: 0;
-  }
-  .dm-hero__stage {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    order: 0;
-    width: 100%;
-    margin: 0 -9% 0 -6%;
-    width: auto;
-  }
-  .dm-hero__queue {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
-    order: 0;
-    margin: 0;
-    padding: 2rem 0;
-    background: none;
-    clip-path: none;
-  }
-  .dm-queue__list {
-    display: grid;
-    gap: 0.25rem;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-  }
-}
-
-/* ---------- Reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .dm-hero,
-  .dm-stage__img,
-  .copy-enter-active,
-  .copy-leave-active {
-    transition: none;
-  }
-  .dm-stage__img {
-    transform: none;
-  }
-  .copy-enter-from,
-  .copy-leave-to {
-    transform: none;
-  }
-}
-
-.dm-copy__cat { background:none; padding:0; margin-bottom:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; }
-.dm-copy__name { font-family:var(--font-display); font-size:clamp(2.5rem,4.4vw,5rem); line-height:1.12; letter-spacing:-.04em; font-weight:900; text-transform:uppercase; }
-.cutout { display:inline-block; padding:.02em .16em; transform:rotate(-2deg); background:#fff8e8; color:#191919; border:2px solid; box-shadow:3px 3px 0 #191919; }
-.dm-copy__actions { flex-direction:column; align-items:flex-start; margin-top:1rem; gap:.8rem; }
-.dm-copy__meta { margin-top:.8rem; align-items:center; }
-.dm-copy__price,.dm-link { border:2px solid #191919; border-radius:999px; background:#fff8e8; color:#191919; padding:.32em .68em; }
-.dm-copy__price { box-shadow:3px 3px 0 #191919; }
-.dm-link { text-align:center; text-decoration:none; }
-.dm-hero__stage { touch-action:pan-y; }
+.dm-hero { min-height:100svh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" "copy controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
+.dm-hero__intro { grid-area:intro; display:grid; justify-content:start; gap:.45rem; padding:0; margin:0; border:0; }
+.dm-intro__meta { gap:.35rem .75rem; opacity:1; font-size:.85rem; }
+.dm-intro__title { font:800 clamp(1rem,1.4vw,1.4rem)/1.2 var(--font-display); }
+.dm-hero__copy { grid-area:copy; align-self:start; }
+.dm-copy__cat { display:block; padding:0; background:none; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.6rem; }
+.dm-copy__cat a { color:inherit; text-underline-offset:.2em; }
+.dm-copy__name { font:900 clamp(2rem,4.5vw,5rem)/1.12 var(--font-display); letter-spacing:-.04em; text-transform:uppercase; }
+.cutout { display:inline-block; transform:rotate(-2deg); padding:0 .16em; border:2px solid; color:#191919; background:#fff8e8; box-shadow:3px 3px #191919; }
+.dm-copy__meta { align-items:center; margin-top:.85rem; gap:.55rem 1rem; }
+.dm-copy__price { padding:.25em .5em; background:#fff8e8; color:#191919; border:2px solid; border-radius:.4em; box-shadow:3px 3px #191919; }
+.dm-copy__actions { margin-top:1.15rem; }
 .dm-copy__actions :deep(.qa--row) { flex-direction:row; }
-@media(min-width:1100px) {
-  .dm-hero { align-content:center; grid-template-rows:auto auto; row-gap:1.25rem; padding-block:3rem; }
-  .dm-hero__intro { grid-row:1; padding:0; border:0; }
-  .dm-hero__copy { grid-row:2; }
-  .dm-hero__queue { align-self:end; display:flex; flex-direction:column-reverse; gap:1rem; padding:0; }
-  .dm-queue__head { margin:0; flex-wrap:wrap; }
+.dm-hero__stage { grid-area:stage; width:100%; height:clamp(300px,55svh,620px); margin:0; aspect-ratio:auto; touch-action:pan-y; }
+.dm-hero__plane { position:absolute; display:block; inset:0; z-index:-1; background:#277348; clip-path:polygon(80% 0,100% 0,100% 100%,50% 100%); }
+.dm-stage__img { width:85%; transform:translateX(-80%) scale(.65); }
+.dm-stage__img.is-next { opacity:.88; transform:translateX(80%) scale(.47); }
+.dm-stage__shadow { left:8%; right:18%; }
+.dm-hero__queue { grid-area:controls; justify-self:center; display:flex; align-items:center; gap:.4rem; margin:0; padding:.12rem .45rem; border:2px solid #191919; border-radius:2rem; background:#fff8e8; color:#191919; clip-path:none; }
+.dm-queue__head { order:2; margin:0; }
+.dm-queue__controls { gap:0; }
+.dm-ctl,.dm-item { color:#191919; width:44px; height:44px; }
+.dm-queue__list { margin:0; padding:0; gap:0; overflow:visible; }
+.dm-queue__list > li { flex:0 0 auto; }
+.dm-item { display:grid; place-items:center; grid-template-columns:1fr; width:28px; padding:0; }
+.dm-item::before { content:""; width:7px; height:7px; background:#8c8172; border-radius:10px; }
+.dm-item.is-active::before { width:18px; background:#191919; }
+.dm-item__bar { opacity:0; }
+.slide-count { font:800 .8rem var(--font-ui); }
+@media(max-width:900px) {
+ .dm-hero { grid-template-columns:1fr; grid-template-areas:"intro" "stage" "controls" "copy"; align-content:center; gap:.65rem; padding:78px var(--gutter) 2rem; }
+ .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
+ .dm-hero__stage { height:clamp(190px,32svh,350px); width:min(100%,42rem); }
+ .dm-stage__img { width:100%; }
+ .dm-stage__img.is-next { transform:translateX(64%) scale(.48); }
+ .dm-hero__plane { clip-path:polygon(100% 12%,100% 50%,85% 50%); }
+ .dm-copy__name { margin-bottom:.6rem; }
+ .dm-queue__controls .dm-ctl:nth-child(-n+2) { display:none; }
+ .dm-copy__actions :deep(.qa) { width:100%; }
+ .dm-copy__actions :deep(.qa__go) { flex:1; }
 }
-@media(max-width:1099px) {
-  .dm-hero { align-content:start; gap:.4rem; padding-block:.75rem 2rem; }
-  .dm-hero__intro { order:-3; margin:0; padding:0; border:0; }
-  .dm-hero__stage { order:-2; height:clamp(130px,23svh,260px); width:100%; margin:0; }
-  .dm-hero__queue { order:-1; display:flex; justify-content:center; align-items:center; gap:.6rem; padding:0; margin:0; background:transparent; clip-path:none; color:inherit; }
-  .dm-queue__title,.dm-queue__controls .dm-ctl:nth-child(-n+2),.dm-item__body,.dm-item__thumb { display:none; }
-  .dm-queue__head { order:1; margin:0; }
-  .dm-ctl { width:44px; height:44px; color:inherit; border-color:currentColor; }
-  .dm-queue__list { gap:0; margin:0; padding:0; }
-  .dm-queue__list li { flex:0 0 auto; }
-  .dm-item { display:grid; place-items:center; width:44px; height:44px; padding:0; background:none; border:none; }
-  .dm-item::before { content:""; width:9px; height:9px; border-radius:50%; background:var(--hero-fg); opacity:.4; }
-  .dm-item.is-active::before { width:24px; border-radius:8px; opacity:1; }
-  .dm-item__bar { opacity:0; }
-  .dm-copy__name { margin-bottom:.4rem; font-size:clamp(2rem,8vw,3.2rem); text-wrap:initial; }
-  .dm-copy__actions :deep(.qa),.dm-link { width:100%; }
-  .dm-copy__actions :deep(.qa__go) { flex:1; }
-  .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
+@media(max-width:600px) {
+ .dm-hero { align-content:start; padding:68px 20px 80px; gap:.45rem; }
+ .dm-intro__meta svg { display:none; }
+ .dm-intro__meta { font-size:.76rem; }
+ .dm-hero__stage { height:clamp(150px,28svh,260px); }
+ .dm-hero__plane { display:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .dm-hero,.dm-stage__img,.copy-enter-active,.copy-leave-active { transition:none; }
 }
 </style>

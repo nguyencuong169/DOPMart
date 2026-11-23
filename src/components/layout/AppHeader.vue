@@ -243,7 +243,7 @@ onBeforeUnmount(() => {
     @focusin="reveal"
   >
     <RouterLink to="/" class="dop-nav-logo" @click="closeMenu()">
-      <span>DOP</span><b>mart</b><small>Mini mart · Big happy</small>
+      <span>DOP</span><b>mart</b><small>Small Money – Big Happy</small>
     </RouterLink>
     <nav ref="navEl" class="dop-nav" aria-label="Điều hướng chính">
       <span

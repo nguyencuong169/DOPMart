@@ -86,7 +86,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
     <div class="cart-bottom">
       <div class="pickup"><MapPin /> Nhận tại tầng {{ floor.floor }}</div>
       <div class="total">
-        <span>Tổng cộng</span><b>{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+        <span>Tổng cộng</span><b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
       </div>
       <RouterLink
         to="/checkout"

@@ -9,7 +9,7 @@ const cart = useCartStore();
     <img :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
     <div>
       <b>{{ item.name }}</b
-      ><small>{{ item.price.toLocaleString("vi-VN") }} ₫</small>
+      ><small class="tabular-nums">{{ item.price.toLocaleString("vi-VN") }} ₫</small>
       <div class="quantity">
         <button @click="cart.change(item.id, -1)" aria-label="Giảm số lượng"><Minus /></button
         ><span>{{ item.qty }}</span

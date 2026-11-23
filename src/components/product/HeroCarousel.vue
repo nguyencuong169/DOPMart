@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
 .store-hero__status.is-open { color: var(--green-ink); }
 .store-hero h1 {
   margin: 0 0 22px;
-  font: 800 clamp(2.5rem, 5.55vw, 5.5rem)/var(--lh-display) var(--font-display);
+  font: 800 var(--fs-hero)/var(--lh-display) var(--font-display);
   letter-spacing: -.065em;
   text-wrap: balance;
 }
@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
   margin: 0 0 22px;
   max-width: 37ch;
   color: var(--on-cream);
-  font-size: clamp(var(--fs-md), 1.4vw, var(--fs-lg));
+  font-size: var(--fs-lg);
   line-height: var(--lh-body);
 }
 .store-hero__links a {
@@ -342,7 +342,7 @@ onBeforeUnmount(() => {
   .store-hero__status { padding: 2px 6px; }
   .store-hero h1 {
     margin-bottom: 8px;
-    font-size: clamp(28px, 8.5vw, 48px);
+    font-size: var(--fs-xl);
   }
   .store-hero__intro {
     margin-bottom: 8px;

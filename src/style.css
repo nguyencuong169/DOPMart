@@ -36,6 +36,11 @@
   --berry: var(--red);
   --berry-deep: var(--red-ink);
   --orange: var(--flame);
+  /* secondary / muted text tokens — used instead of opacity (spec: never opacity) */
+  --ink-well: var(--ink);
+  --mango-glow: var(--yellow);
+  --rice-paper: var(--cream);
+  --muted-foreground: #5b554b; /* category label, ~0.6 of ink on cream */
 
   /* --- spacing: multiples of 8 --- */
   --sp-1: 8px;

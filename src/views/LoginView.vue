@@ -149,7 +149,7 @@ async function handleLogin(e) {
 }
 
 .login-brand .brand-dop {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 2.5rem;
   font-weight: 400;
   color: var(--midnight-dream, #0a0f2a);
@@ -158,7 +158,7 @@ async function handleLogin(e) {
 }
 
 .login-brand .brand-mart {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 2.5rem;
   font-weight: 400;
   color: var(--mango-glow, #ff6b35);
@@ -175,7 +175,7 @@ async function handleLogin(e) {
 }
 
 .login-title {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 2.5rem;
   font-weight: 400;
   color: var(--midnight-dream, #0a0f2a);

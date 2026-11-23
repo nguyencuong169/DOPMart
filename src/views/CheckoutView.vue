@@ -38,10 +38,10 @@ onMounted(() => {
       <h2>Đơn hàng</h2>
       <p v-for="i in cart.items" :key="i.id">
         {{ i.name }} × {{ i.qty }}
-        <b>{{ (i.price * i.qty).toLocaleString("vi-VN") }} ₫</b>
+        <b class="tabular-nums">{{ (i.price * i.qty).toLocaleString("vi-VN") }} ₫</b>
       </p>
       <div class="total">
-        <span>Tổng</span><b>{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+        <span>Tổng</span><b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
       </div>
       <p id="qr-payment-status">Thanh toán qua mã QR hiện chưa được cấu hình.</p>
       <button type="button" class="checkout" aria-describedby="qr-payment-status" disabled>

@@ -43,7 +43,7 @@ function goBack() {
       <div class="detail-rating">
         ★★★★★ <span>{{ product.rating }} · Đã bán {{ product.sold }}</span>
       </div>
-      <strong class="detail-price">{{ product.price.toLocaleString("vi-VN") }} ₫</strong>
+      <strong class="detail-price tabular-nums">{{ product.price.toLocaleString("vi-VN") }} ₫</strong>
       <div class="buy-row">
         <QuickAdd :product="product" :stock="product.stock[floor.floor]" />
       </div>

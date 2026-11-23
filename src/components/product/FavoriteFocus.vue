@@ -105,10 +105,10 @@ function move(d) {
   height: 48px;
 }
 .favorite-empty h3 {
-  line-height: 1.1;
+  line-height: var(--lh-display);
 }
 .favorite-empty p {
-  line-height: 1.5;
+  line-height: var(--lh-body);
   max-width: 45ch;
   text-wrap: pretty;
 }

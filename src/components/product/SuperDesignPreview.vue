@@ -1,21 +1,8 @@
 <script setup>
 import { onMounted } from 'vue'
 
-// Load external scripts on mount
 onMounted(() => {
-  // Load Iconify
-  if (!document.querySelector('script[src="https://code.iconify.design"]')) {
-    const ic = document.createElement('script')
-    ic.src = 'https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js'
-    document.head.appendChild(ic)
-  }
-  // Load Google Fonts
-  if (!document.querySelector('link[href*="fonts.googleapis.com"]')) {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = 'https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;700&display=swap'
-    document.head.appendChild(link)
-  }
+  window.__SUPERDESIGN_PREVIEW__?.ready?.()
 })
 
 </script>
@@ -26,13 +13,8 @@ onMounted(() => {
 </style>
 
 <style>
-  body {
-    font-family: 'Archivo', sans-serif;
-    background-color: #0b1120;
-    -webkit-tap-highlight-color: transparent;
-  }
   .font-display {
-    font-family: 'Anton', sans-serif;
+    font-family: 'Barlow Condensed', 'Be Vietnam Pro', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -181,7 +163,7 @@ onMounted(() => {
 
 <template>
   <div class="superdesign-preview">
-    <main id="app" class="w-full overflow-x-clip bg-slate-950 selection:bg-red-500 selection:text-white flex flex-col lg:grid lg:grid-cols-[60%_40%] lg:h-[650px] relative">
+    <main id="app" class="w-full overflow-x-clip bg-cream selection:bg-red-ink selection:text-ink flex flex-col lg:grid lg:grid-cols-[60%_40%] lg:h-[650px] relative">
       <div class="ambient-mesh"></div>
       <div class="absolute inset-0 bg-dots opacity-30 pointer-events-none z-0"></div>
       <div class="floating-circle w-64 h-64 -top-10 -left-10 z-0"></div>
@@ -191,7 +173,7 @@ onMounted(() => {
       <section aria-label="Danh sách sản phẩm bán chạy" class="w-full h-[650px] lg:h-full relative z-10 overflow-hidden bg-transparent">
         <div class="flex flex-row items-stretch justify-start h-full overflow-x-auto snap-x snap-mandatory scroll-smooth carousel-scrollbar gap-0">
           
-          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#E91E63] bg-mesh text-white p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.1s;">
+          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#E91E63] bg-mesh text-ink p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.1s;">
             <div class="hidden lg:block card-divider"></div>
             <div class="card-pattern absolute inset-0 opacity-20 pointer-events-none pulse-load"></div>
             <div class="absolute top-6 right-10 z-30">
@@ -201,8 +183,8 @@ onMounted(() => {
             </div>
             <h3 class="font-display text-4xl lg:text-5xl mb-2 text-center group-hover:scale-105 transition-transform duration-500 drop-shadow-md">FRUIT<br>GUMMY</h3>
             <div class="flex flex-col items-center mb-8">
-              <span class="font-display text-2xl lg:text-3xl text-white/90 tracking-wide">$3.50</span>
-              <button onclick="showToast('Fruit Gummy')" id="cta-fruit-gummy" aria-label="Mua Fruit Gummy giá 3.50 đô la" class="mt-4 bg-white text-[#E91E63] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-50">
+              <span class="font-display text-2xl lg:text-3xl text-ink/90 tracking-wide">35.000 ₫</span>
+              <button onclick="showToast('Fruit Gummy')" id="cta-fruit-gummy" aria-label="Mua Fruit Gummy giá 35.000 đồng" class="mt-4 bg-cream text-[#E91E63] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-100">
                 MUA NGAY
               </button>
             </div>
@@ -215,14 +197,14 @@ onMounted(() => {
             <div class="hidden lg:block card-divider"></div>
             <div class="card-pattern absolute inset-0 opacity-10 pointer-events-none pulse-load"></div>
             <div class="absolute top-6 right-10 z-30">
-              <span class="text-white px-3 py-1 rounded-full text-[10px] font-bold neon-badge flex items-center gap-1">
+              <span class="text-ink px-3 py-1 rounded-full text-[10px] font-bold neon-badge flex items-center gap-1">
                 <i class="iconify-icon text-sm" icon="lucide:flame"></i> BEST SELLER
               </span>
             </div>
             <h3 class="font-display text-5xl mb-2 text-center group-hover:scale-105 transition-transform duration-500 drop-shadow-sm">POTATO<br>CHIPS</h3>
             <div class="flex flex-col items-center mb-8">
-              <span class="font-display text-3xl text-red-600 tracking-wide">$2.90</span>
-              <button onclick="showToast('Potato Chips')" id="cta-potato-chips" aria-label="Mua Potato Chips giá 2.90 đô la" class="mt-4 bg-slate-900 text-white font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-800">
+              <span class="font-display text-3xl text-red-ink tracking-wide">29.000 ₫</span>
+              <button onclick="showToast('Potato Chips')" id="cta-potato-chips" aria-label="Mua Potato Chips giá 29.000 đồng" class="mt-4 bg-ink text-white font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-[#333]">
                 MUA NGAY
               </button>
             </div>
@@ -236,8 +218,8 @@ onMounted(() => {
             <div class="card-pattern absolute inset-0 opacity-20 pointer-events-none pulse-load"></div>
             <h3 class="font-display text-4xl lg:text-5xl mb-2 text-center group-hover:scale-105 transition-transform duration-500 drop-shadow-md">HEALTHY<br>NUTS</h3>
             <div class="flex flex-col items-center mb-8">
-              <span class="font-display text-2xl lg:text-3xl text-white/90 tracking-wide">$5.80</span>
-              <button onclick="showToast('Healthy Nuts')" id="cta-healthy-nuts" aria-label="Mua Healthy Nuts giá 5.80 đô la" class="mt-4 bg-white text-[#4CAF50] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-50">
+              <span class="font-display text-2xl lg:text-3xl text-ink/90 tracking-wide">58.000 ₫</span>
+              <button onclick="showToast('Healthy Nuts')" id="cta-healthy-nuts" aria-label="Mua Healthy Nuts giá 58.000 đồng" class="mt-4 bg-cream text-[#4CAF50] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-100">
                 MUA NGAY
               </button>
             </div>
@@ -246,13 +228,13 @@ onMounted(() => {
             </div>
           </article>
 
-          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#DC3545] bg-mesh text-white p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.4s;">
+          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#DC3545] bg-mesh text-ink p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.4s;">
             <div class="hidden lg:block card-divider"></div>
             <div class="card-pattern absolute inset-0 opacity-20 pointer-events-none pulse-load"></div>
             <h3 class="font-display text-4xl lg:text-5xl mb-2 text-center group-hover:scale-105 transition-transform duration-500 drop-shadow-md">INSTANT<br>SAUSAGE</h3>
             <div class="flex flex-col items-center mb-8">
-              <span class="font-display text-2xl lg:text-3xl text-white/90 tracking-wide">$4.20</span>
-              <button onclick="showToast('Instant Sausage')" id="cta-instant-sausage" aria-label="Mua Instant Sausage giá 4.20 đô la" class="mt-4 bg-white text-[#DC3545] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-50">
+              <span class="font-display text-2xl lg:text-3xl text-ink/90 tracking-wide">42.000 ₫</span>
+              <button onclick="showToast('Instant Sausage')" id="cta-instant-sausage" aria-label="Mua Instant Sausage giá 42.000 đồng" class="mt-4 bg-cream text-[#DC3545] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-100">
                 MUA NGAY
               </button>
             </div>
@@ -261,7 +243,7 @@ onMounted(() => {
             </div>
           </article>
 
-          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#FF6B35] bg-mesh text-white p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.5s;">
+          <article class="skew-card group relative flex-1 min-w-[320px] lg:min-w-[280px] bg-[#FF6B35] bg-mesh text-ink p-10 pt-16 flex flex-col items-center stagger-in snap-center" style="animation-delay: 0.5s;">
             <div class="card-pattern absolute inset-0 opacity-20 pointer-events-none pulse-load"></div>
             <div class="absolute top-6 right-10 z-30">
               <span class="text-slate-900 px-3 py-1 rounded-full text-[10px] font-bold neon-badge flex items-center gap-1">
@@ -270,8 +252,8 @@ onMounted(() => {
             </div>
             <h3 class="font-display text-4xl lg:text-5xl mb-2 text-center group-hover:scale-105 transition-transform duration-500 drop-shadow-md">SPICY<br>STICK</h3>
             <div class="flex flex-col items-center mb-8">
-              <span class="font-display text-2xl lg:text-3xl text-white/90 tracking-wide">$3.80</span>
-              <button onclick="showToast('Spicy Stick')" id="cta-spicy-stick" aria-label="Mua Spicy Stick giá 3.80 đô la" class="mt-4 bg-white text-[#FF6B35] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-50">
+              <span class="font-display text-2xl lg:text-3xl text-ink/90 tracking-wide">38.000 ₫</span>
+              <button onclick="showToast('Spicy Stick')" id="cta-spicy-stick" aria-label="Mua Spicy Stick giá 38.000 đồng" class="mt-4 bg-cream text-[#FF6B35] font-bold py-2.5 px-8 rounded-full shadow-xl transition-all duration-300 transform group-hover:scale-105 active:scale-95 hover:bg-slate-100">
                 MUA NGAY
               </button>
             </div>
@@ -285,19 +267,19 @@ onMounted(() => {
 
       <header class="w-full h-auto lg:h-full flex flex-col justify-center items-center relative px-6 lg:px-12 py-12 lg:py-0 text-center bg-transparent z-20">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none w-full overflow-hidden">
-          <h1 class="text-7xl lg:text-[10rem] xl:text-[12rem] font-display text-white whitespace-nowrap tracking-tighter">DOP MART</h1>
+          <h1 class="text-7xl lg:text-[10rem] xl:text-[12rem] font-display text-ink whitespace-nowrap tracking-tighter">DOP MART</h1>
         </div>
         <div class="relative z-10 w-full max-w-lg mx-auto bg-black/20 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-2xl">
           <div class="flex items-center justify-center gap-3 mb-4">
             <div class="h-px w-8 bg-white/20"></div>
-            <span class="font-display text-sm tracking-[0.4em] text-white/60">DOP MART EXCLUSIVE</span>
+            <span class="font-display text-sm tracking-[0.4em] text-ink/60">DOP MART EXCLUSIVE</span>
             <div class="h-px w-8 bg-white/20"></div>
           </div>
           <span class="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-5 py-1 rounded-full text-[10px] md:text-xs font-bold mb-6 lg:mb-8 tracking-[0.2em] shadow-lg shadow-red-900/20 uppercase">Món ngon mỗi ngày</span>
-          <h2 class="text-5xl sm:text-7xl lg:text-7xl xl:text-9xl font-display text-white mb-6 lg:mb-8 tracking-tighter leading-[0.9] header-shadow">
+          <h2 class="text-5xl sm:text-7xl lg:text-7xl xl:text-9xl font-display text-ink mb-6 lg:mb-8 tracking-tighter leading-[0.9] header-shadow">
             TOP <span class="text-white snack-glow">SNACK</span> BÁN CHẠY
           </h2>
-          <p class="text-slate-400 text-base md:text-lg font-medium opacity-80">
+          <p class="text-ink/70 text-base md:text-lg font-medium opacity-80">
             Khám phá những hương vị độc bản tại DOP Mart. Mỗi sản phẩm là một hành trình cảm xúc từ nguyên liệu tự nhiên nhất.
           </p>
         </div>
@@ -305,7 +287,7 @@ onMounted(() => {
 
       <div id="cart-toast" class="fixed bottom-8 right-8 z-[100] flex items-center gap-3 bg-green-600 text-white px-6 py-4 rounded-2xl shadow-2xl border border-white/20">
         <i class="iconify-icon text-2xl" icon="lucide:check-circle"></i>
-        <span id="toast-message" class="font-bold">Added to cart!</span>
+        <span id="toast-message" class="font-bold">Đã thêm vào giỏ!</span>
       </div>
     </main>
   </div>

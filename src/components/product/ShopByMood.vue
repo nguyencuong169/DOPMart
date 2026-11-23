@@ -510,14 +510,14 @@ watch(tabs, () => nextTick(updateScrollState));
 }
 .cat-bar__lead {
   margin: var(--sp-1) 0 0;
-  color: #5b554b;
+  color: var(--on-cream);
   font-size: var(--fs-sm);
 }
 .cat-more {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  background: #fff;
+  background: var(--cream);
   color: var(--ink);
   border: var(--bw-bold) solid var(--ink);
   border-radius: var(--r-pill);
@@ -545,10 +545,11 @@ watch(tabs, () => nextTick(updateScrollState));
 }
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 456px));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   justify-content: center;
   gap: var(--sp-3);
   padding: var(--sp-3) 0 var(--sp-1);
+  max-width: 100%;
 }
 @media (max-width: 980px) {
   .cat-grid {

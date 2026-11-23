@@ -379,7 +379,18 @@ onBeforeUnmount(() => animation?.revert());
 
 @media (max-width: 768px) {
   .promo-list {
-    grid-template-columns: 1fr;
+    min-width: 0;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(85%, 24rem);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-block: 4px;
+  }
+
+  .promo-card {
+    min-width: 0;
+    scroll-snap-align: start;
   }
 
   .promo-showcase {

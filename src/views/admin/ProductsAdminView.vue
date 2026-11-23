@@ -272,6 +272,8 @@ onMounted(() => {
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
 }
@@ -324,7 +326,7 @@ onMounted(() => {
   background: var(--muted, #f9fafb);
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;
-  width: 320px;
+  width: min(320px, 100%);
 }
 
 .search-icon {
@@ -333,6 +335,7 @@ onMounted(() => {
 }
 
 .search-input {
+  min-width: 0;
   flex: 1;
   border: none;
   background: transparent;
@@ -441,6 +444,7 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   width: min(720px, 92vw);
   max-height: 85vh;
+  max-height: 85dvh;
   background: var(--popover, #ffffff);
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
@@ -493,7 +497,7 @@ onMounted(() => {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -568,5 +572,18 @@ onMounted(() => {
   font-size: 0.75rem;
   color: var(--muted-foreground, #9ca3af);
   margin-top: 0.25rem;
+}
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-field.span-2 {
+    grid-column: 1;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+  }
 }
 </style>

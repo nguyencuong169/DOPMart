@@ -2,7 +2,7 @@
 import { computed, onMounted } from "vue";
 import { useProductStore } from "../stores/productStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
-import HeroCarousel from "../components/product/HeroCarousel.vue";
+import HeroCarousel from "../components/product/HeroCarousel_V2.vue";
 import ShopByMood from "../components/product/ShopByMood.vue";
 import PromotionShowcase from "../components/product/PromotionShowcase.vue";
 import NewProductsSection from "../components/product/NewProductsSection.vue";

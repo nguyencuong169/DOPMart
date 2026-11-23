@@ -9,6 +9,7 @@ import {
   Play,
   Star,
 } from "lucide-vue-next";
+import { useSwipe } from "@vueuse/core";
 import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore.js";
 import { relativeLuminance } from "../../utils/color.js";
@@ -17,6 +18,39 @@ const store = useProductStore();
 const slides = computed(() => store.products.slice(0, 4));
 const current = ref(0);
 const active = computed(() => slides.value[current.value]);
+
+const emphasizedEndings = [
+  "phô mai",
+  "bùng vị",
+  "nhiệt đới",
+  "ăn liền",
+  "trái cây",
+  "mini",
+  "mộc",
+  "cay",
+];
+const nameParts = computed(() => {
+  const name = slides.value[current.value]?.name || "";
+  const words = name.split(/\s+/).filter(Boolean);
+  const normalized = name.toLocaleLowerCase("vi-VN");
+  const ending =
+    emphasizedEndings.find((phrase) => normalized.endsWith(phrase)) ||
+    words[words.length - 1] ||
+    "";
+  return {
+    head: ending ? name.slice(0, -ending.length).trim() : name,
+    accent: ending ? name.slice(-ending.length) : "",
+  };
+});
+
+const stage = ref(null);
+useSwipe(stage, {
+  threshold: 40,
+  onSwipeEnd(_, direction) {
+    if (direction === "left") go(current.value + 1);
+    if (direction === "right") go(current.value - 1);
+  },
+});
 
 const prefersReduced = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -97,11 +131,9 @@ onBeforeUnmount(() => {
     >
       <Transition name="copy" mode="out-in" appear>
         <div :key="active.id" class="dm-copy">
-          <p class="dm-copy__cat">{{ active.categoryName }}</p>
+          <p class="dm-copy__cat">DOP MART · {{ active.categoryName }}</p>
           <h2 class="dm-copy__name">
-            <RouterLink :to="`/product/${active.slug}`">{{
-              active.name
-            }}</RouterLink>
+            <RouterLink :to="`/product/${active.slug}`">{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink>
           </h2>
           <p class="dm-copy__desc">{{ active.description }}</p>
           <div class="dm-copy__meta">
@@ -115,7 +147,7 @@ onBeforeUnmount(() => {
           <div class="dm-copy__actions">
             <QuickAdd :product="active" />
             <RouterLink to="/deals" class="dm-link"
-              >Khuyến mãi hôm nay</RouterLink
+              >Khuyến mãi hôm nay →</RouterLink
             >
           </div>
         </div>
@@ -123,7 +155,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Ảnh sản phẩm: xếp chồng, chỉ đổi lớp is-active -->
-    <div class="dm-hero__stage">
+    <div ref="stage" class="dm-hero__stage">
       <span class="dm-stage__shadow" aria-hidden="true" />
       <img
         v-for="(p, i) in slides"
@@ -195,6 +227,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="dm-item"
+            :aria-label="p.name"
             :class="{ 'is-active': i === current }"
             :aria-current="i === current ? 'true' : undefined"
             @click="go(i)"
@@ -689,5 +722,41 @@ onBeforeUnmount(() => {
   .copy-leave-to {
     transform: none;
   }
+}
+
+.dm-copy__cat { background:none; padding:0; margin-bottom:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; }
+.dm-copy__name { font-family:var(--font-display); font-size:clamp(2.5rem,4.4vw,5rem); line-height:1.12; letter-spacing:-.04em; font-weight:900; text-transform:uppercase; }
+.cutout { display:inline-block; padding:.02em .16em; transform:rotate(-2deg); background:#fff8e8; color:#191919; border:2px solid; box-shadow:3px 3px 0 #191919; }
+.dm-copy__actions { flex-direction:column; align-items:flex-start; margin-top:1rem; gap:.8rem; }
+.dm-copy__meta { margin-top:.8rem; align-items:center; }
+.dm-copy__price,.dm-link { border:2px solid #191919; border-radius:999px; background:#fff8e8; color:#191919; padding:.32em .68em; }
+.dm-copy__price { box-shadow:3px 3px 0 #191919; }
+.dm-link { text-align:center; text-decoration:none; }
+.dm-hero__stage { touch-action:pan-y; }
+@media(min-width:1100px) {
+  .dm-hero { align-content:center; grid-template-rows:auto auto; row-gap:1.25rem; padding-block:3rem; }
+  .dm-hero__intro { grid-row:1; padding:0; border:0; }
+  .dm-hero__copy { grid-row:2; }
+  .dm-hero__queue { align-self:end; display:flex; flex-direction:column-reverse; gap:1rem; padding:0; }
+  .dm-queue__head { margin:0; flex-wrap:wrap; }
+}
+@media(max-width:1099px) {
+  .dm-hero { align-content:center; gap:.65rem; padding-block:1rem 2rem; }
+  .dm-hero__intro { order:-3; margin:0; padding:0; border:0; }
+  .dm-hero__stage { order:-2; height:clamp(145px,27svh,300px); width:100%; margin:0; }
+  .dm-hero__queue { order:-1; display:flex; justify-content:center; align-items:center; gap:.6rem; padding:0; margin:0; background:transparent; clip-path:none; color:inherit; }
+  .dm-queue__title,.dm-queue__controls .dm-ctl:nth-child(-n+2),.dm-item__body,.dm-item__thumb { display:none; }
+  .dm-queue__head { order:1; margin:0; }
+  .dm-ctl { width:44px; height:44px; color:inherit; border-color:currentColor; }
+  .dm-queue__list { gap:0; margin:0; padding:0; }
+  .dm-queue__list li { flex:0 0 auto; }
+  .dm-item { display:grid; place-items:center; width:44px; height:44px; padding:0; background:none; border:none; }
+  .dm-item::before { content:""; width:9px; height:9px; border-radius:50%; background:var(--hero-fg); opacity:.4; }
+  .dm-item.is-active::before { width:24px; border-radius:8px; opacity:1; }
+  .dm-item__bar { opacity:0; }
+  .dm-copy__name { margin-bottom:.5rem; }
+  .dm-copy__actions :deep(.qa),.dm-link { width:100%; }
+  .dm-copy__actions :deep(.qa__go) { flex:1; }
+  .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
 }
 </style>

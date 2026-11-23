@@ -42,7 +42,7 @@ const moreLinks = [
   },
   {
     label: "Cách đặt hàng",
-    note: "Chọn món, kiểm tra giỏ hàng và chọn tầng nhận",
+    note: "4 nhịp: chọn → quét → nhận",
     to: "/how-it-works",
     icon: QrCode,
     match: (path) => path === "/how-it-works",

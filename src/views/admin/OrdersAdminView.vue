@@ -154,7 +154,7 @@ onMounted(() => { loadOrders().then(filterOrders); });
   background: var(--muted, #f9fafb);
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;
-  width: min(320px, 100%);
+  width: 320px;
 }
 
 .search-icon {
@@ -163,7 +163,6 @@ onMounted(() => { loadOrders().then(filterOrders); });
 }
 
 .search-input {
-  min-width: 0;
   flex: 1;
   border: none;
   background: transparent;
@@ -173,7 +172,7 @@ onMounted(() => { loadOrders().then(filterOrders); });
 }
 
 .form-select {
-  width: min(200px, 100%);
+  width: 200px;
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;

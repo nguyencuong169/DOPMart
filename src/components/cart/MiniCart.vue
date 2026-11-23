@@ -94,7 +94,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
         :class="{ disabled: !cart.items.length }"
         :aria-disabled="!cart.items.length"
         @click="close"
-        >Thanh toán <ArrowRight
+        >Thanh toán QR <ArrowRight
       /></RouterLink>
     </div>
   </aside>

@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted } from "vue";
-import CartItem from "../components/cart/CartItem.vue";
 import { useCartStore } from "../stores/cartStore";
 const cart = useCartStore();
 onMounted(() => cart.init());

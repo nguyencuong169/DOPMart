@@ -43,10 +43,7 @@ onMounted(() => {
       <div class="total">
         <span>Tổng</span><b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
       </div>
-      <p id="qr-payment-status">Thanh toán qua mã QR hiện chưa được cấu hình.</p>
-      <button type="button" class="checkout" aria-describedby="qr-payment-status" disabled>
-        Tạo mã QR
-      </button>
+      <button class="checkout" :disabled="!cart.items.length || !name">Tạo mã QR</button>
     </aside>
   </main>
 </template>

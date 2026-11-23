@@ -11,10 +11,10 @@ const cart = useCartStore();
       <b>{{ item.name }}</b
       ><small class="tabular-nums">{{ item.price.toLocaleString("vi-VN") }} ₫</small>
       <div class="quantity">
-        <button @click="cart.change(item.id, -1)" aria-label="Giảm số lượng"><Minus /></button
+        <button @click="cart.change(item.id, -1)"><Minus /></button
         ><span>{{ item.qty }}</span
-        ><button @click="cart.change(item.id, 1)" aria-label="Tăng số lượng"><Plus /></button
-        ><button class="remove" @click="cart.remove(item.id)" :aria-label="`Xóa ${item.name}`"><X /></button>
+        ><button @click="cart.change(item.id, 1)"><Plus /></button
+        ><button class="remove" @click="cart.remove(item.id)"><X /></button>
       </div>
     </div>
   </div>

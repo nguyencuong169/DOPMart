@@ -324,15 +324,10 @@ onBeforeUnmount(() => {
 }
 @media (max-width: 760px) {
   .store-hero__inner {
-    --hero-gutter: clamp(12px, 4vw, 24px);
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(min-content, 1fr) auto;
+    grid-template-rows: auto;
     grid-template-areas: "copy" "showcase" "item";
-    align-items: stretch;
-    min-height: calc(100svh - var(--home-mobile-header-height, 0px));
-    min-height: calc(100dvh - var(--home-mobile-header-height, 0px));
-    row-gap: 12px;
-    padding: 16px var(--hero-gutter) var(--mobile-nav-clearance);
+    row-gap: 20px;
   }
   .store-hero__hours {
     gap: 4px 8px;
@@ -410,9 +405,7 @@ onBeforeUnmount(() => {
   }
   .store-hero__stage { min-height: 112px; }
 }
-@media (max-width: 360px) and (max-height: 620px) {
-  .store-hero__intro { display: none; }
-  .store-hero__inner { row-gap: 6px; }
-  .store-hero__stage { min-height: 96px; }
+@media (max-width: 380px) {
+  .store-hero__dots { flex-basis: 100%; }
 }
 </style>

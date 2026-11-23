@@ -201,7 +201,7 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 /* Stat grid */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
 
@@ -290,7 +290,7 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 /* Action grid */
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.75rem;
 }
 

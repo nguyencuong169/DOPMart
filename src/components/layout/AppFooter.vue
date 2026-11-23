@@ -5,12 +5,7 @@ import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="footer-brand__head">
-          <div class="footer-logo">DOP <i>mart</i></div>
-          <a class="footer-mobile-top" href="#top">
-            Lên đầu trang <ArrowUpRight :size="16" aria-hidden="true" />
-          </a>
-        </div>
+        <div class="footer-logo">DOP <i>mart</i></div>
         <p>Mini mart - Big happy</p>
         <span
           >Snack station dành riêng cho văn phòng, phục vụ nhanh tại tầng 14 và tầng
@@ -27,7 +22,7 @@ import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
       <div class="footer-col">
         <h4>Hỗ trợ</h4>
         <RouterLink to="/how-it-works">Cách đặt hàng</RouterLink
-        ><RouterLink to="/checkout">Thanh toán</RouterLink
+        ><RouterLink to="/checkout">Thanh toán QR</RouterLink
         ><RouterLink to="/about">Về DOP Mart</RouterLink>
       </div>
       <div class="footer-col footer-contact">

@@ -181,7 +181,7 @@ onMounted(() => {
 
 <template>
   <div class="superdesign-preview">
-    <main id="app" class="w-full overflow-x-clip bg-slate-950 selection:bg-red-500 selection:text-white flex flex-col lg:grid lg:grid-cols-[60%_40%] lg:h-[650px] relative">
+    <main id="app" class="w-full bg-slate-950 selection:bg-red-500 selection:text-white flex flex-col lg:grid lg:grid-cols-[60%_40%] lg:h-[650px] relative">
       <div class="ambient-mesh"></div>
       <div class="absolute inset-0 bg-dots opacity-30 pointer-events-none z-0"></div>
       <div class="floating-circle w-64 h-64 -top-10 -left-10 z-0"></div>

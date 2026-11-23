@@ -1,27 +1,24 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useMediaQuery } from "@vueuse/core";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Store, Menu, ChevronLeft, Bell, ShoppingCart } from "lucide-vue-next";
-import { getCurrentUserWithProfile } from "@/lib/supabase";
+import { Store, LogOut, Menu, ChevronLeft, Sun, Moon, Bell, ShoppingCart } from "lucide-vue-next";
+import { isAdmin, getCurrentUserWithProfile } from "@/lib/supabase";
 
 const route = useRoute();
 const router = useRouter();
 
-const isMobile = useMediaQuery("(max-width: 768px)");
-const sidebarOpen = ref(!isMobile.value);
+const sidebarOpen = ref(true);
 const userMenuOpen = ref(false);
 const avatarError = ref(false);
 const user = ref(null);
-
-watch(isMobile, (mobile) => { sidebarOpen.value = !mobile; });
+const isMobile = ref(window.innerWidth < 768);
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
 
 const closeSidebar = () => {
-  sidebarOpen.value = false;
+  if (isMobile.value) sidebarOpen.value = false;
 };
 
 const toggleUserMenu = () => {
@@ -43,6 +40,8 @@ const adminLinks = [
 const isActive = (name) => route.name === name;
 
 onMounted(async () => {
+  isMobile.value = window.innerWidth < 768;
+  if (isMobile.value) sidebarOpen.value = false;
   const { user: u, profile } = await getCurrentUserWithProfile();
   user.value = u;
   if (!(profile?.is_admin === true)) {
@@ -50,12 +49,16 @@ onMounted(async () => {
   }
 });
 
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth < 768;
+  if (!isMobile.value) sidebarOpen.value = true;
+});
 </script>
 
 <template>
-  <div class="admin-layout" :class="{ 'with-sidebar': sidebarOpen }" @keydown.esc="closeSidebar">
+  <div class="admin-layout" :class="{ 'is-mobile': isMobile }">
     <header class="admin-topbar">
-      <button class="topbar-toggle" @click="toggleSidebar" :aria-expanded="sidebarOpen" aria-controls="admin-sidebar" :aria-label="sidebarOpen ? 'Đóng menu' : 'Mở menu'">
+      <button class="topbar-toggle" @click="toggleSidebar" aria-label="Mở menu">
         <Menu :size="20" />
       </button>
       <div class="topbar-brand">
@@ -86,8 +89,11 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <div v-if="isMobile && sidebarOpen" class="admin-scrim" @click="closeSidebar" />
-    <aside id="admin-sidebar" class="admin-sidebar" :inert="!sidebarOpen">
+    <aside
+      class="admin-sidebar"
+      :class="{ open: sidebarOpen, hidden: isMobile && !sidebarOpen }"
+      @click.outside="closeSidebar"
+    >
       <div class="sidebar-header">
         <button class="sidebar-close" @click="closeSidebar" aria-label="Đóng sidebar">
           <ChevronLeft :size="20" />
@@ -100,7 +106,7 @@ onMounted(async () => {
           :to="{ name: link.name }"
           class="sidebar-link"
           :class="{ active: isActive(link.name) }"
-          @click="isMobile && closeSidebar()"
+          @click="closeSidebar"
         >
           <component :is="link.icon" :size="18" class="sidebar-link-icon" />
           <span class="sidebar-link-label">{{ link.label }}</span>
@@ -126,7 +132,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: 100dvh;
   background: var(--background, #ffffff);
   color: var(--foreground, #1a1a1a);
 }
@@ -136,8 +141,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex: 0 0 56px;
-  min-height: 56px;
+  height: 56px;
   padding: 0 1rem;
   background: var(--background, #ffffff);
   border-bottom: 1px solid var(--border, #e5e7eb);
@@ -262,18 +266,16 @@ onMounted(async () => {
   top: 56px;
   left: 0;
   width: 260px;
-  bottom: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  height: calc(100vh - 56px);
   background: var(--background, #ffffff);
   border-right: 1px solid var(--border, #e5e7eb);
   z-index: 20;
   transition: transform 0.25s ease;
-  transform: translateX(-100%);
+  transform: translateX(0);
 }
 
-.with-sidebar .admin-sidebar {
-  transform: translateX(0);
+.admin-sidebar.hidden {
+  transform: translateX(-100%);
 }
 
 .sidebar-header {
@@ -339,50 +341,33 @@ onMounted(async () => {
 /* Main content */
 .admin-main {
   flex: 1;
-  min-height: 0;
-  min-width: 0;
   overflow: auto;
-  padding: clamp(12px, 2vw, 24px);
+  padding: 1.5rem;
+  margin-left: 260px;
   transition: margin-left 0.25s ease;
 }
 
-.with-sidebar .admin-main {
-  margin-inline-start: 260px;
+.is-mobile .admin-main {
+  margin-left: 0;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .admin-topbar {
-    padding-inline: 0.5rem;
-    gap: 0.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 30;
   }
-
   .topbar-spacer {
     display: block;
   }
-
   .admin-sidebar {
-    max-width: calc(100% - 44px);
     z-index: 40;
   }
-
-  .admin-scrim {
-    position: fixed;
-    inset: 56px 0 0;
-    z-index: 35;
-    background: rgb(0 0 0 / 0.4);
-  }
-
-  .with-sidebar .admin-main {
-    margin-inline-start: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-sidebar,
   .admin-main {
-    transition: none;
+    padding-top: 72px;
   }
 }
 

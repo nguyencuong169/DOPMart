@@ -283,10 +283,6 @@ onMounted(async () => {
 }
 
 /* Stock checkbox — mirrors .choice button border/radius */
-.catalog-toolbar .filter-actions {
-  flex-wrap: wrap;
-  max-width: 100%;
-}
 .catalog-toolbar .stock-checkbox {
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -305,8 +301,7 @@ onMounted(async () => {
 /* Sort select — mirrors .search-page-input border/radius */
 .catalog-toolbar .sort-select {
   width: 220px;
-  max-width: 100%;
-  padding: 12px 36px 12px 16px;
+  padding: 12px 16px;
   border: 2px solid var(--ink);
   border-radius: 14px;
   background: #fff;
@@ -338,19 +333,6 @@ onMounted(async () => {
 .catalog-page.full-bleed .catalog-toolbar {
   background: var(--cream);
   border-bottom-color: var(--ink);
-}
-@media (max-width: 480px) {
-  .catalog-toolbar .filter-actions {
-    width: 100%;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .catalog-toolbar .sort-select {
-    width: auto;
-    min-width: 0;
-    flex: 1 1 145px;
-  }
 }
 </style>
 

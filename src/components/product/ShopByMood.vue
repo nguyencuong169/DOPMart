@@ -271,6 +271,8 @@ watch(tabs, () => nextTick(updateScrollState));
 <style scoped>
 .cat-stage {
   --fd: var(--font-display);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   position: relative;
   background: var(--cream);
   background: color-mix(in srgb, var(--ac) 10%, var(--cream));

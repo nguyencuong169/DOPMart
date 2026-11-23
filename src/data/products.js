@@ -176,7 +176,7 @@ const tintOfFormat = {
   instant: "#b52a26",
 }
 const seed=[
- [1,'khoai-tay-cay-bung-vi','Khoai tây vị phô mai','chips',12000,4.9,186,0,1,8,12],
+ [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],
  [2,'hat-hon-hop-rang-moc','Hạt hỗn hợp rang mộc','healthy',15000,4.8,149,0,0,10,9],
  [3,'mi-ly-tom-cay','Mì ly tôm cay','noodles',18000,4.9,226,0,1,7,14],
  [4,'soda-trai-cay-nhiet-doi','Soda trái cây nhiệt đới','drinks',14000,4.7,238,0,1,16,11],

@@ -1,19 +1,19 @@
 <script setup>
-import { ArrowRight, MapPin } from "lucide-vue-next";
+import { ArrowRight, QrCode } from "lucide-vue-next";
 import OrderProcess from "../components/common/OrderProcess.vue";
 
 const faqs = [
   {
-    q: "Làm sao để kiểm tra đơn?",
-    a: "Mở giỏ hàng để xem lại món, số lượng và tổng tiền trước khi chọn điểm nhận.",
+    q: "Đặt hàng mất bao lâu?",
+    a: "Từ lúc chọn món đến khi nhận trung bình dưới 2 phút, vì đơn được chuẩn bị ngay tại tầng bạn chọn.",
   },
   {
     q: "Thanh toán bằng cách nào?",
-    a: "Thanh toán QR trên DOP Mart chưa khả dụng. Bạn vẫn có thể xem giỏ hàng và tổng tiền.",
+    a: "Quét QR chuyển khoản hoặc ví điện tử. Đơn chỉ được giữ khi thanh toán thành công.",
   },
   {
     q: "Nhận hàng ở đâu?",
-    a: "Bạn có thể chọn tầng 14 hoặc tầng 20 ở mục Vị trí nhận trên trang thanh toán.",
+    a: "Chọn tầng 14 hoặc tầng 20 ở thanh header. Tồn kho và giá hiển thị theo đúng tầng nhận.",
   },
 ];
 </script>
@@ -22,10 +22,13 @@ const faqs = [
     <header class="view-hero">
       <div class="view-hero__copy">
         <span class="kicker">HOW IT WORKS</span>
-        <h1>Cách đặt hàng</h1>
-        <p>Chọn món, kiểm tra giỏ hàng và chọn tầng nhận tại DOP Mart.</p>
+        <h1>Đói → chọn → quét → nhận.</h1>
+        <p>
+          Bốn nhịp, không form dài, không địa chỉ giao hàng. Mọi thứ diễn ra trong giờ nghỉ
+          của bạn.
+        </p>
       </div>
-      <div class="how-pill"><MapPin :size="18" /> Tầng 14 &amp; 20</div>
+      <div class="how-pill"><QrCode :size="18" /> QR trong 30 giây</div>
     </header>
     <OrderProcess />
     <section class="how-faq">

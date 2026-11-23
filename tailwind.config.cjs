@@ -10,6 +10,23 @@ module.exports = {
         ui: ['"Be Vietnam Pro"', "sans-serif"],
         display: ['"Bricolage Grotesque"', '"Be Vietnam Pro"', "sans-serif"],
       },
+      fontSize: {
+        xs: '12px',      /* --fs-xs: labels and kickers only — never body copy */
+        sm: '14px',      /* --fs-sm: description, meta */
+        md: '16px',      /* --fs-md: body copy */
+        lg: '20px',      /* --fs-lg: product name, card title */
+        xl: 'clamp(28px, 4vw, 44px)',   /* --fs-xl: section title */
+        hero: 'clamp(40px, 7vw, 88px)', /* --fs-hero: hero / page headline */
+      },
+      lineHeight: {
+        display: '1.12', /* --lh-display: Vietnamese stacked diacritics need room above cap */
+        h2: '1.2',       /* --lh-h2 */
+        body: '1.5',     /* --lh-body */
+      },
+      letterSpacing: {
+        display: '-0.02em', /* --tracking-display: tighten large headlines */
+        kicker: '0.2em',    /* --tracking-kicker: airy ALL CAPS labels */
+      },
       colors: {
         // brand palette (used across custom styles)
         ink: "#1a1a1a",

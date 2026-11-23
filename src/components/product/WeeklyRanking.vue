@@ -110,7 +110,7 @@ onMounted(() => {
   background-color: #0b1120;
   overflow: hidden;
   color: #fff;
-  font-family: "Archivo", sans-serif;
+  font-family: var(--font-display);
   -webkit-tap-highlight-color: transparent;
   padding: 4rem 1rem;
   gap: 2rem;
@@ -120,7 +120,7 @@ onMounted(() => {
   .wr-page { flex-direction: column; }
 }
 .font-display {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -145,7 +145,7 @@ onMounted(() => {
   white-space: nowrap;
 }
 .wr-ghost-title {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 8rem;
   color: #fff;
   letter-spacing: -0.05em;
@@ -162,7 +162,7 @@ onMounted(() => {
 }
 .wr-header__line { height: 1px; width: 2rem; background: rgba(255, 255, 255, 0.2); }
 .wr-header__kicker {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.875rem;
   letter-spacing: 0.4em;
   color: rgba(255, 255, 255, 0.6);
@@ -181,7 +181,7 @@ onMounted(() => {
   box-shadow: 0 10px 15px -3px rgba(127, 29, 29, 0.2);
 }
 .wr-header__title {
-  font-family: "Anton", sans-serif;
+  font-family: var(--font-display);
   font-size: 3rem;
   color: #fff;
   margin-bottom: 1.5rem;
@@ -296,10 +296,10 @@ onMounted(() => {
 }
 .wr-card__badge-inner {
   background: linear-gradient(to right, #facc15, #f97316);
-  color: #0f172a;
+  color: var(--ink);
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -308,8 +308,8 @@ onMounted(() => {
 }
 .wr-card__flame { width: 0.875rem; height: 0.875rem; }
 .wr-card__name {
-  font-size: 1.75rem;
-  line-height: 1;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-display);
   text-align: center;
   margin-bottom: 0.5rem;
   transition: transform 0.5s;
@@ -317,7 +317,7 @@ onMounted(() => {
 }
 .group:hover .wr-card__name { transform: scale(1.05); }
 @media (min-width: 1024px) {
-  .wr-card__name { font-size: 2.25rem; }
+  .wr-card__name { font-size: var(--fs-xl); }
 }
 .wr-card__price-block {
   display: flex;
@@ -326,13 +326,12 @@ onMounted(() => {
   margin-bottom: 1.5rem;
 }
 .wr-card__price {
-  font-size: 1.25rem;
+  font-size: var(--fs-lg);
   color: var(--card-text, #fff);
-  opacity: 0.9;
   letter-spacing: 0.05em;
 }
 @media (min-width: 1024px) {
-  .wr-card__price { font-size: 1.5rem; }
+  .wr-card__price { font-size: clamp(var(--fs-lg), 4vw, var(--fs-xl)); }
 }
 .wr-card__cta {
   margin-top: 1rem;
@@ -346,7 +345,7 @@ onMounted(() => {
   transform: scale(1);
   border: none;
   cursor: pointer;
-  font-family: "Archivo", sans-serif;
+  font-family: var(--font-display);
 }
 .wr-card__cta:hover { transform: scale(1.05); background: #f8fafc; }
 .wr-card__cta:active { transform: scale(0.95); }

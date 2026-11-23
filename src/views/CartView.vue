@@ -12,7 +12,7 @@ onMounted(() => cart.init());
     </div>
     <CartItem v-for="i in cart.items" :key="i.id" :item="i" />
     <div class="total big">
-      <span>Tổng cộng</span><b>{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+      <span>Tổng cộng</span><b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
     </div>
     <RouterLink v-if="cart.items.length" class="checkout" to="/checkout"
       >Tiếp tục thanh toán</RouterLink

@@ -34,6 +34,9 @@
     "vue-router": "4.5.0"
   },
   "devDependencies": {
+    "@allanyiin/frontend-design": "^2026.8.15",
+    "@its-thepoe/design-motion-principles": "^1.0.1",
+    "@superdesign/cli": "^0.14.0",
     "@vitejs/plugin-vue": "5.2.1",
     "autoprefixer": "^10.6.2",
     "postcss": "^8.5.32",

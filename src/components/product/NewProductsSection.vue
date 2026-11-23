@@ -98,14 +98,14 @@ defineProps({ products: { type: Array, default: () => [] } });
   gap: 8px;
   margin-bottom: 7px;
   color: var(--fresh-green);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   letter-spacing: 0.16em;
 }
 
 .new-strip :deep(.section-head .kicker)::before {
   content: "✳";
-  color: #d34b2b;
+  color: var(--red-ink);
   font-size: 17px;
 }
 
@@ -115,7 +115,7 @@ defineProps({ products: { type: Array, default: () => [] } });
   font-size: clamp(38px, 5.2vw, 68px);
   font-style: italic;
   font-weight: 900;
-  letter-spacing: -0.035em;
+  letter-spacing: var(--tracking-display);
   line-height: 0.94;
   text-transform: uppercase;
   text-wrap: balance;
@@ -124,7 +124,7 @@ defineProps({ products: { type: Array, default: () => [] } });
 .new-strip :deep(.section-head p) {
   max-width: 48ch;
   margin-top: 8px;
-  color: #344536;
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 

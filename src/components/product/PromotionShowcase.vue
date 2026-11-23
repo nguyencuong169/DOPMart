@@ -126,7 +126,7 @@ onBeforeUnmount(() => animation?.revert());
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.25em;
@@ -149,7 +149,7 @@ onBeforeUnmount(() => animation?.revert());
 }
 
 .promo-eyebrow-text {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.15em;
@@ -158,7 +158,7 @@ onBeforeUnmount(() => animation?.revert());
 }
 
 .promo-h1 {
-  font-family: "Anton", "Barlow Condensed", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(40px, 6vw, 64px);
   font-weight: 400;
   line-height: 0.9;
@@ -174,7 +174,7 @@ onBeforeUnmount(() => animation?.revert());
 }
 
 .promo-lead {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-md);
   font-weight: 500;
   line-height: 1.6;
@@ -188,7 +188,7 @@ onBeforeUnmount(() => animation?.revert());
   align-items: center;
   gap: var(--sp-1);
   margin-top: var(--sp-1);
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--ink-well);
@@ -201,7 +201,7 @@ onBeforeUnmount(() => animation?.revert());
   gap: var(--sp-1);
   margin-top: var(--sp-3);
   padding: var(--sp-2) var(--sp-4);
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-md);
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -277,20 +277,19 @@ onBeforeUnmount(() => animation?.revert());
 }
 
 .promo-category {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--ink-well);
-  opacity: 0.6;
+  color: var(--muted-foreground);
 }
 
 .promo-title {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: var(--lh-h2);
   color: var(--ink-well);
   margin: 0;
 }
@@ -303,20 +302,20 @@ onBeforeUnmount(() => animation?.revert());
 }
 
 .promo-old {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-sm);
-  color: rgba(26, 26, 26, 0.4);
+  color: var(--on-cream);
 }
 
 .promo-new {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--mango-glow);
 }
 
 .promo-save {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--green-ink);
@@ -326,7 +325,7 @@ onBeforeUnmount(() => animation?.revert());
   width: 100%;
   margin-top: var(--sp-2);
   padding: var(--sp-1) var(--sp-2);
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-sm);
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -353,7 +352,7 @@ onBeforeUnmount(() => animation?.revert());
   top: var(--sp-2);
   right: var(--sp-2);
   padding: var(--sp-1) var(--sp-2);
-  font-family: "Anton", "Barlow Condensed", sans-serif;
+  font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 400;
   text-transform: uppercase;

@@ -107,8 +107,8 @@ const add = () => {
   box-shadow: 2px 2px 0 var(--ink);
 }
 .qa__step {
-  width: var(--qa-step-size, 30px);
-  height: var(--qa-step-size, 30px);
+  width: var(--qa-step-size, 44px);
+  height: var(--qa-step-size, 44px);
   display: grid;
   place-items: center;
   padding: 0;

@@ -313,7 +313,7 @@ onBeforeUnmount(() => ctx?.revert());
 .bs-rank__champ-price {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: clamp(22px, 4vw, 30px);
+  font-size: clamp(var(--fs-lg), 4vw, var(--fs-xl));
   letter-spacing: -0.02em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -402,9 +402,9 @@ onBeforeUnmount(() => ctx?.revert());
 .bs-rank__runner-title {
   font-family: var(--font-display) !important;
   font-weight: 900 !important;
-  font-size: clamp(16px, 2.8vw, 20px) !important;
-  line-height: 1.15 !important;
-  letter-spacing: -0.02em !important;
+  font-size: clamp(var(--fs-md), 2.8vw, var(--fs-lg)) !important;
+  line-height: var(--lh-display) !important;
+  letter-spacing: var(--tracking-display) !important;
   color: var(--ink) !important;
   margin: 0 !important;
 }
@@ -417,7 +417,7 @@ onBeforeUnmount(() => ctx?.revert());
 .bs-rank__runner-price {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: clamp(15px, 2.6vw, 19px);
+  font-size: clamp(var(--fs-sm), 2.6vw, var(--fs-lg));
   letter-spacing: -0.01em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -477,7 +477,7 @@ onBeforeUnmount(() => ctx?.revert());
 }
 @media (max-width: 750px) {
   .bs-rank__title {
-    font-size: clamp(40px, 14vw, 72px);
+    font-size: clamp(var(--fs-xl), 14vw, var(--fs-hero));
   }
   .bs-rank__track {
     gap: 14px;
@@ -490,10 +490,10 @@ onBeforeUnmount(() => ctx?.revert());
     width: min(200px, 96vw);
   }
   .bs-rank__champ-title {
-    font-size: clamp(20px, 5vw, 30px) !important;
+    font-size: clamp(var(--fs-lg), 5vw, var(--fs-xl)) !important;
   }
   .bs-rank__runner-title {
-    font-size: clamp(15px, 2.6vw, 18px) !important;
+    font-size: clamp(var(--fs-sm), 2.6vw, var(--fs-lg)) !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {

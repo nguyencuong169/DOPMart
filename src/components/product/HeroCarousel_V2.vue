@@ -12,7 +12,6 @@ import {
 import { useSwipe } from "@vueuse/core";
 import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore.js";
-import { relativeLuminance } from "../../utils/color.js";
 
 const store = useProductStore();
 const slides = computed(() => store.products.slice(0, 4));
@@ -61,16 +60,6 @@ const focusing = ref(false);
 const held = computed(() => hovering.value || focusing.value);
 const autoplay = computed(() => playing.value && slides.value.length > 1);
 
-/* Mặt phẳng nền = màu sản phẩm. Chữ chọn ink hoặc trắng, bên nào tương phản hơn. */
-const INK_LUMINANCE = 0.0103; // #1a1a1a
-const accent = computed(() => active.value?.color || "#ffd338");
-const fg = computed(() => {
-  const L = relativeLuminance(accent.value);
-  const onInk = (L + 0.05) / (INK_LUMINANCE + 0.05);
-  const onWhite = 1.05 / (L + 0.05);
-  return onInk >= onWhite ? "#1a1a1a" : "#ffffff";
-});
-
 const vnd = (n) => `${Number(n).toLocaleString("vi-VN")} ₫`;
 
 /* Giờ mở cửa */
@@ -115,7 +104,6 @@ onBeforeUnmount(() => {
     :class="{ 'is-playing': autoplay, 'is-held': held }"
     aria-roledescription="carousel"
     aria-label="Sản phẩm nổi bật tại DOP Mart"
-    :style="{ '--hero-accent': accent, '--hero-fg': fg }"
     @mouseenter="hovering = true"
     @mouseleave="hovering = false"
     @focusin="focusing = true"
@@ -131,7 +119,7 @@ onBeforeUnmount(() => {
     >
       <Transition name="copy" mode="out-in" appear>
         <div :key="active.id" class="dm-copy">
-          <p class="dm-copy__cat">DOP MART · <RouterLink :to="`/category/${active.category}`">{{ active.categoryName }} ↗</RouterLink></p>
+          <p class="dm-copy__cat"><RouterLink :to="`/category/${active.category}`">{{ active.categoryName }} ↗</RouterLink></p>
           <h2 class="dm-copy__name">
             <RouterLink :to="`/product/${active.slug}`">{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink>
           </h2>
@@ -172,7 +160,9 @@ onBeforeUnmount(() => {
 
     <!-- Giới thiệu + giờ mở cửa -->
     <div class="dm-hero__intro">
-      <h1 class="dm-intro__title">Món ngon, ngay trong văn phòng</h1>
+      <h1 class="dm-intro__title">DOP <em>mart</em></h1>
+      <p class="dm-intro__slogan">Small Money – Big Happy</p>
+      <p class="dm-intro__promise">Ở nhà có vợ, ở công ty có DOP.</p>
       <p class="dm-intro__meta">
         <span><MapPin :size="16" aria-hidden="true" />Tầng 14 &amp; 20</span>
         <span><Clock :size="16" aria-hidden="true" />08:30–17:30</span>
@@ -626,20 +616,20 @@ onBeforeUnmount(() => {
 }
 
 
-.dm-hero { min-height:100svh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" "copy controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
+.dm-hero { --hero-accent:#ffbf38; --hero-fg:#191919; width:100%; max-width:none; box-sizing:border-box; min-height:100svh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" ". controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
 .dm-hero__intro { grid-area:intro; display:grid; justify-content:start; gap:.45rem; padding:0; margin:0; border:0; }
 .dm-intro__meta { gap:.35rem .75rem; opacity:1; font-size:.85rem; }
 .dm-intro__title { font:800 clamp(1rem,1.4vw,1.4rem)/1.2 var(--font-display); }
 .dm-hero__copy { grid-area:copy; align-self:start; }
 .dm-copy__cat { display:block; padding:0; background:none; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.6rem; }
 .dm-copy__cat a { color:inherit; text-underline-offset:.2em; }
-.dm-copy__name { font:900 clamp(2rem,4.5vw,5rem)/1.12 var(--font-display); letter-spacing:-.04em; text-transform:uppercase; }
+.dm-copy__name { font:900 clamp(1.5rem,2.7vw,2.8rem)/1.12 var(--font-display); letter-spacing:-.04em; text-transform:uppercase; }
 .cutout { display:inline-block; transform:rotate(-2deg); padding:0 .16em; border:2px solid; color:#191919; background:#fff8e8; box-shadow:3px 3px #191919; }
 .dm-copy__meta { align-items:center; margin-top:.85rem; gap:.55rem 1rem; }
 .dm-copy__price { padding:.25em .5em; background:#fff8e8; color:#191919; border:2px solid; border-radius:.4em; box-shadow:3px 3px #191919; }
 .dm-copy__actions { margin-top:1.15rem; }
 .dm-copy__actions :deep(.qa--row) { flex-direction:row; }
-.dm-hero__stage { grid-area:stage; width:100%; height:clamp(300px,55svh,620px); margin:0; aspect-ratio:auto; touch-action:pan-y; }
+.dm-hero__stage { grid-area:stage; width:100%; height:clamp(250px,44svh,470px); margin:0; aspect-ratio:auto; touch-action:pan-y; }
 .dm-hero__plane { position:absolute; display:block; inset:0; z-index:-1; background:#277348; clip-path:polygon(80% 0,100% 0,100% 100%,50% 100%); }
 .dm-stage__img { width:85%; transform:translateX(-80%) scale(.65); }
 .dm-stage__img.is-next { opacity:.88; transform:translateX(80%) scale(.47); }
@@ -661,7 +651,7 @@ onBeforeUnmount(() => {
  .dm-hero__stage { height:clamp(190px,32svh,350px); width:min(100%,42rem); }
  .dm-stage__img { width:100%; }
  .dm-stage__img.is-next { transform:translateX(64%) scale(.48); }
- .dm-hero__plane { clip-path:polygon(100% 12%,100% 50%,85% 50%); }
+ .dm-hero__plane { clip-path:polygon(100% 5%,100% 100%,36% 100%); }
  .dm-copy__name { margin-bottom:.6rem; }
  .dm-queue__controls .dm-ctl:nth-child(-n+2) { display:none; }
  .dm-copy__actions :deep(.qa) { width:100%; }
@@ -671,8 +661,28 @@ onBeforeUnmount(() => {
  .dm-hero { align-content:start; padding:68px 20px 80px; gap:.45rem; }
  .dm-intro__meta svg { display:none; }
  .dm-intro__meta { font-size:.76rem; }
- .dm-hero__stage { height:clamp(150px,28svh,260px); }
- .dm-hero__plane { display:none; }
+ .dm-hero__stage { height:clamp(140px,21svh,220px); }
+ .dm-hero__plane { clip-path:polygon(100% 18%,100% 100%,61% 100%); }
+}
+
+.dm-intro__title { margin:0; font:900 clamp(4rem,7.7vw,8rem)/.96 var(--font-display); letter-spacing:-.075em; }
+.dm-intro__title em { color:#a23213; font-style:normal; }
+.dm-intro__slogan { margin:0; font:800 clamp(1.2rem,2.4vw,2.3rem)/1.2 var(--font-display); letter-spacing:-.04em; }
+.dm-intro__promise { margin:.2rem 0; font-weight:600; }
+.dm-copy__price { border:0; box-shadow:none; background:transparent; padding:0; font-size:1.45rem; }
+.dm-copy__actions :deep(.qa__go) { box-shadow:none; background:#fff6de; }
+.dm-copy__desc { font-size:.94rem; }
+.dm-hero__stage { justify-self:center; }
+@media(max-width:900px) {
+ .dm-hero__copy { background:#fff6de; padding:1rem 1.2rem; border-radius:1rem; }
+ .dm-copy__actions :deep(.qa) { width:auto; max-width:100%; }
+ .dm-intro__title { font-size:clamp(3.3rem,8vw,5rem); }
+ .dm-intro__meta { margin-top:.25rem; }
+}
+@media(max-width:600px) {
+ .dm-hero__intro { gap:.18rem; }
+ .dm-hero__copy { padding:.8rem 1rem; }
+ .dm-copy__actions { margin-top:.65rem; }
 }
 @media(prefers-reduced-motion:reduce) {
  .dm-hero,.dm-stage__img,.copy-enter-active,.copy-leave-active { transition:none; }

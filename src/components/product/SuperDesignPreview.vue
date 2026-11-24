@@ -42,7 +42,7 @@ const shelves = computed(() => store.categories.map(category => {
             <span class="wr-card__cta">Xem kệ</span>
           </div>
           <div class="wr-card__media shine-effect">
-            <img v-if="shelf.image" class="wr-card__img floating" :src="shelf.image" alt=""
+            <img v-if="shelf.image" class="wr-card__img floating" :class="{ 'drink-packshot': shelf.slug === 'do-uong' }" :src="shelf.image" alt=""
               loading="lazy" decoding="async" :style="{ animationDelay: `${(i + 1) * .5}s` }">
             <span v-else aria-hidden="true">{{ shelf.icon }}</span>
           </div>
@@ -59,6 +59,7 @@ const shelves = computed(() => store.categories.map(category => {
   height:clamp(150px,16vw,220px);
   object-fit:contain;
 }
+.category-menu .drink-packshot { padding-block:clamp(15px,2vw,27px); box-sizing:border-box; }
 .glass-intro { align-self:center; flex:0 0 280px; }
 .glass-intro { padding:clamp(18px,2vw,32px); border:1px solid #ffffff29; border-radius:20px; background:linear-gradient(130deg,#ffffff12,#ffffff04); }
 .shelf-brand { color:#ff766b; font:850 1.1rem var(--font-display); }

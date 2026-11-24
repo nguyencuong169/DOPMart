@@ -60,14 +60,21 @@ const shelves = computed(() => store.categories.map(category => {
   object-fit:contain;
 }
 .category-menu .drink-packshot { padding-block:clamp(15px,2vw,27px); box-sizing:border-box; }
-.glass-intro { align-self:center; flex:0 0 280px; }
+.glass-intro { align-self:center; flex:0 0 clamp(280px,23vw,350px); }
 .glass-intro { padding:clamp(18px,2vw,32px); border:1px solid #ffffff29; border-radius:20px; background:linear-gradient(130deg,#ffffff12,#ffffff04); }
 .shelf-brand { color:#ff766b; font:850 1.1rem var(--font-display); }
-.glass-intro h2 { margin:.55rem 0; font:900 clamp(2rem,3.3vw,3.5rem)/.97 var(--font-display); letter-spacing:-.045em; text-transform:uppercase; }
+.glass-intro h2 { margin:.55rem 0; font:900 clamp(2rem,2.8vw,3rem)/.97 var(--font-display); letter-spacing:-.045em; text-transform:uppercase; }
 .glass-intro em { font-style:normal; text-shadow:0 0 14px #ffd70066; }
 .glass-intro p { color:#c1ccda; margin:.8rem 0 1rem; line-height:1.45; }
 .glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:0 .85rem; border-radius:999px; background:white; color:#0b1120; font-weight:800; text-decoration:none; }
 @media(max-width:1023px) {
   .glass-intro { align-self:stretch; flex-basis:auto; }
+}
+.category-menu .wr-card__price { font-size:15px; font-weight:650; }
+.category-menu .wr-card__name { min-height:2lh; display:grid; place-items:center; }
+@media(min-width:768px) and (max-width:1023px) {
+  .glass-intro { display:flex; align-items:center; gap:24px; }
+  .glass-intro p { flex:1; }
+  .glass-intro a { flex-shrink:0; }
 }
 </style>

@@ -18,12 +18,13 @@ const s = useProductStore();
 const floor = useFloorStore();
 const page = ref(1);
 const category = ref("all");
+const filtersOpen = ref(false);
 const stockOnly = ref(false);
 const pageSize = 8;
 
 const views = {
   all: {
-    kicker: "DOP SHELF · 32 PICKS",
+    kicker: "KỆ HÀNG DOP MART",
     title: "Tủ snack hôm nay",
     lead: (n) => `${n} món đang chờ bạn tại tầng ${floor.floor}.`,
     sort: "default",
@@ -149,12 +150,15 @@ onMounted(async () => {
         </div>
       </div>
 
-      <section class="catalog-toolbar">
+      <section class="catalog-toolbar" :class="{ expanded: filtersOpen }">
+        <button class="mobile-filter" :aria-expanded="filtersOpen" aria-controls="catalog-categories catalog-stock" @click="filtersOpen = !filtersOpen">
+          <SlidersHorizontal :size="16" /> Bộ lọc <span v-if="category !== 'all' || stockOnly">({{ Number(category !== 'all') + Number(stockOnly) }})</span>
+        </button>
         <div class="filter-group flex items-center gap-2">
           <SlidersHorizontal class="size-4 shrink-0" />
           <span class="label">BỘ LỌC</span>
         </div>
-        <div class="category-chips flex flex-wrap gap-2">
+        <div id="catalog-categories" class="category-chips flex flex-wrap gap-2">
           <button :class="{ active: category === 'all' }" @click="category = 'all'">Tất cả</button>
           <button
             v-for="c in s.categories"
@@ -166,11 +170,11 @@ onMounted(async () => {
           </button>
         </div>
         <div class="filter-actions flex items-center gap-4">
-          <label class="stock-checkbox flex items-center gap-2 cursor-pointer">
+          <label id="catalog-stock" class="stock-checkbox flex items-center gap-2 cursor-pointer">
             <input v-model="stockOnly" type="checkbox" class="checkbox" />
             <span>Còn hàng {{ floor.floor }}F</span>
           </label>
-          <select v-model="sort" class="sort-select">
+          <select aria-label="Sắp xếp sản phẩm" v-model="sort" class="sort-select">
             <option value="default">Mặc định</option>
             <option value="best">Bán chạy</option>
             <option value="rating">Đánh giá cao</option>
@@ -333,6 +337,18 @@ onMounted(async () => {
 .catalog-page.full-bleed .catalog-toolbar {
   background: var(--cream);
   border-bottom-color: var(--ink);
+}
+.mobile-filter { display:none; }
+@media(max-width:767px) {
+  .catalog-title { margin-bottom:12px; gap:8px; }
+  .catalog-title .catalog-stat { display:none; }
+  .catalog-toolbar { display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; margin-bottom:16px; padding:10px 0; }
+  .catalog-toolbar .filter-group { display:none; }
+  .mobile-filter { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 12px; background:var(--cream); border:2px solid var(--ink); border-radius:14px; font-weight:750; }
+  .filter-actions { display:contents; }
+  .catalog-toolbar .sort-select { grid-area:1 / 2; width:100%; min-width:0; padding-right:28px; }
+  .catalog-toolbar .category-chips, .catalog-toolbar .stock-checkbox { display:none; grid-column:1 / -1; }
+  .catalog-toolbar.expanded .category-chips, .catalog-toolbar.expanded .stock-checkbox { display:flex; }
 }
 </style>
 

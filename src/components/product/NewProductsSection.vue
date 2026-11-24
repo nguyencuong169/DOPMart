@@ -6,10 +6,9 @@ defineProps({ products: { type: Array, default: () => [] } });
 <template>
   <section id="moi-len-ke" class="new-strip">
     <SectionHeader
-      kicker="FRESH DROP · MỚI LÊN KỆ"
       title="Mới lên kệ"
       lead="Những món vừa có mặt tại DOP Mart trong tuần này."
-      cta="Bắt món mới"
+      cta="Xem tất cả"
       to="/new"
     />
     <div class="new-strip__stage">
@@ -329,7 +328,7 @@ defineProps({ products: { type: Array, default: () => [] } });
 
 @media (max-width: 1199px) {
   .new-strip :deep(.product-grid) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sp-3);
   }
 }
@@ -339,15 +338,21 @@ defineProps({ products: { type: Array, default: () => [] } });
     gap: var(--sp-2);
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .new-strip :deep(.section-head) {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 20px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:8px 12px;
   }
-
-  .new-strip :deep(.section-head__copy) {
-    padding: 18px 22px;
+  .new-strip :deep(.section-head__copy) { display:contents; }
+  .new-strip :deep(.section-head h2) { font-size:clamp(30px,8vw,42px); margin:0; }
+  .new-strip :deep(.section-head p) { grid-row:2; grid-column:1 / -1; margin:0; }
+  .new-strip :deep(.section-head > a) { grid-column:2; grid-row:1; }
+  .new-strip :deep(.cat-card__line:last-child) {
+    color:var(--fresh-ink);
+    -webkit-text-stroke:0;
   }
+  .new-strip :deep(.cat-card__shot) { top:calc(46cqw + 12px); width:70%; }
 }
 </style>

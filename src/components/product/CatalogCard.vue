@@ -188,7 +188,6 @@ onMounted(async () => {
       <span
         v-if="!isGrid"
         class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
-        aria-hidden="true"
         >{{ fmt(product.price) }} ₫</span
       >
     </div>

@@ -184,7 +184,7 @@ onMounted(async () => {
         </div>
       </section>
 
-      <ProductGrid :products="list" hide-card-info />
+      <ProductGrid :products="list" />
       <Pagination :page="page" :pages="pages" @change="page = $event" />
     </div>
   </main>

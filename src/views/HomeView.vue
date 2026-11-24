@@ -3,7 +3,6 @@ import { computed, onMounted } from "vue";
 import { useProductStore } from "../stores/productStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import HeroCarousel from "../components/product/HeroCarousel_V2.vue";
-import ShopByMood from "../components/product/ShopByMood.vue";
 import PromotionShowcase from "../components/product/PromotionShowcase.vue";
 import NewProductsSection from "../components/product/NewProductsSection.vue";
 import DopComboShowcase from "../components/product/DopComboShowcase.vue";
@@ -26,14 +25,13 @@ const homeNewProducts = computed(() => store.newProducts.slice(0, 4));
 <template>
   <main class="home">
     <HeroCarousel />
-    <ShopByMood />
+    <SuperDesignPreview />
     <PromotionShowcase />
     <NewProductsSection :products="homeNewProducts" />
     <!-- <DopComboShowcase /> -->
     <DropComboShowcaseNew />
     <BestSellerSpotlight />
     <WeeklyRanking />
-    <SuperDesignPreview />
     <OrderProcess />
     <AboutTeaser />
     <FavoriteFocus v-if="favorites.ids.length > 1" />

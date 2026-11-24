@@ -2,13 +2,15 @@
 import { computed } from "vue";
 import { ArrowUpRight } from "lucide-vue-next";
 import { useProductStore } from "../../stores/productStore";
-import { imageOfFormat } from "../../data/products";
+const categoryImages = import.meta.glob("../../assets/categories/*.webp", {
+  eager: true,
+  import: "default",
+});
 
 const store = useProductStore();
 const shelves = computed(() => store.categories.map(category => {
   const products = store.products.filter(product => product.category === category.slug);
-  const image = products.find(product => product.image)?.image
-    || category.formats?.map(format => imageOfFormat[format]).find(Boolean);
+  const image = categoryImages[`../../assets/categories/${category.slug}.webp`];
   return { ...category, image, count: products.length };
 }));
 </script>

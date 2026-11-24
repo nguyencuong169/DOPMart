@@ -408,8 +408,15 @@ onBeforeUnmount(() => {
   border:1.5px solid #242018;
   border-radius:14px;
   color:#242018;
-  background:#fff6df;
+  background:#ffd338;
   box-shadow:2px 2px 0 #242018;
 }
 .dop-nav-actions :is(.cart-button,.nav-toggle) { width:42px; }
+.dop-header .dop-nav-actions :deep(svg),
+.dop-header .dop-menu :deep(svg) {
+  color:#242018;
+  stroke:currentColor;
+}
+.dop-header .nav-toggle__bars i { background:#242018; }
+.dop-header .dop-nav-actions :deep(.search-kbd) { background:transparent; color:#242018; }
 </style>

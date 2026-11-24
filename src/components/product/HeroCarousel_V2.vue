@@ -616,7 +616,7 @@ onBeforeUnmount(() => {
 }
 
 
-.dm-hero { --hero-accent:#ffbf38; --hero-fg:#191919; width:100%; max-width:none; box-sizing:border-box; min-height:100svh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" ". controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
+.dm-hero { --hero-accent:#ffbf38; --hero-fg:#191919; width:100%; max-width:none; box-sizing:border-box; min-height:100dvh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" ". controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
 .dm-hero__intro { grid-area:intro; display:grid; justify-content:start; gap:.45rem; padding:0; margin:0; border:0; }
 .dm-intro__meta { gap:.35rem .75rem; opacity:1; font-size:.85rem; }
 .dm-intro__title { font:800 clamp(1rem,1.4vw,1.4rem)/1.2 var(--font-display); }
@@ -646,9 +646,9 @@ onBeforeUnmount(() => {
 .dm-item__bar { opacity:0; }
 .slide-count { font:800 .8rem var(--font-ui); }
 @media(max-width:900px) {
- .dm-hero { grid-template-columns:1fr; grid-template-areas:"intro" "stage" "controls" "copy"; align-content:start; min-height:auto; gap:.65rem; padding:76px var(--gutter) 2rem; }
+ .dm-hero { grid-template-columns:1fr; grid-template-areas:"intro" "stage" "controls" "copy"; align-content:stretch; grid-template-rows:auto minmax(100px,1fr) auto auto; min-height:100dvh; gap:.65rem; padding:76px var(--gutter) 2rem; }
  .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
- .dm-hero__stage { height:clamp(210px,34svh,370px); width:min(100%,42rem); }
+ .dm-hero__stage { height:100%; min-height:100px; width:min(100%,42rem); }
  .dm-stage__img { width:100%; }
  .dm-stage__img.is-next { transform:translateX(64%) scale(.48); }
  .dm-hero__plane { clip-path:polygon(100% 0,100% 100%,91% 100%,65% 55%); }
@@ -658,10 +658,10 @@ onBeforeUnmount(() => {
  .dm-copy__actions :deep(.qa__go) { flex:1; }
 }
 @media(max-width:600px) {
- .dm-hero { align-content:start; padding:16px 20px 2rem; gap:.45rem; }
+ .dm-hero { align-content:stretch; padding:16px 20px calc(76px + env(safe-area-inset-bottom, 0px)); gap:.45rem; }
  .dm-intro__meta svg { display:none; }
  .dm-intro__meta { font-size:.76rem; }
- .dm-hero__stage { height:clamp(150px,26svh,240px); }
+ .dm-hero__stage { aspect-ratio:auto; }
  .dm-hero__plane { clip-path:polygon(100% 13%,100% 75%,68% 52%); }
 }
 

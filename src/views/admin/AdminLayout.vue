@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Store, LogOut, Menu, ChevronLeft, Sun, Moon, Bell, ShoppingCart } from "lucide-vue-next";
-import { isAdmin, getCurrentUserWithProfile } from "@/lib/supabase";
+import { isAdmin, getCurrentUserWithProfile, supabase } from "@/lib/supabase";
 
 const route = useRoute();
 const router = useRouter();
@@ -26,7 +26,8 @@ const toggleUserMenu = () => {
 };
 
 const onLogout = async () => {
-  await router.push("/");
+  await supabase?.auth.signOut();
+  await router.push({ name: "login" });
 };
 
 const adminLinks = [
@@ -35,6 +36,7 @@ const adminLinks = [
   { name: "admin-orders", label: "Đơn hàng", icon: ShoppingCart },
   { name: "admin-users", label: "Người dùng", icon: Store },
   { name: "admin-promotions", label: "Khuyến mãi", icon: Bell },
+  { name: "admin-operations", label: "Vận hành mới", icon: ShoppingCart },
 ];
 
 const isActive = (name) => route.name === name;
@@ -44,7 +46,7 @@ onMounted(async () => {
   if (isMobile.value) sidebarOpen.value = false;
   const { user: u, profile } = await getCurrentUserWithProfile();
   user.value = u;
-  if (!(profile?.is_admin === true)) {
+  if (!(profile?.is_admin === true || profile?.role === "admin")) {
     await router.push("/");
   }
 });

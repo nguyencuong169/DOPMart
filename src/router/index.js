@@ -1,22 +1,42 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { isAdmin } from "../lib/supabase";
+import { getCurrentUser, isAdmin } from "../lib/supabase";
 
 const Catalogue = () => import("../views/ProductsView.vue");
 
 // Admin views (lazy-loaded)
 const AdminLayout = () => import("../views/admin/AdminLayout.vue");
-const AdminDashboard = () => import("../views/admin/DashboardView.vue");
+const AdminDashboard = () => import("../views/admin/MartOperationsView.vue");
 const AdminProducts = () => import("../views/admin/ProductsAdminView.vue");
 const AdminOrders = () => import("../views/admin/OrdersAdminView.vue");
 const AdminUsers = () => import("../views/admin/UsersAdminView.vue");
 const AdminPromotions = () => import("../views/admin/PromotionsAdminView.vue");
+const MartOperations = () => import("../views/admin/MartOperationsView.vue");
 
 /** Guard: chỉ cho vào nếu user có role admin, không thì về trang chủ */
 async function adminGuard(to) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      name: "login",
+      query: { redirect: to.fullPath },
+      replace: true,
+    };
+  }
+
   const ok = await isAdmin();
-  console.log("adminGuard", ok);
   if (!ok) {
     return { name: "home", replace: true };
+  }
+}
+
+async function authGuard(to) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      name: "login",
+      query: { redirect: to.fullPath },
+      replace: true,
+    };
   }
 }
 
@@ -88,6 +108,12 @@ const routes = [
     name: "checkout",
     component: () => import("../views/CheckoutView.vue"),
   },
+  {
+    path: "/orders",
+    name: "orders",
+    component: () => import("../views/OrdersView.vue"),
+    beforeEnter: authGuard,
+  },
   // ============================================================
   // Admin routes (yêu cầu role admin)
   // ============================================================
@@ -125,6 +151,12 @@ const routes = [
         path: "promotions",
         name: "admin-promotions",
         component: AdminPromotions,
+        beforeEnter: adminGuard,
+      },
+      {
+        path: "operations",
+        name: "admin-operations",
+        component: MartOperations,
         beforeEnter: adminGuard,
       },
     ],

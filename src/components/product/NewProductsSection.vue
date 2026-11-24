@@ -349,10 +349,18 @@ defineProps({ products: { type: Array, default: () => [] } });
   .new-strip :deep(.section-head h2) { font-size:clamp(30px,8vw,42px); margin:0; }
   .new-strip :deep(.section-head p) { grid-row:2; grid-column:1 / -1; margin:0; }
   .new-strip :deep(.section-head > a) { grid-column:2; grid-row:1; }
+}
+@media(max-width:1199px) {
   .new-strip :deep(.cat-card__line:last-child) {
     color:var(--fresh-ink);
     -webkit-text-stroke:0;
   }
   .new-strip :deep(.cat-card__shot) { top:calc(46cqw + 12px); width:70%; }
+}
+@media(min-width:1200px) {
+  .new-strip { padding-top:clamp(24px,2.5vw,40px); }
+  .new-strip :deep(.section-head) { margin-bottom:12px; }
+  .new-strip :deep(.section-head__copy) { padding-block:8px; }
+  .new-strip :deep(.cat-card__tag--price) { font-size:clamp(15px,4cqw,18px); }
 }
 </style>

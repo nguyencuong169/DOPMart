@@ -5,15 +5,22 @@ import { useProductStore } from "../../stores/productStore";
 import colaCan from "../../assets/categories/coca-cola.webp";
 
 const store = useProductStore();
+const onColor = (hex) => {
+  const n = parseInt(String(hex || "#000000").replace("#", ""), 16);
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return l > 0.62 ? "#0f172a" : "#ffffff";
+};
+
 const shelves = computed(() => store.categories.map(category => {
   const products = store.products.filter(product => product.category === category.slug);
   const image = category.slug === "do-uong" ? colaCan : products.find(product => product.image)?.image;
-  return { ...category, image, count: products.length };
+  const theme = products.find(product => product.tint)?.tint || category.color;
+  return { ...category, image, theme, count: products.length };
 }));
 </script>
 
 <template>
-  <section id="danh-muc" class="shelf-menu" aria-labelledby="shelf-heading">
+  <section id="danh-muc" class="wr-page category-menu" aria-labelledby="shelf-heading">
     <div class="glass-intro">
       <div>
         <span class="shelf-brand">DOP Mart</span>
@@ -22,55 +29,40 @@ const shelves = computed(() => store.categories.map(category => {
       <p>Từ snack giòn đến nước mát, chọn kệ theo món bạn đang thèm.</p>
       <RouterLink to="/products">Xem tất cả sản phẩm <ArrowUpRight :size="18" /></RouterLink>
     </div>
-    <nav class="shelves" aria-label="Danh mục DOP Mart">
-      <RouterLink v-for="shelf in shelves" :key="shelf.slug" class="shelf"
-        :to="`/category/${shelf.slug}`" :style="{ '--shelf-color': shelf.color }">
-        <span class="shelf-label"><strong>{{ shelf.name }}</strong><small>{{ shelf.count }} món</small></span>
-        <img v-if="shelf.image" :src="shelf.image" alt="" loading="lazy" decoding="async">
-        <span v-else class="shelf-icon" aria-hidden="true">{{ shelf.icon }}</span>
-        <ArrowUpRight class="shelf-arrow" :size="21" aria-hidden="true" />
-      </RouterLink>
+    <nav class="wr-shelf" aria-label="Danh mục DOP Mart">
+      <div class="wr-track carousel-scrollbar">
+        <RouterLink v-for="(shelf, i) in shelves" :key="shelf.slug"
+          class="wr-card skew-card group stagger-in" :to="`/category/${shelf.slug}`"
+          :style="{ '--card-color': shelf.theme, '--card-text': onColor(shelf.theme), animationDelay: `${(i + 1) * .1}s` }">
+          <div class="wr-card__divider" aria-hidden="true"></div>
+          <div class="wr-card__pattern" aria-hidden="true"></div>
+          <h3 class="wr-card__name font-display">{{ shelf.name }}</h3>
+          <div class="wr-card__price-block">
+            <span class="wr-card__price font-display">{{ shelf.count }} món</span>
+            <span class="wr-card__cta">Xem kệ</span>
+          </div>
+          <div class="wr-card__media shine-effect">
+            <img v-if="shelf.image" class="wr-card__img floating" :src="shelf.image" alt=""
+              loading="lazy" decoding="async" :style="{ animationDelay: `${(i + 1) * .5}s` }">
+            <span v-else aria-hidden="true">{{ shelf.icon }}</span>
+          </div>
+        </RouterLink>
+      </div>
     </nav>
   </section>
 </template>
 
+<style scoped src="./WeeklyRanking.css"></style>
 <style scoped>
-.shelf-menu {
-  display:grid; grid-template-columns:clamp(220px,20vw,300px) minmax(0,1fr);
-  align-items:center; gap:clamp(16px,2vw,32px); padding:clamp(28px,4vw,64px) var(--edge,4vw);
-  background:#0b1120; color:white; scroll-margin-top:70px;
-}
+.category-menu { scroll-margin-top:70px; }
+.glass-intro { align-self:center; flex:0 0 280px; }
 .glass-intro { padding:clamp(18px,2vw,32px); border:1px solid #ffffff29; border-radius:20px; background:linear-gradient(130deg,#ffffff12,#ffffff04); }
 .shelf-brand { color:#ff766b; font:850 1.1rem var(--font-display); }
 .glass-intro h2 { margin:.55rem 0; font:900 clamp(2rem,3.3vw,3.5rem)/.97 var(--font-display); letter-spacing:-.045em; text-transform:uppercase; }
 .glass-intro em { font-style:normal; text-shadow:0 0 14px #ffd70066; }
 .glass-intro p { color:#c1ccda; margin:.8rem 0 1rem; line-height:1.45; }
 .glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:0 .85rem; border-radius:999px; background:white; color:#0b1120; font-weight:800; text-decoration:none; }
-.shelves { display:flex; min-width:0; overflow-x:auto; padding:8px 0 12px; scroll-snap-type:x proximity; scrollbar-color:#64748b #182132; }
-.shelf { position:relative; isolation:isolate; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-  flex:1 0 170px; min-height:255px; padding:20px; color:#0b1120; text-decoration:none; text-align:center; scroll-snap-align:center;
-  background:radial-gradient(at 0 0,#ffffff49,transparent 65%),var(--shelf-color); }
-.shelf-label { align-self:center; padding:5px 10px; border-radius:8px; background:#fff9ed; }
-.shelf strong { display:block; font:900 1.15rem/1.12 var(--font-display); text-transform:uppercase; }
-.shelf small { font-weight:700; }
-.shelf img { width:100%; height:130px; object-fit:contain; filter:drop-shadow(0 9px 7px #0004); }
-.shelf-icon { font-size:3rem; }
-.shelf-arrow { border-radius:50%; padding:3px; background:white; }
-.shelf:focus-visible .shelf-label { outline:3px solid #101827; }
-@media(min-width:1024px) {
-  .shelf { clip-path:polygon(12% 0,100% 0,88% 100%,0 100%); margin-right:-18px; padding-inline:24px; }
-  .shelf:last-child { margin-right:0; }
-  .shelf:is(:hover,:focus-visible) { clip-path:inset(0); z-index:1; }
-}
 @media(max-width:1023px) {
-  .shelves { gap:4px; }
-  .shelf { flex:0 0 170px; }
-}
-@media(max-width:767px) {
-  .shelf-menu { grid-template-columns:minmax(0,1fr); padding:24px 16px; }
-  .glass-intro br { display:none; }
-  .glass-intro em { margin-left:.15em; }
-  .shelf { min-height:210px; padding:12px; }
-  .shelf img { height:110px; }
+  .glass-intro { align-self:stretch; flex-basis:auto; }
 }
 </style>

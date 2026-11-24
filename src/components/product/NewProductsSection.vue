@@ -4,11 +4,11 @@ import ProductGrid from "./ProductGrid.vue";
 defineProps({ products: { type: Array, default: () => [] } });
 </script>
 <template>
-  <section class="new-strip">
+  <section id="moi-len-ke" class="new-strip">
     <SectionHeader
       kicker="FRESH DROP · MỚI LÊN KỆ"
-      title="Thử trước đồng nghiệp"
-      lead="Những món vừa cập bến kệ DOP Mart trong tuần này — số lượng còn ít."
+      title="Mới lên kệ"
+      lead="Những món vừa có mặt tại DOP Mart trong tuần này."
       cta="Bắt món mới"
       to="/new"
     />

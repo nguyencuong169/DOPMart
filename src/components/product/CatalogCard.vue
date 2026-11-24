@@ -148,33 +148,6 @@ onMounted(async () => {
         />
       </button>
 
-      <!-- status tags hang on the left: MỚI first, then NÓNG, then the discount -->
-      <div class="cat-card__tags">
-        <span
-          v-if="product.isNew"
-          class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
-          >MỚI</span
-        >
-        <span
-          v-if="product.hot"
-          class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
-          >BÁN CHẠY</span
-        >
-        <span
-          v-if="discount"
-          class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
-          >-{{ discount }}%</span
-        >
-      </div>
-
-      <!-- the price tag hangs on the middle-right of the pack -->
-      <span
-        v-if="!isGrid"
-        class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
-        aria-hidden="true"
-        >{{ fmt(product.price) }} ₫</span
-      >
-
       <button
         v-if="isGrid"
         type="button"
@@ -192,6 +165,32 @@ onMounted(async () => {
       <div class="cat-card__buy">
         <QuickAdd :product="product" :stock="stock" />
       </div>
+    </div>
+
+    <div v-if="product.isNew || product.hot || discount || !isGrid" class="cat-card__tags">
+        <span
+          v-if="product.isNew"
+          class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
+          >MỚI</span
+        >
+        <span
+          v-if="product.hot"
+          class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
+          >BÁN CHẠY</span
+        >
+        <span
+          v-if="discount"
+          class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
+          >-{{ discount }}%</span
+        >
+
+
+      <span
+        v-if="!isGrid"
+        class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
+        aria-hidden="true"
+        >{{ fmt(product.price) }} ₫</span
+      >
     </div>
 
     <!-- grid variant: the plate that is always readable -->
@@ -381,17 +380,16 @@ onMounted(async () => {
    hole sits inside that padding on the edge facing the pack and the string leaves the
    hole exactly, so a tag never looks detached from the product. */
 .cat-card__tags {
-  position: absolute;
-  left: 0.5%;
-  /* beside the pack's body, not up in the corner: the strings then run into the pack */
-  top: 30%;
-  z-index: 5;
+  position: relative;
+  z-index: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  pointer-events: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px clamp(8px, 4cqw, 16px) 12px;
 }
+.cat-card__tags .cat-card__tag { transform: none; }
+.cat-card__tags .cat-card__tag::before, .cat-card__tags .cat-card__tag::after { content: none; }
 .cat-card__tag {
   position: relative;
   padding: 7px 12px;
@@ -454,13 +452,9 @@ onMounted(async () => {
   transform: rotate(34deg);
 }
 .cat-card__tag--price {
-  position: absolute;
-  right: 0.5%;
-  top: 46%;
-  z-index: 5;
+  margin-inline-start: auto;
   background: var(--c);
   color: var(--on);
-  transform: translateY(-50%) rotate(6deg);
 }
 .cat-card__tag--new {
   background: var(--green-ink);

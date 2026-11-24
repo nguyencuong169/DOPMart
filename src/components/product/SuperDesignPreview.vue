@@ -55,6 +55,10 @@ const shelves = computed(() => store.categories.map(category => {
 <style scoped src="./WeeklyRanking.css"></style>
 <style scoped>
 .category-menu { scroll-margin-top:70px; }
+.category-menu .wr-card__img {
+  height:clamp(150px,16vw,220px);
+  object-fit:contain;
+}
 .glass-intro { align-self:center; flex:0 0 280px; }
 .glass-intro { padding:clamp(18px,2vw,32px); border:1px solid #ffffff29; border-radius:20px; background:linear-gradient(130deg,#ffffff12,#ffffff04); }
 .shelf-brand { color:#ff766b; font:850 1.1rem var(--font-display); }

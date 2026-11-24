@@ -39,7 +39,7 @@ const shelves = computed(() => store.categories.map(category => {
   display:grid; grid-template-columns:minmax(0,1fr);
   gap:clamp(16px,3vw,56px); align-items:center;
   padding:clamp(28px,5vw,80px) var(--edge,5vw); color:var(--ink);
-  background:radial-gradient(ellipse at 0% 75%,#eef4df,transparent 50%),#fff;
+  background:var(--cream);
   scroll-margin-top:70px;
 }
 .glass-intro {
@@ -48,24 +48,24 @@ const shelves = computed(() => store.categories.map(category => {
   box-shadow:inset 0 1px #fffd,0 15px 40px -28px #723b13;
 }
 .shelf-brand { display:block; margin-bottom:.45rem; color:var(--red-ink); font:850 clamp(1rem,1.35vw,1.25rem)/1.1 var(--font-display); }
-.glass-intro h2 { margin:0; font:900 clamp(2.4rem,4.3vw,5rem)/1.06 var(--font-display); letter-spacing:-.025em; font-family:"Barlow Condensed",var(--font-display); font-style:italic; text-transform:uppercase; color:#315e36; }
-.glass-intro em { display:inline-block; color:#fffdf2; background:#315e36; padding:0 .14em .08em; transform:rotate(-2deg); font-style:inherit; }
+.glass-intro h2 { margin:0; font:900 clamp(2.4rem,4.3vw,5rem)/1.06 var(--font-display); letter-spacing:-.025em; transform:rotate(-1.5deg); text-transform:uppercase; color:var(--ink); }
+.glass-intro em { display:inline-block; color:var(--ink); background:var(--sun); padding:0 .14em .08em; transform:rotate(-2deg); font-style:inherit; }
 .glass-intro p { max-width:28ch; margin:1rem 0; line-height:1.5; }
 .glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:0 .85rem; border:1.5px solid var(--ink); border-radius:12px; background:#ffdc65; box-shadow:3px 3px var(--ink); color:inherit; font-weight:800; text-decoration:none; }
-.shelves { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr); gap:12px; overflow-x:auto; scroll-snap-type:x proximity; padding:5px 14px 9px; }
+.shelves { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr); gap:12px; overflow-x:auto; scroll-snap-type:x proximity; padding:10px 14px 16px; }
 .shelf {
   position:relative; isolation:isolate; display:grid; grid-template-rows:minmax(3.25em,auto) 1fr; min-width:0;
   scroll-snap-align:start; padding:16px clamp(12px,1.2vw,24px); text-decoration:none; color:inherit;
   }
 .shelf::before {
   content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-  transform:skewX(-5deg); border:1.5px solid #23412f; border-radius:16px 16px 5px 16px;
-  box-shadow:2px 3px #23412f;
-  background:linear-gradient(165deg,#fff9ed 0 36%,transparent 36.5%),var(--shelf-color,#ffbf38);
+  border:var(--bw-bold) solid var(--ink); border-radius:var(--r-md);
+  box-shadow:6px 6px 0 var(--ink);
+  background:linear-gradient(to bottom,var(--shelf-color) 0 9px,var(--paper) 9px);
 }
 .shelf strong { display:block; font:850 clamp(1.15rem,2vw,2rem)/1.1 var(--font-display); letter-spacing:-.04em; }
-.shelf-label { align-self:start; justify-self:start; background:#fff9ed; padding:2px 5px; border-radius:4px; }
-.shelf small { display:block; margin-top:.25rem; font:750 .8125rem/1.25 var(--font-ui); color:#315e36; }
+.shelf-label { align-self:start; justify-self:start; padding:2px 5px; border-radius:4px; }
+.shelf small { display:block; margin-top:.25rem; font:750 .8125rem/1.25 var(--font-ui); color:var(--paper); background:var(--ink); width:fit-content; border-radius:var(--r-pill); padding:2px 7px; }
 .shelf img { justify-self:center; width:100%; height:clamp(88px,9vw,160px); object-fit:contain; transform:rotate(var(--tilt,-3deg)); filter:drop-shadow(0 7px 5px #28180338); transition:transform .25s; }
 .shelf:nth-child(even) { --tilt:3deg; }
 .shelf-icon { align-self:center; justify-self:center; font-size:3rem; }
@@ -97,7 +97,7 @@ const shelves = computed(() => store.categories.map(category => {
   .glass-intro br { display:none; }
   .glass-intro em { margin-left:.15em; }
   .glass-intro p { max-width:35ch; margin:.6rem 0 .8rem; }
-  .shelves { display:flex; overflow-x:auto; padding:3px 16px 10px; scroll-snap-type:x mandatory; scroll-padding:16px; }
+  .shelves { display:flex; overflow-x:auto; padding:8px 16px 14px; scroll-snap-type:x mandatory; scroll-padding:16px; }
   .shelf { flex:0 0 47%; padding:15px 6%; scroll-snap-align:start; }
   .shelf img { height:118px; }
 }

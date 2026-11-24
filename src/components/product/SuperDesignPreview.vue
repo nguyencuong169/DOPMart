@@ -36,7 +36,7 @@ const shelves = computed(() => store.categories.map(category => {
 
 <style scoped>
 .shelf-menu {
-  display:grid; grid-template-columns:minmax(230px,.8fr) minmax(0,2fr);
+  display:grid; grid-template-columns:minmax(0,1fr);
   gap:clamp(16px,3vw,56px); align-items:center;
   padding:clamp(28px,5vw,80px) var(--edge,5vw); color:var(--ink);
   background:radial-gradient(ellipse at 0% 75%,#eef4df,transparent 50%),#fff;
@@ -52,10 +52,10 @@ const shelves = computed(() => store.categories.map(category => {
 .glass-intro em { display:inline-block; color:#fffdf2; background:#315e36; padding:0 .14em .08em; transform:rotate(-2deg); font-style:inherit; }
 .glass-intro p { max-width:28ch; margin:1rem 0; line-height:1.5; }
 .glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:0 .85rem; border:1.5px solid var(--ink); border-radius:12px; background:#ffdc65; box-shadow:3px 3px var(--ink); color:inherit; font-weight:800; text-decoration:none; }
-.shelves { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.shelves { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr); gap:12px; overflow-x:auto; scroll-snap-type:x proximity; padding:3px 4px 8px 0; }
 .shelf {
-  position:relative; isolation:isolate; display:grid; grid-template-rows:auto 1fr; min-width:0;
-  padding:16px 12%; text-decoration:none; color:inherit;
+  position:relative; isolation:isolate; display:grid; grid-template-rows:minmax(3.25em,auto) 1fr; min-width:0;
+  scroll-snap-align:start; padding:16px clamp(12px,1.2vw,24px); text-decoration:none; color:inherit;
   border:1.5px solid #23412f; border-radius:18px 18px 6px 18px; box-shadow:2px 3px #23412f;
   background:radial-gradient(ellipse at 50% 70%,#ffffffe0,transparent 75%),color-mix(in srgb,var(--shelf-color,#ffbf38) 42%,#fffdf2);
 }
@@ -67,9 +67,10 @@ const shelves = computed(() => store.categories.map(category => {
 .shelf:hover img,.shelf:focus-visible img { transform:translateY(-3px) rotate(-3deg); }
 .shelf:focus-visible { outline:0; }
 .shelf:focus-visible .shelf-label { outline:3px solid; outline-offset:3px; }
-@media(max-width:900px) {
-  .shelf-menu { grid-template-columns:1fr; }
+@media(min-width:601px) {
   .glass-intro { display:flex; align-items:center; gap:1.5rem; }
+  .glass-intro br { display:none; }
+  .glass-intro em { margin-left:.15em; }
   .glass-intro a { margin-left:auto; flex-shrink:0; }
 }
 @media(max-width:600px) {

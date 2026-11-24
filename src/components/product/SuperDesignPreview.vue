@@ -67,7 +67,19 @@ const shelves = computed(() => store.categories.map(category => {
 .shelf:hover img,.shelf:focus-visible img { transform:translateY(-3px) rotate(-3deg); }
 .shelf:focus-visible { outline:0; }
 .shelf:focus-visible .shelf-label { outline:3px solid; outline-offset:3px; }
-@media(min-width:601px) {
+@media(min-width:768px) {
+  .shelf-menu {
+    grid-template-columns:clamp(210px,19vw,300px) minmax(0,1fr);
+    gap:clamp(16px,1.8vw,30px);
+  }
+  .glass-intro { padding:clamp(16px,1.5vw,26px); }
+  .glass-intro h2 { font-size:clamp(2rem,3vw,3.25rem); }
+  .shelves { grid-auto-columns:minmax(132px,1fr); align-self:stretch; }
+  .shelf { padding:16px 10px; }
+  .shelf strong { font-size:clamp(1.15rem,1.5vw,1.7rem); }
+  .shelf img { align-self:center; }
+}
+@media(min-width:601px) and (max-width:767px) {
   .glass-intro { display:flex; align-items:center; gap:1.5rem; }
   .glass-intro br { display:none; }
   .glass-intro em { margin-left:.15em; }

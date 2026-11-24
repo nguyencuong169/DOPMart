@@ -41,20 +41,20 @@ const shelves = computed(() => store.categories.map(category => {
 .shelf-menu {
   display:grid; grid-template-columns:minmax(230px,.8fr) minmax(0,2fr);
   gap:clamp(16px,3vw,56px); align-items:center;
-  padding:clamp(28px,5vw,80px) var(--edge,5vw); color:#211f1a;
-  background:radial-gradient(ellipse at 10% 20%,#ffd364 0,transparent 40%),radial-gradient(ellipse at 12% 90%,#ffc9ad 0,transparent 46%),#fff3d8;
+  padding:clamp(28px,5vw,80px) var(--edge,5vw); color:var(--ink);
+  background:radial-gradient(ellipse at 5% 10%,#ffdb85,transparent 48%),var(--cream);
   scroll-margin-top:70px;
 }
 .glass-intro {
-  padding:clamp(20px,2.8vw,42px); border:1px solid #fff9; border-radius:24px;
+  padding:clamp(20px,2.8vw,42px); border:1px solid #32241038; border-radius:20px;
   background:linear-gradient(135deg,#fff9,#fff3); backdrop-filter:blur(12px);
   box-shadow:inset 0 1px #fffd,0 15px 40px -28px #723b13;
 }
-.shelf-brand { display:block; margin-bottom:.45rem; color:#ab251c; font:850 clamp(1rem,1.35vw,1.25rem)/1.1 var(--font-display); }
+.shelf-brand { display:block; margin-bottom:.45rem; color:var(--red-ink); font:850 clamp(1rem,1.35vw,1.25rem)/1.1 var(--font-display); }
 .glass-intro h2 { margin:0; font:900 clamp(2.4rem,4.3vw,5rem)/1.06 var(--font-display); letter-spacing:-.055em; }
 .glass-intro em { display:inline-block; color:#fff6dc; background:#242019; padding:0 .14em .08em; transform:rotate(-2deg); font-style:normal; }
-.glass-intro p { max-width:28ch; margin:1rem 0; line-height:1.45; }
-.glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; color:inherit; font-weight:800; text-underline-offset:4px; }
+.glass-intro p { max-width:28ch; margin:1rem 0; line-height:1.5; }
+.glass-intro a { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:0 .85rem; border:1.5px solid var(--ink); border-radius:12px; background:var(--cream); box-shadow:2px 2px var(--ink); color:inherit; font-weight:800; text-decoration:none; }
 .shelves { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 0; }
 .shelf {
   position:relative; isolation:isolate; display:grid; grid-template-rows:auto 1fr; min-width:0;
@@ -63,24 +63,24 @@ const shelves = computed(() => store.categories.map(category => {
   background:linear-gradient(150deg,#fff9,transparent 60%),repeating-linear-gradient(45deg,transparent 0 12px,#fff2 12px 13px),var(--shelf-color,#ffbf38);
 }
 .shelf strong { display:block; font:850 clamp(1.15rem,2vw,2rem)/1.1 var(--font-display); letter-spacing:-.04em; }
-.shelf small { font-weight:650; }
+.shelf small { display:block; margin-top:.25rem; font:650 .8125rem/1.25 var(--font-ui); }
 .shelf img { justify-self:center; width:100%; height:clamp(88px,9vw,160px); object-fit:contain; filter:drop-shadow(0 7px 5px #28180338); transition:transform .25s; }
 .shelf-icon { align-self:center; justify-self:center; font-size:3rem; }
-.shelf-arrow { position:absolute; right:12%; bottom:12px; background:#fff8df; border-radius:50%; padding:2px; }
+.shelf-arrow { position:absolute; right:12%; bottom:12px; color:var(--ink); background:var(--cream); border:1px solid currentColor; border-radius:50%; padding:2px; }
 .shelf:hover img,.shelf:focus-visible img { transform:translateY(-3px) rotate(-3deg); }
 .shelf:focus-visible { outline:0; }
 .shelf:focus-visible .shelf-label { outline:3px solid; outline-offset:3px; }
 @media(max-width:900px) {
   .shelf-menu { grid-template-columns:1fr; }
   .glass-intro { display:flex; align-items:center; gap:1.5rem; }
-  .glass-intro a { margin-left:auto; }
+  .glass-intro a { margin-left:auto; flex-shrink:0; }
 }
 @media(max-width:600px) {
   .shelf-menu { padding:22px 0; gap:14px; }
   .glass-intro { margin-inline:16px; display:block; padding:18px; }
   .glass-intro br { display:none; }
   .glass-intro em { margin-left:.15em; }
-  .glass-intro p { max-width:35ch; margin:.6rem 0 0; }
+  .glass-intro p { max-width:35ch; margin:.6rem 0 .8rem; }
   .shelves { display:flex; overflow-x:auto; padding:3px 16px 10px; scroll-snap-type:x mandatory; scroll-padding:16px; }
   .shelf { flex:0 0 47%; padding:15px 6%; scroll-snap-align:start; }
   .shelf img { height:118px; }

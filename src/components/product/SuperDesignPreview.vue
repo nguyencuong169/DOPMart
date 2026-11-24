@@ -18,7 +18,10 @@ const shelves = computed(() => store.categories.map(category => {
 <template>
   <section id="danh-muc" class="shelf-menu" aria-labelledby="shelf-heading">
     <div class="glass-intro">
-      <h2 id="shelf-heading">Khám phá<br><em>kệ hàng</em></h2>
+      <div>
+        <span class="shelf-brand">DOP Mart</span>
+        <h2 id="shelf-heading">Khám phá<br><em>kệ hàng</em></h2>
+      </div>
       <p>Từ snack giòn đến nước mát, chọn kệ theo món bạn đang thèm.</p>
       <RouterLink to="/products">Xem tất cả sản phẩm <ArrowUpRight :size="18" /></RouterLink>
     </div>
@@ -47,6 +50,7 @@ const shelves = computed(() => store.categories.map(category => {
   background:linear-gradient(135deg,#fff9,#fff3); backdrop-filter:blur(12px);
   box-shadow:inset 0 1px #fffd,0 15px 40px -28px #723b13;
 }
+.shelf-brand { display:block; margin-bottom:.45rem; color:#ab251c; font:850 clamp(1rem,1.35vw,1.25rem)/1.1 var(--font-display); }
 .glass-intro h2 { margin:0; font:900 clamp(2.4rem,4.3vw,5rem)/1.06 var(--font-display); letter-spacing:-.055em; }
 .glass-intro em { display:inline-block; color:#fff6dc; background:#242019; padding:0 .14em .08em; transform:rotate(-2deg); font-style:normal; }
 .glass-intro p { max-width:28ch; margin:1rem 0; line-height:1.45; }

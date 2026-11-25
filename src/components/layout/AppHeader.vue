@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowUpRight, ChevronDown, QrCode, ShoppingBag, Store } from "lucide-vue-next";
+import { ArrowUpRight, ChevronDown, PackageCheck, QrCode, ShoppingBag, Store } from "lucide-vue-next";
 import SearchBox from "../common/SearchBox.vue";
 import { useCartStore } from "../../stores/cartStore";
 import { useProductStore } from "../../stores/productStore";
@@ -33,6 +33,13 @@ const primaryLinks = [
   { label: "Khuyến mãi", to: "/deals", match: (path) => path === "/deals" },
 ];
 const moreLinks = [
+  {
+    label: "Đơn của tôi",
+    note: "Theo dõi trạng thái đơn hàng",
+    to: "/orders",
+    icon: PackageCheck,
+    match: (path) => path === "/orders",
+  },
   {
     label: "Về DOP Mart",
     note: "Câu chuyện & giá trị",

@@ -56,4 +56,36 @@ INSERT INTO products (slug, name, format_slug, shelf_slug, category_name, price,
 INSERT INTO profiles (id, floor, updated_at) VALUES
   ('demo-user-id', 20, now());
 
+-- 3. Backfill the new MVP transaction schema after catalog seeding.
+-- Prices are versioned in mart.product_prices and inventory balances are
+-- created only when missing so re-seeding never overwrites live stock.
+INSERT INTO mart.product_prices (product_id, amount)
+SELECT p.id, p.price::NUMERIC(14, 2)
+FROM products p
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM mart.product_prices pp
+  WHERE pp.product_id = p.id
+    AND pp.valid_to IS NULL
+);
+
+INSERT INTO mart.inventory_balances (warehouse_id, product_id, on_hand_qty)
+SELECT
+  w.id,
+  p.id,
+  GREATEST(
+    COALESCE(p.stock, 0),
+    COALESCE(p.stock_floor_14, 0),
+    COALESCE(p.stock_floor_20, 0)
+  )
+FROM mart.warehouses w
+CROSS JOIN products p
+WHERE w.code = 'DOP-HQ'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM mart.inventory_balances ib
+    WHERE ib.warehouse_id = w.id
+      AND ib.product_id = p.id
+  );
+
 COMMIT;

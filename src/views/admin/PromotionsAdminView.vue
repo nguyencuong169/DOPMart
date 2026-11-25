@@ -1,400 +1,276 @@
-<script setup>
-import { ref, onMounted } from "vue";
-import { supabase } from "@/lib/supabase";
-import { Search, Plus, Edit, Trash2, Save, X, Tag, Clock } from "lucide-vue-next";
+<script setup lang="ts">
+import { computed, onMounted, reactive, shallowRef } from 'vue'
+import { Edit, Plus, RefreshCw, Search, Trash2, X } from 'lucide-vue-next'
+import {
+  deleteMartPromotion,
+  getMartAdminPromotions,
+  upsertMartPromotion,
+  type MartAdminPromotion,
+} from '../../services/martAdminService'
 
-const promotions = ref([]);
-const loading = ref(false);
-const searchQuery = ref("");
-const showForm = ref(false);
-const editing = ref(null);
-const form = ref({
-  code: "",
-  description: "",
-  discountType: "percent",
-  discountValue: null,
-  minOrder: 0,
-  maxUses: 0,
-  startsAt: "",
-  endsAt: "",
-  isActive: true,
-});
+interface PromotionForm {
+  code: string
+  description: string
+  discountType: 'percent' | 'fixed'
+  discountValue: number
+  minOrder: number
+  maxUses: number
+  startsAt: string
+  endsAt: string
+  isActive: boolean
+}
 
-const loadPromotions = async () => {
-  loading.value = true;
+const promotions = shallowRef<MartAdminPromotion[]>([])
+const loading = shallowRef(true)
+const saving = shallowRef(false)
+const errorMessage = shallowRef('')
+const searchQuery = shallowRef('')
+const showForm = shallowRef(false)
+const editingId = shallowRef<string | null>(null)
+
+const form = reactive<PromotionForm>({
+  code: '', description: '', discountType: 'percent', discountValue: 0,
+  minOrder: 0, maxUses: 0, startsAt: '', endsAt: '', isActive: true,
+})
+
+const filteredPromotions = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return promotions.value
+  return promotions.value.filter((promotion) => (
+    `${promotion.code} ${promotion.description}`.toLowerCase().includes(query)
+  ))
+})
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency', currency: 'VND', maximumFractionDigits: 0,
+  }).format(value || 0)
+}
+
+function formatDate(value?: string) {
+  if (!value) return 'Không giới hạn'
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(value))
+}
+
+function toDateTimeInput(value?: string) {
+  return value ? value.slice(0, 16) : ''
+}
+
+function resetForm() {
+  Object.assign(form, {
+    code: '', description: '', discountType: 'percent', discountValue: 0,
+    minOrder: 0, maxUses: 0, startsAt: new Date().toISOString().slice(0, 16),
+    endsAt: '', isActive: true,
+  })
+}
+
+function openCreate() {
+  editingId.value = null
+  resetForm()
+  showForm.value = true
+}
+
+function openEdit(promotion: MartAdminPromotion) {
+  editingId.value = promotion.id
+  Object.assign(form, {
+    code: promotion.code,
+    description: promotion.description,
+    discountType: promotion.discount_type,
+    discountValue: promotion.discount_value,
+    minOrder: promotion.min_order,
+    maxUses: promotion.max_uses,
+    startsAt: toDateTimeInput(promotion.starts_at),
+    endsAt: toDateTimeInput(promotion.ends_at),
+    isActive: promotion.is_active,
+  })
+  showForm.value = true
+}
+
+function getErrorMessage(cause: unknown, fallback: string) {
+  const raw = cause instanceof Error ? cause.message : ''
+  const code = raw.split(':')[0]
+  const messages: Record<string, string> = {
+    '23505': 'Mã khuyến mãi đã tồn tại.',
+    INVALID_PROMOTION_PAYLOAD: 'Vui lòng kiểm tra loại và giá trị giảm.',
+    PROMOTION_NOT_FOUND: 'Không tìm thấy khuyến mãi.',
+  }
+  return messages[code] ?? raw ?? fallback
+}
+
+async function loadPromotions() {
+  loading.value = true
+  errorMessage.value = ''
   try {
-    const { data, error } = await supabase
-      .from("promotions")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    promotions.value = data || [];
-  } catch (e) {
-    alert("Lỗi tải khuyến mãi: " + e.message);
-  } finally { loading.value = false; }
-};
+    promotions.value = await getMartAdminPromotions()
+  } catch (cause) {
+    errorMessage.value = getErrorMessage(cause, 'Không thể tải khuyến mãi.')
+  } finally {
+    loading.value = false
+  }
+}
 
-const filteredPromotions = ref([]);
-const filterPromotions = () => {
-  const q = searchQuery.value.toLowerCase();
-  filteredPromotions.value = promotions.value.filter((p) =>
-    p.code.toLowerCase().includes(q) || (p.description || "").toLowerCase().includes(q)
-  );
-};
+async function savePromotion() {
+  if (!form.code.trim() || form.discountValue <= 0) {
+    errorMessage.value = 'Mã và giá trị khuyến mãi là bắt buộc.'
+    return
+  }
 
-const openCreate = () => {
-  editing.value = null;
-  form.value = { code: "", description: "", discountType: "percent", discountValue: null, minOrder: 0, maxUses: 0, startsAt: "", endsAt: "", isActive: true };
-  showForm.value = true;
-};
-
-const openEdit = (p) => {
-  editing.value = p.id;
-  form.value = { ...p, startsAt: p.starts_at, endsAt: p.ends_at, discountType: p.discount_type, discountValue: p.discount_value, minOrder: p.min_order, maxUses: p.max_uses, isActive: Boolean(p.is_active) };
-  showForm.value = true;
-};
-
-const savePromotion = async () => {
-  const payload = {
-    code: form.value.code.toUpperCase().trim(),
-    description: form.value.description,
-    discount_type: form.value.discountType,
-    discount_value: Number(form.value.discountValue) || 0,
-    min_order: Number(form.value.minOrder) || 0,
-    max_uses: Number(form.value.maxUses) || 0,
-    starts_at: form.value.startsAt,
-    ends_at: form.value.endsAt,
-    is_active: Boolean(form.value.isActive),
-  };
+  saving.value = true
+  errorMessage.value = ''
   try {
-    if (editing.value) {
-      const { error } = await supabase.from("promotions").update(payload).eq("id", editing.value);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from("promotions").insert(payload);
-      if (error) throw error;
-    }
-    showForm.value = false;
-    await loadPromotions();
-  } catch (e) { alert("Lỗi lưu khuyến mãi: " + e.message); }
-};
+    await upsertMartPromotion({
+      id: editingId.value ?? undefined,
+      code: form.code.trim().toUpperCase(),
+      description: form.description.trim(),
+      discountType: form.discountType,
+      discountValue: Number(form.discountValue),
+      minOrder: Number(form.minOrder),
+      maxUses: Number(form.maxUses),
+      startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : undefined,
+      endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : undefined,
+      isActive: form.isActive,
+    })
+    showForm.value = false
+    await loadPromotions()
+  } catch (cause) {
+    errorMessage.value = getErrorMessage(cause, 'Không thể lưu khuyến mãi.')
+  } finally {
+    saving.value = false
+  }
+}
 
-const deletePromotion = async (id) => {
-  if (!confirm("Xóa mã giảm giá này?")) return;
+async function removePromotion(promotion: MartAdminPromotion) {
+  if (!window.confirm(`Xóa mã “${promotion.code}”?`)) return
+  errorMessage.value = ''
   try {
-    const { error } = await supabase.from("promotions").delete().eq("id", id);
-    if (error) throw error;
-    await loadPromotions();
-  } catch (e) { alert("Lỗi xóa khuyến mãi: " + e.message); }
-};
+    await deleteMartPromotion(promotion.id)
+    await loadPromotions()
+  } catch (cause) {
+    errorMessage.value = getErrorMessage(cause, 'Không thể xóa khuyến mãi.')
+  }
+}
 
-const toggleActive = async (id, current) => {
-  try {
-    const { error } = await supabase.from("promotions").update({ is_active: !current }).eq("id", id);
-    if (error) throw error;
-    await loadPromotions();
-  } catch (e) { alert("Lỗi cập nhật trạng thái: " + e.message); }
-};
-
-const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
-
-onMounted(() => { loadPromotions().then(filterPromotions); });
+onMounted(loadPromotions)
 </script>
 
 <template>
-  <div class="admin-promotions">
-    <div class="page-header">
-      <h1 class="page-title">Quản lý khuyến mãi</h1>
-      <button class="btn btn--primary" @click="openCreate">
-        <Plus :size="18" /> Tạo mã giảm giá
-      </button>
-    </div>
+  <section class="admin-promotions" aria-labelledby="promotions-heading">
+    <header class="promotions-header">
+      <div>
+        <span class="promotions-kicker">DOP MART · PROMOTIONS</span>
+        <h1 id="promotions-heading" class="promotions-title">Khuyến mãi</h1>
+        <p class="promotions-lead">Quản lý mã giảm giá dùng trong các chiến dịch bán hàng nội bộ.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="secondary-button" :disabled="loading" @click="loadPromotions">
+          <RefreshCw :size="16" :class="{ spinning: loading }" aria-hidden="true" />
+          Làm mới
+        </button>
+        <button type="button" class="primary-button" @click="openCreate">
+          <Plus :size="17" aria-hidden="true" />
+          Tạo mã mới
+        </button>
+      </div>
+    </header>
 
-    <div class="search-bar">
-      <Search :size="18" class="search-icon" />
-      <input v-model="searchQuery" @input="filterPromotions" placeholder="Tìm mã giảm giá..." class="search-input" />
-    </div>
+    <div v-if="errorMessage" class="admin-alert" role="alert">{{ errorMessage }}</div>
 
-    <div class="table-wrap">
+    <label class="search-box">
+      <Search :size="18" aria-hidden="true" />
+      <span class="sr-only">Tìm mã khuyến mãi</span>
+      <input v-model="searchQuery" type="search" placeholder="Tìm theo mã hoặc mô tả…" />
+    </label>
+
+    <div v-if="loading && !promotions.length" class="empty-state" role="status">Đang tải khuyến mãi…</div>
+
+    <div v-else class="table-wrap">
       <table class="admin-table">
         <thead>
           <tr>
-            <th style="width:130px">Mã giảm giá</th>
-            <th>Mô tả</th>
-            <th style="width:130px">Loại giảm</th>
-            <th style="width:120px">Giá trị</th>
-            <th style="width:110px">Đơn tối thiểu</th>
-            <th style="width:110px">Số lần dùng</th>
-            <th style="width:140px">Hạn sử dụng</th>
-            <th class="text-center" style="width:100px">Kích hoạt</th>
-            <th class="text-center" style="width:120px">Hành động</th>
+            <th>Mã</th><th>Mô tả</th><th>Giảm</th><th>Đơn tối thiểu</th><th>Đã dùng</th><th>Thời hạn</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="p in filteredPromotions" :key="p.id">
-            <td class="mono font-bold">{{ p.code }}</td>
-            <td>{{ p.description || "—" }}</td>
-            <td>{{ p.discount_type === "percent" ? "Phần trăm" : "Tiền mặt" }}</td>
-            <td class="mono">
-              {{ p.discount_type === "percent" ? p.discount_value + "%" : formatCurrency(p.discount_value) }}
-            </td>
-            <td class="mono">{{ formatCurrency(p.min_order) }}</td>
-            <td class="text-center">{{ p.used_count }} / {{ p.max_uses || "∞" }}</td>
-            <td class="mono text-muted">{{ p.ends_at?.slice(0, 10) }}</td>
-            <td class="text-center">
-              <label class="toggle-switch">
-                <input type="checkbox" v-model="p.is_active" @change="toggleActive(p.id, p.is_active)" />
-                <span class="toggle-slider"></span>
-              </label>
-            </td>
-            <td class="text-center actions">
-              <button class="icon-btn" @click="openEdit(p)" title="Sửa"><Edit :size="16" /></button>
-              <button class="icon-btn icon-btn--danger" @click="deletePromotion(p.id)" title="Xóa"><Trash2 :size="16" /></button>
+          <tr v-for="promotion in filteredPromotions" :key="promotion.id">
+            <td><strong class="code">{{ promotion.code }}</strong></td>
+            <td>{{ promotion.description || 'Không có mô tả' }}</td>
+            <td class="amount">{{ promotion.discount_type === 'percent' ? `${promotion.discount_value}%` : formatCurrency(promotion.discount_value) }}</td>
+            <td class="amount">{{ formatCurrency(promotion.min_order) }}</td>
+            <td>{{ promotion.used_count }} / {{ promotion.max_uses || '∞' }}</td>
+            <td class="date-cell">{{ formatDate(promotion.ends_at) }}</td>
+            <td><span class="status-pill" :class="{ active: promotion.is_active, inactive: !promotion.is_active }">{{ promotion.is_active ? 'Đang bật' : 'Đã tắt' }}</span></td>
+            <td class="actions">
+              <button type="button" class="icon-button" title="Sửa khuyến mãi" @click="openEdit(promotion)"><Edit :size="16" /></button>
+              <button type="button" class="icon-button danger" title="Xóa khuyến mãi" @click="removePromotion(promotion)"><Trash2 :size="16" /></button>
             </td>
           </tr>
-          <tr v-if="filteredPromotions.length === 0"><td colspan="9" class="empty">Không tìm thấy khuyến mãi nào</td></tr>
+          <tr v-if="!filteredPromotions.length"><td colspan="8" class="empty-state">Chưa có khuyến mãi phù hợp.</td></tr>
         </tbody>
       </table>
     </div>
 
-    <Transition name="fade">
-      <div v-if="showForm" class="modal-overlay" @click="showForm = false"></div>
-    </Transition>
-    <Transition name="slide-fade">
-      <div v-if="showForm" class="modal" @click.stop>
-        <div class="modal-header">
-          <h3>{{ editing ? "Sửa mã giảm giá" : "Tạo mã giảm giá mới" }}</h3>
-          <button class="modal-close" @click="showForm = false"><X :size="20" /></button>
+    <div v-if="showForm" class="modal-layer" @click.self="showForm = false">
+      <form class="modal" @submit.prevent="savePromotion">
+        <header class="modal-header">
+          <div><span class="promotions-kicker">PROMOTION EDITOR</span><h2>{{ editingId ? 'Sửa khuyến mãi' : 'Tạo khuyến mãi' }}</h2></div>
+          <button type="button" class="icon-button" aria-label="Đóng" @click="showForm = false"><X :size="19" /></button>
+        </header>
+        <div class="form-grid">
+          <label>Mã khuyến mãi<input v-model="form.code" required placeholder="DOP20" /></label>
+          <label>Mô tả<input v-model="form.description" placeholder="Giảm cho đơn đầu tiên" /></label>
+          <label>Loại giảm<select v-model="form.discountType"><option value="percent">Phần trăm (%)</option><option value="fixed">Số tiền (VND)</option></select></label>
+          <label>Giá trị<input v-model.number="form.discountValue" type="number" min="0.01" required /></label>
+          <label>Đơn tối thiểu<input v-model.number="form.minOrder" type="number" min="0" /></label>
+          <label>Giới hạn lượt dùng<input v-model.number="form.maxUses" type="number" min="0" /></label>
+          <label>Bắt đầu<input v-model="form.startsAt" type="datetime-local" /></label>
+          <label>Kết thúc<input v-model="form.endsAt" type="datetime-local" /></label>
+          <label class="checkbox-field"><input v-model="form.isActive" type="checkbox" /> Kích hoạt mã</label>
         </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-field span-2">
-              <label class="form-label">Mã giảm giá</label>
-              <input v-model="form.code" class="form-input" placeholder="GIAM20" />
-            </div>
-            <div class="form-field span-2">
-              <label class="form-label">Mô tả</label>
-              <input v-model="form.description" class="form-input" placeholder="Giảm 20% cho đơn trên 100k" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Loại giảm giá</label>
-              <select v-model="form.discountType" class="form-select">
-                <option value="percent">Phần trăm (%)</option>
-                <option value="fixed">Tiền mặt (VNĐ)</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Giá trị giảm</label>
-              <input type="number" v-model.number="form.discountValue" class="form-input" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Đơn hàng tối thiểu</label>
-              <input type="number" v-model.number="form.minOrder" class="form-input" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Số lần sử dụng tối đa</label>
-              <input type="number" v-model.number="form.maxUses" class="form-input" placeholder="0 = không giới hạn" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Bắt đầu từ</label>
-              <input type="datetime-local" v-model="form.startsAt" class="form-input" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Kết thúc vào</label>
-              <input type="datetime-local" v-model="form.endsAt" class="form-input" />
-            </div>
-            <div class="form-field span-2 form-toggle">
-              <label class="form-label">Trạng thái</label>
-              <div class="toggle-row">
-                <label class="toggle-item">
-                  <input type="checkbox" v-model="form.isActive" /> Kích hoạt
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn" @click="showForm = false">Hủy</button>
-          <button class="btn btn--primary" @click="savePromotion"><Save :size="16" /> {{ editing ? "Cập nhật" : "Tạo mới" }}</button>
-        </div>
-      </div>
-    </Transition>
-  </div>
+        <footer class="modal-footer"><button type="button" class="secondary-button" @click="showForm = false">Hủy</button><button type="submit" class="primary-button" :disabled="saving">{{ saving ? 'Đang lưu…' : 'Lưu khuyến mãi' }}</button></footer>
+      </form>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.admin-promotions {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--foreground, #1a1a1a);
-  margin: 0;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s;
-}
-
-.btn--primary {
-  background: var(--flame, #ff5a1f);
-  color: #ffffff;
-  border-color: var(--flame, #ff5a1f);
-}
-
-.btn--primary:hover { opacity: 0.9; }
-
-.btn {
-  background: var(--background, #ffffff);
-  color: var(--foreground, #1a1a1a);
-  border-color: var(--border, #e5e7eb);
-}
-
-.btn:hover { background: var(--muted, #f3f4f6); }
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: var(--muted, #f9fafb);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 10px;
-  width: 320px;
-}
-
-.search-icon { color: var(--muted-foreground, #9ca3af); flex-shrink: 0; }
-
-.search-input {
-  flex: 1; border: none; background: transparent; outline: none;
-  font-size: 0.875rem; color: var(--foreground, #1a1a1a);
-}
-
-.table-wrap { overflow-x: auto; margin-top: 0.5rem; }
-
-.admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-
-.admin-table th {
-  text-align: left; padding: 0.75rem 1rem; font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
-  border-bottom: 1px solid var(--border, #e5e7eb);
-  background: var(--muted, #f9fafb);
-}
-
-.admin-table td {
-  padding: 0.75rem 1rem; border-bottom: 1px solid var(--border, #e5e7eb);
-  color: var(--foreground, #1a1a1a);
-}
-
-.admin-table tr:last-child td { border-bottom: none; }
-
-.text-center { text-align: center; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.8125rem; }
-.font-bold { font-weight: 700; }
-.text-muted { color: var(--muted-foreground, #6b7280); }
-
-.empty {
-  text-align: center; padding: 2rem; color: var(--muted-foreground, #9ca3af);
-}
-
-/* Toggle switch */
-.toggle-switch {
-  position: relative; display: inline-block; width: 44px; height: 24px;
-}
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--muted, #f3f4f6); transition: 0.15s; border-radius: 34px;
-}
-.toggle-slider:before {
-  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-  background: #ffffff; transition: 0.15s; border-radius: 50%;
-}
-.toggle-switch input:checked + .toggle-slider { background: var(--flame, #ff5a1f); }
-.toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
-
-.actions { gap: 0.5rem; }
-.icon-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border: none; background: transparent;
-  cursor: pointer; border-radius: 6px; color: var(--muted-foreground, #6b7280);
-}
-.icon-btn:hover { background: var(--muted, #f3f4f6); }
-.icon-btn--danger:hover { background: #fef2f2; color: #b91c1c; }
-
-/* Form (modal) */
-.form-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
-}
-.form-field.span-2 { grid-column: span 2; }
-.form-label {
-  display: block; font-size: 0.8125rem; font-weight: 500;
-  color: var(--muted-foreground, #6b7280); margin-bottom: 0.375rem;
-}
-.form-input, .form-select {
-  width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border, #e5e7eb);
-  border-radius: 8px; background: var(--background, #ffffff);
-  color: var(--foreground, #1a1a1a); font-size: 0.875rem; outline: none;
-}
-.form-input:focus, .form-select:focus { border-color: var(--flame, #ff5a1f); }
-.toggle-row { display: flex; gap: 1rem; margin-top: 0.25rem; }
-.toggle-item {
-  display: flex; align-items: center; gap: 0.375rem;
-  font-size: 0.875rem; color: var(--foreground, #1a1a1a); cursor: pointer;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgb(0 0 0 / 0.4);
-  backdrop-filter: blur(2px); z-index: 50;
-}
-.modal {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(720px, 92vw); max-height: 85vh;
-  background: var(--popover, #ffffff); border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px; box-shadow: var(--shadow-2, 0 10px 15px -3px rgb(0 0 0 / 0.1));
-  z-index: 51; display: flex; flex-direction: column; overflow: hidden;
-  animation: slideUp 0.2s ease;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translate(-50%, -40%); }
-  to { opacity: 1; transform: translate(-50%, -50%); }
-}
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border, #e5e7eb);
-}
-.modal-header h3 { font-size: 1rem; font-weight: 600; color: var(--foreground, #1a1a1a); margin: 0; }
-.modal-close {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border: none; background: transparent;
-  cursor: pointer; border-radius: 6px; color: var(--muted-foreground, #6b7280);
-}
-.modal-close:hover { background: var(--muted, #f3f4f6); }
-.modal-body { padding: 1.25rem; overflow-y: auto; }
-.modal-footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;
-  padding: 0.75rem 1.25rem; border-top: 1px solid var(--border, #e5e7eb);
-  background: var(--muted, #f9fafb);
-}
+.admin-promotions { display: grid; gap: 24px; }
+.promotions-header, .header-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.header-actions { align-items: center; }
+.promotions-kicker { color: #756a61; font-size: 11px; font-weight: 900; letter-spacing: .1em; }
+.promotions-title { margin: 8px 0 6px; font-family: var(--font-display, sans-serif); font-size: clamp(34px, 5vw, 56px); line-height: .95; letter-spacing: -.04em; }
+.promotions-lead { max-width: 56ch; margin: 0; color: #756a61; font-size: 14px; line-height: 1.5; }
+.primary-button, .secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid var(--ink, #191919); border-radius: 11px; padding: 10px 13px; color: var(--ink, #191919); font-weight: 900; cursor: pointer; }
+.primary-button { background: #ffd338; box-shadow: 3px 3px 0 var(--ink, #191919); }
+.secondary-button { background: #fffdf7; }
+.primary-button:disabled, .secondary-button:disabled { cursor: wait; opacity: .55; }
+.spinning { animation: spin .8s linear infinite; }
+.admin-alert { border: 1.5px solid #b42318; border-radius: 12px; background: #fff1f0; padding: 12px 14px; color: #8e1c16; font-weight: 700; }
+.search-box { display: flex; align-items: center; gap: 9px; width: min(440px, 100%); border: 1.5px solid #c8beb2; border-radius: 12px; background: #fffdf7; padding: 11px 13px; color: #756a61; }
+.search-box input { width: 100%; border: 0; outline: 0; background: transparent; font: inherit; }
+.table-wrap { overflow-x: auto; border: 1.5px solid #d9cec1; border-radius: 18px; background: #fffdf7; }
+.admin-table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 13px; }
+.admin-table th { padding: 14px 16px; border-bottom: 1.5px solid #d9cec1; color: #756a61; font-size: 11px; letter-spacing: .07em; text-align: left; text-transform: uppercase; }
+.admin-table td { padding: 14px 16px; border-bottom: 1px solid #ebe2d8; vertical-align: middle; }
+.code, .amount { font-variant-numeric: tabular-nums; font-weight: 900; white-space: nowrap; }
+.date-cell { color: #756a61; white-space: nowrap; }
+.status-pill { display: inline-flex; border-radius: 999px; padding: 6px 9px; font-size: 11px; font-weight: 900; }
+.status-pill.active { background: #d8f5df; color: #176b39; }
+.status-pill.inactive { background: #f1e9dc; color: #756a61; }
+.actions { display: flex; justify-content: flex-end; gap: 6px; }
+.icon-button { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid #d9cec1; border-radius: 9px; background: transparent; color: #645b53; cursor: pointer; }
+.icon-button:hover { background: #f1e9dc; color: #191919; }
+.icon-button.danger:hover { background: #fff1f0; color: #b42318; }
+.empty-state { min-height: 120px; color: #8a7f74; text-align: center; }
+.modal-layer { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgb(25 25 25 / .38); padding: 20px; }
+.modal { width: min(720px, 100%); max-height: 90svh; overflow: auto; border: 2px solid var(--ink); border-radius: 20px; background: #fffdf7; box-shadow: 7px 7px 0 var(--ink); padding: 24px; }
+.modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.modal-header h2 { margin: 7px 0 0; font-family: var(--font-display); font-size: 32px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 24px; }
+.form-grid label { display: grid; gap: 7px; color: #645b53; font-size: 12px; font-weight: 800; }
+.form-grid input:not([type='checkbox']), .form-grid select { width: 100%; border: 1.5px solid #c8beb2; border-radius: 10px; background: #fff; padding: 10px 11px; color: #191919; font: inherit; font-weight: 500; }
+.checkbox-field { display: flex !important; align-items: center; gap: 8px !important; }
+.modal-footer { justify-content: flex-end; margin-top: 24px; border-top: 1px solid #ded5ca; padding-top: 18px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 760px) { .promotions-header, .header-actions { align-items: stretch; flex-direction: column; } .header-actions, .primary-button, .secondary-button { width: 100%; } .form-grid { grid-template-columns: 1fr; } }
 </style>

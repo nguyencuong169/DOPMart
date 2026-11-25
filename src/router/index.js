@@ -13,6 +13,20 @@ const AdminPromotions = () => import("../views/admin/PromotionsAdminView.vue");
 const MartOperations = () => import("../views/admin/MartOperationsView.vue");
 
 /**
+ * Guard: chỉ cho vào nếu user đã đăng nhập
+ */
+async function authGuard(to) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      name: "login",
+      query: { redirect: to.fullPath },
+      replace: true,
+    };
+  }
+}
+
+/**
  * Guard: chỉ cho vào nếu user có role admin, không thì trả về trang login
  */
 async function adminGuard(to) {
@@ -28,17 +42,6 @@ async function adminGuard(to) {
   const ok = await isAdmin();
   if (!ok) {
     return { name: "home", replace: true };
-  }
-}
-
-async function authGuard(to) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return {
-      name: "login",
-      query: { redirect: to.fullPath },
-      replace: true,
-    };
   }
 }
 
@@ -61,6 +64,18 @@ const routes = [
     beforeEnter: authGuard,
   },
   {
+    path: "/orders",
+    name: "orders",
+    component: () => import("../views/OrdersView.vue"),
+    beforeEnter: authGuard,
+  },
+  {
+    path: "/orders/:id",
+    name: "order-detail",
+    component: () => import("../views/OrderDetailView.vue"),
+    beforeEnter: authGuard,
+  },
+  {
     path: "/products",
     name: "products",
     component: CatalogView,
@@ -80,7 +95,6 @@ const routes = [
   { path: "/search", name: "search", component: () => import("../views/SearchView.vue") },
   { path: "/cart", name: "cart", component: () => import("../views/CartView.vue") },
   { path: "/checkout", name: "checkout", component: () => import("../views/CheckoutView.vue") },
-  { path: "/orders", name: "orders", component: () => import("../views/OrdersView.vue"), beforeEnter: authGuard },
   // ============================================
   // Admin routes (chỉ role admin)
   // ============================================

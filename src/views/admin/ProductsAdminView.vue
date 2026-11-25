@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, shallowRef } from "vue";
-import { Edit, Package, Plus, RefreshCw, Search, Trash2, X, Upload, Image } from "lucide-vue-next";
+import { Edit, Package, Plus, RefreshCw, Search, Trash2, X, Upload, Image, FileText } from "lucide-vue-next";
 import { deleteMartProduct, upsertMartProduct, type MartAdminProduct } from "../../services/martAdminService";
 import { fetchAdminProducts, updateProductStock, uploadProductImage, getProductImageUrl } from "../../lib/supabase";
 
@@ -20,6 +20,13 @@ interface ProductForm {
   stock: number;
   imageFile: File | null;
   imageUrl: string | null;
+}
+
+interface ImportResult {
+  total: number;
+  success: number;
+  failed: number;
+  errors: Array<{ row: number; name?: string; error: string }>;
 }
 
 const products = shallowRef<MartAdminProduct[]>([]);
@@ -45,6 +52,13 @@ const stockValue = shallowRef("");
 
 const uploadFile = shallowRef<File | null>(null);
 const imagePreview = shallowRef<string | null>(null);
+
+// Import state
+const showImport = shallowRef(false);
+const importCsv = shallowRef("");
+const importFile = shallowRef<File | null>(null);
+const importLoading = shallowRef(false);
+const importResult = shallowRef<ImportResult | null>(null);
 
 const formats = [
   { value: "chips", label: "Bim bim" },
@@ -223,6 +237,97 @@ function removeImage() {
   imagePreview.value = editingId.value ? form.imageUrl : null;
 }
 
+/* ---------------- Import CSV ---------------- */
+
+const importTemplate = `name,slug,categoryName,formatSlug,shelfSlug,price,rating,color,tint,description,isNew,hot,stock,image
+Khoai tây cay,khoai-tay-cay,Snack mặn,chips,snack-man,12000,4.9,#ffb82e,#f5a623,"Giòn, cay",1,0,50,
+Mì ly tôm,mì-ly-tom,Snack mặn,noodles,snack-man,18000,4.8,#ef3340,#d13a1f,"Mì ly tôm",0,1,40,
+`;
+
+function parseCsv(text: string): Array<Record<string, string>> {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length === 0) return [];
+  const header = lines[0].split(",").map((h) => h.trim());
+  const rows: Array<Record<string, string>> = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(",");
+    const obj: Record<string, string> = {};
+    header.forEach((h, idx) => {
+      obj[h] = (values[idx] ?? "").trim();
+    });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function boolVal(v: string): boolean {
+  return ["1", "true", "yes", "có", "mới"].includes(String(v).trim().toLowerCase());
+}
+
+async function runImport() {
+  let rows: Array<Record<string, string>> = [];
+  if (importFile.value) {
+    const text = await importFile.value.text();
+    rows = parseCsv(text);
+  } else if (importCsv.value.trim()) {
+    rows = parseCsv(importCsv.value);
+  } else {
+    errorMessage.value = "Vui lòng dán CSV hoặc chọn file.";
+    return;
+  }
+
+  importLoading.value = true;
+  errorMessage.value = "";
+  const result: ImportResult = { total: rows.length, success: 0, failed: 0, errors: [] };
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const rowNum = i + 2;
+    try {
+      const name = r.name?.trim();
+      const slug = r.slug?.trim();
+      if (!name || !slug) throw new Error("Thiếu tên hoặc slug");
+      if (Number(r.price) < 0) throw new Error("Giá không được âm");
+
+      await upsertMartProduct({
+        name,
+        slug,
+        category_name: r.categoryName?.trim() || "",
+        format_slug: r.formatSlug?.trim() || "chips",
+        shelf_slug: r.shelfSlug?.trim() || "snack-man",
+        price: Number(r.price) || 0,
+        rating: Number(r.rating) || 0,
+        color: r.color?.trim() || "#ffb82e",
+        tint: r.tint?.trim() || "#f5a623",
+        description: r.description?.trim() || "",
+        is_new: boolVal(r.isNew ?? "0"),
+        hot: boolVal(r.hot ?? "0"),
+        stock: Number(r.stock) || 0,
+        image: r.image?.trim() || null,
+      });
+      result.success++;
+    } catch (e) {
+      result.failed++;
+      result.errors.push({
+        row: rowNum,
+        name: r.name?.trim(),
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+
+  importResult.value = result;
+  importLoading.value = false;
+  await loadProducts();
+}
+
+function closeImport() {
+  showImport.value = false;
+  importResult.value = null;
+  importCsv.value = "";
+  importFile.value = null;
+}
+
 onMounted(loadProducts);
 </script>
 
@@ -234,6 +339,7 @@ onMounted(loadProducts);
         <h1>Quản lý sản phẩm</h1>
       </div>
       <div class="header-actions">
+        <button class="secondary-button" @click="showImport = true"><FileText size="17" /> Import CSV</button>
         <button class="primary-button" @click="openCreate"><Plus size="17" /> Thêm sản phẩm</button>
       </div>
     </header>
@@ -293,6 +399,7 @@ onMounted(loadProducts);
       </div>
     </div>
 
+    <!-- Form modal -->
     <div v-if="showForm" class="modal-layer" @click.self="showForm = false">
       <form class="modal" @submit.prevent="saveProduct">
         <div class="modal-header"><h2>{{ editingId ? "Sửa sản phẩm" : "Thêm sản phẩm mới" }}</h2><button type="button" class="icon-button" @click="showForm = false"><X size="19" /></button></div>
@@ -316,11 +423,60 @@ onMounted(loadProducts);
       </form>
     </div>
 
+    <!-- Stock edit modal -->
     <div v-if="stockEditId" class="modal-layer" @click.self="stockEditId = null">
       <form class="modal" @submit.prevent="saveStock">
         <div class="modal-header"><h2>Cập nhật tồn kho</h2><button type="button" class="icon-button" @click="stockEditId = null"><X size="19" /></button></div>
         <div class="form-grid wide"><label>Tồn kho mới (tổng)</label><input v-model.number="stockValue" type="number" min="0" required autofocus /></div>
         <div class="modal-footer"><button type="button" class="secondary-button" @click="stockEditId = null">Hủy</button><button type="submit" class="primary-button">Cập nhật</button></div>
+      </form>
+    </div>
+
+    <!-- Import CSV modal -->
+    <div v-if="showImport" class="modal-layer" @click.self="closeImport">
+      <form class="modal" @submit.prevent="runImport">
+        <div class="modal-header"><h2>Import sản phẩm từ CSV</h2><button type="button" class="icon-button" @click="closeImport"><X size="19" /></button></div>
+        <div class="form-grid wide">
+          <label>Tệp CSV <span style="color:#b42318">*</span></label>
+          <input type="file" accept=".csv" @change="(e) => { importFile.value = (e.target as HTMLInputElement).files?.[0] ?? null; }" />
+          <small class="muted">Hoặc dán nội dung CSV bên dưới</small>
+          <textarea v-model="importCsv" rows="8" placeholder="name,slug,categoryName,formatSlug,shelfSlug,price,rating,color,tint,description,isNew,hot,stock,image"></textarea>
+          <details class="csv-help" style="margin-top: 8px;">
+            <summary style="cursor: pointer; font-weight: 800; color: #645b53;">Mẫu CSV (nhấn để xem)</summary>
+            <pre style="margin: 6px 0 0; background: #fbf9f5; border: 1px solid #d9cec1; border-radius: 8px; padding: 10px; font-size: 12px; overflow: auto;">{{ importTemplate }}</pre>
+          </details>
+          <small class="muted">Lưu ý: cột <code>isNew</code>, <code>hot</code> nhận 1/0. Cột <code>image</code> để trống nếu không có ảnh.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="secondary-button" @click="closeImport">Hủy</button>
+          <button type="submit" class="primary-button" :disabled="importLoading">{{ importLoading ? "Đang nhập…" : "Chạy import" }}</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Import result modal -->
+    <div v-if="importResult" class="modal-layer" @click.self="importResult = null">
+      <form class="modal" style="max-width: 700px;">
+        <div class="modal-header"><h2>Kết quả import</h2><button type="button" class="icon-button" @click="importResult = null"><X size="19" /></button></div>
+        <div class="form-grid wide" style="gap: 12px;">
+          <div style="background:#e8f7ea;border:1px solid #b9e3cc;border-radius:10px;padding:16px;">
+            <div style="font-size:12px;color:#216b37;font-weight:800;text-transform:uppercase;letter-spacing:.1em;">Thành công</div>
+            <div style="font-size:32px;font-weight:900;color:#191919;">{{ importResult.success }}</div>
+          </div>
+          <div v-if="importResult.failed > 0" style="background:#fff0ef;border:1px solid #f5c6bf;border-radius:10px;padding:16px;">
+            <div style="font-size:12px;color:#9b211a;font-weight:800;text-transform:uppercase;letter-spacing:.1em;">Thất bại</div>
+            <div style="font-size:32px;font-weight:900;color:#191919;">{{ importResult.failed }}</div>
+          </div>
+          <div v-if="importResult.failed > 0">
+            <label style="font-size:12px;font-weight:800;color:#645b53;">Chi tiết lỗi</label>
+            <ul style="margin:8px 0 0;padding-left:18px;color:#191919;font-size:13px;max-height:200px;overflow:auto;border:1px solid #d9cec1;border-radius:8px;background:#fff;padding:10px;">
+              <li v-for="err in importResult.errors" :key="err.row">
+                Dòng {{ err.row }}<span v-if="err.name" style="color:#645b53;font-weight:600;"> ({{ err.name }})</span>: {{ err.error }}
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer"><button type="button" class="primary-button" @click="importResult = null; closeImport()">Đóng</button></div>
       </form>
     </div>
   </div>
@@ -388,6 +544,9 @@ onMounted(loadProducts);
 .image-preview { position: relative; display: inline-block; }
 .image-preview img { max-width: 160px; max-height: 160px; border-radius: 10px; border: 1px solid #d9cec1; }
 .remove-image { margin-top: 8px; font-size: 11px; font-weight: 800; color: #b42318; background: transparent; border: 0; cursor: pointer; padding: 0; }
+.csv-help pre { margin: 6px 0 0; background: #fbf9f5; border: 1px solid #d9cec1; border-radius: 8px; padding: 10px; font-size: 12px; overflow: auto; }
+.muted { color: #8a7f74; font-size: 12px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: #f1e9dc; padding: 2px 6px; border-radius: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 760px) { .products-admin { padding: 12px; } .filters-bar { flex-direction: column; align-items: stretch; } .form-grid { grid-template-columns: 1fr; } .products-header { flex-direction: column; align-items: stretch; } .header-actions { width: 100%; justify-content: space-between; } }
 </style>

@@ -9,14 +9,47 @@ import {
   Play,
   Star,
 } from "lucide-vue-next";
+import { useSwipe } from "@vueuse/core";
 import QuickAdd from "./QuickAdd.vue";
 import { useProductStore } from "../../stores/productStore.js";
-import { relativeLuminance } from "../../utils/color.js";
 
 const store = useProductStore();
 const slides = computed(() => store.products.slice(0, 4));
 const current = ref(0);
 const active = computed(() => slides.value[current.value]);
+
+const emphasizedEndings = [
+  "phô mai",
+  "bùng vị",
+  "nhiệt đới",
+  "ăn liền",
+  "trái cây",
+  "mini",
+  "mộc",
+  "cay",
+];
+const nameParts = computed(() => {
+  const name = slides.value[current.value]?.name || "";
+  const words = name.split(/\s+/).filter(Boolean);
+  const normalized = name.toLocaleLowerCase("vi-VN");
+  const ending =
+    emphasizedEndings.find((phrase) => normalized.endsWith(phrase)) ||
+    words[words.length - 1] ||
+    "";
+  return {
+    head: ending ? name.slice(0, -ending.length).trim() : name,
+    accent: ending ? name.slice(-ending.length) : "",
+  };
+});
+
+const stage = ref(null);
+useSwipe(stage, {
+  threshold: 40,
+  onSwipeEnd(_, direction) {
+    if (direction === "left") go(current.value + 1);
+    if (direction === "right") go(current.value - 1);
+  },
+});
 
 const prefersReduced = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -26,16 +59,6 @@ const hovering = ref(false);
 const focusing = ref(false);
 const held = computed(() => hovering.value || focusing.value);
 const autoplay = computed(() => playing.value && slides.value.length > 1);
-
-/* Mặt phẳng nền = màu sản phẩm. Chữ chọn ink hoặc trắng, bên nào tương phản hơn. */
-const INK_LUMINANCE = 0.0103; // #1a1a1a
-const accent = computed(() => active.value?.color || "#ffd338");
-const fg = computed(() => {
-  const L = relativeLuminance(accent.value);
-  const onInk = (L + 0.05) / (INK_LUMINANCE + 0.05);
-  const onWhite = 1.05 / (L + 0.05);
-  return onInk >= onWhite ? "#1a1a1a" : "#ffffff";
-});
 
 const vnd = (n) => `${Number(n).toLocaleString("vi-VN")} ₫`;
 
@@ -81,7 +104,6 @@ onBeforeUnmount(() => {
     :class="{ 'is-playing': autoplay, 'is-held': held }"
     aria-roledescription="carousel"
     aria-label="Sản phẩm nổi bật tại DOP Mart"
-    :style="{ '--hero-accent': accent, '--hero-fg': fg }"
     @mouseenter="hovering = true"
     @mouseleave="hovering = false"
     @focusin="focusing = true"
@@ -97,11 +119,9 @@ onBeforeUnmount(() => {
     >
       <Transition name="copy" mode="out-in" appear>
         <div :key="active.id" class="dm-copy">
-          <p class="dm-copy__cat">{{ active.categoryName }}</p>
+          <p class="dm-copy__cat"><RouterLink :to="`/category/${active.category}`">{{ active.categoryName }} ↗</RouterLink></p>
           <h2 class="dm-copy__name">
-            <RouterLink :to="`/product/${active.slug}`">{{
-              active.name
-            }}</RouterLink>
+            <RouterLink :to="`/product/${active.slug}`">{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink>
           </h2>
           <p class="dm-copy__desc">{{ active.description }}</p>
           <div class="dm-copy__meta">
@@ -114,22 +134,19 @@ onBeforeUnmount(() => {
           </div>
           <div class="dm-copy__actions">
             <QuickAdd :product="active" />
-            <RouterLink to="/deals" class="dm-link"
-              >Khuyến mãi hôm nay</RouterLink
-            >
           </div>
         </div>
       </Transition>
     </div>
 
     <!-- Ảnh sản phẩm: xếp chồng, chỉ đổi lớp is-active -->
-    <div class="dm-hero__stage">
+    <div ref="stage" class="dm-hero__stage">
       <span class="dm-stage__shadow" aria-hidden="true" />
       <img
         v-for="(p, i) in slides"
         :key="p.id"
         class="dm-stage__img"
-        :class="{ 'is-active': i === current }"
+        :class="{ 'is-active': i === current, 'is-next': i !== current && i === (current + 1) % slides.length }"
         :src="p.image"
         :alt="i === current ? p.name : ''"
         :aria-hidden="i !== current"
@@ -143,7 +160,9 @@ onBeforeUnmount(() => {
 
     <!-- Giới thiệu + giờ mở cửa -->
     <div class="dm-hero__intro">
-      <h1 class="dm-intro__title">Món ngon, ngay trong văn phòng</h1>
+      <h1 class="dm-intro__title">DOP <em>mart</em></h1>
+      <p class="dm-intro__slogan">Small Money – Big Happy</p>
+      <p class="dm-intro__promise">Ở nhà có vợ, ở công ty có DOP.</p>
       <p class="dm-intro__meta">
         <span><MapPin :size="16" aria-hidden="true" />Tầng 14 &amp; 20</span>
         <span><Clock :size="16" aria-hidden="true" />08:30–17:30</span>
@@ -156,7 +175,6 @@ onBeforeUnmount(() => {
     <!-- Danh sách nổi bật + điều khiển -->
     <aside class="dm-hero__queue" aria-label="Danh sách sản phẩm nổi bật">
       <div class="dm-queue__head">
-        <h3 class="dm-queue__title">Nổi bật hôm nay</h3>
         <div class="dm-queue__controls">
           <button
             type="button"
@@ -195,24 +213,11 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="dm-item"
+            :aria-label="p.name"
             :class="{ 'is-active': i === current }"
             :aria-current="i === current ? 'true' : undefined"
             @click="go(i)"
           >
-            <span class="dm-item__thumb" :style="{ background: p.color }">
-              <img
-                :src="p.image"
-                alt=""
-                width="96"
-                height="96"
-                loading="lazy"
-                decoding="async"
-              />
-            </span>
-            <span class="dm-item__body">
-              <span class="dm-item__name">{{ p.name }}</span>
-              <span class="dm-item__price">{{ vnd(p.price) }}</span>
-            </span>
             <span
               v-if="i === current"
               class="dm-item__bar"
@@ -222,6 +227,7 @@ onBeforeUnmount(() => {
           </button>
         </li>
       </ol>
+      <b class="slide-count">{{ String(current + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}</b>
     </aside>
   </section>
 </template>
@@ -609,85 +615,78 @@ onBeforeUnmount(() => {
   transform: translateY(-8px);
 }
 
-/* ---------- Tablet: ảnh to hơn ---------- */
-@media (min-width: 700px) {
-  .dm-hero__stage {
-    width: min(100%, 30rem);
-  }
+
+.dm-hero { --hero-accent:#ffbf38; --hero-fg:#191919; width:100%; max-width:none; box-sizing:border-box; min-height:100dvh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" ". controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
+.dm-hero__intro { grid-area:intro; display:grid; justify-content:start; gap:.45rem; padding:0; margin:0; border:0; }
+.dm-intro__meta { gap:.35rem .75rem; opacity:1; font-size:.85rem; }
+.dm-intro__title { font:800 clamp(1rem,1.4vw,1.4rem)/1.2 var(--font-display); }
+.dm-hero__copy { grid-area:copy; align-self:start; }
+.dm-copy__cat { display:block; padding:0; background:none; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.6rem; }
+.dm-copy__cat a { color:inherit; text-underline-offset:.2em; }
+.dm-copy__name { font:900 clamp(1.5rem,2.7vw,2.8rem)/1.12 var(--font-display); letter-spacing:-.04em; text-transform:uppercase; }
+.cutout { display:inline-block; transform:rotate(-2deg); padding:0 .16em; border:2px solid; color:#191919; background:#fff8e8; box-shadow:3px 3px #191919; }
+.dm-copy__meta { align-items:center; margin-top:.85rem; gap:.55rem 1rem; }
+.dm-copy__price { padding:.25em .5em; background:#fff8e8; color:#191919; border:2px solid; border-radius:.4em; box-shadow:3px 3px #191919; }
+.dm-copy__actions { margin-top:1.15rem; }
+.dm-copy__actions :deep(.qa--row) { flex-direction:row; }
+.dm-hero__stage { grid-area:stage; width:100%; height:clamp(320px,61svh,680px); margin:0; aspect-ratio:auto; touch-action:pan-y; }
+.dm-hero__plane { position:absolute; display:block; inset:0; z-index:-1; background:#277348; clip-path:polygon(80% 0,100% 0,100% 100%,50% 100%); }
+.dm-stage__img { width:85%; transform:translateX(-80%) scale(.65); }
+.dm-stage__img.is-next { opacity:.88; transform:translateX(80%) scale(.47); }
+.dm-stage__shadow { left:8%; right:18%; }
+.dm-hero__queue { grid-area:controls; justify-self:center; display:flex; align-items:center; gap:.4rem; margin:0; padding:.12rem .45rem; border:2px solid #191919; border-radius:2rem; background:#fff8e8; color:#191919; clip-path:none; }
+.dm-queue__head { order:2; margin:0; }
+.dm-queue__controls { gap:0; }
+.dm-ctl,.dm-item { color:#191919; width:44px; height:44px; }
+.dm-queue__list { margin:0; padding:0; gap:0; overflow:visible; }
+.dm-queue__list > li { flex:0 0 auto; }
+.dm-item { display:grid; place-items:center; grid-template-columns:1fr; width:28px; padding:0; }
+.dm-item::before { content:""; width:7px; height:7px; background:#8c8172; border-radius:10px; }
+.dm-item.is-active::before { width:18px; background:#191919; }
+.dm-item__bar { opacity:0; }
+.slide-count { font:800 .8rem var(--font-ui); }
+@media(max-width:900px) {
+ .dm-hero { grid-template-columns:1fr; grid-template-areas:"intro" "stage" "controls" "copy"; align-content:stretch; grid-template-rows:auto minmax(100px,1fr) auto auto; min-height:100dvh; gap:.65rem; padding:76px var(--gutter) 2rem; }
+ .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
+ .dm-hero__stage { height:100%; min-height:100px; width:min(100%,42rem); }
+ .dm-stage__img { width:100%; }
+ .dm-stage__img.is-next { transform:translateX(64%) scale(.48); }
+ .dm-hero__plane { clip-path:polygon(100% 0,100% 100%,91% 100%,65% 55%); }
+ .dm-copy__name { margin-bottom:.6rem; }
+ .dm-queue__controls .dm-ctl:nth-child(-n+2) { display:none; }
+ .dm-copy__actions :deep(.qa) { width:100%; }
+ .dm-copy__actions :deep(.qa__go) { flex:1; }
+}
+@media(max-width:600px) {
+ .dm-hero { align-content:stretch; padding:16px 20px calc(76px + env(safe-area-inset-bottom, 0px)); gap:.45rem; }
+ .dm-intro__meta svg { display:none; }
+ .dm-intro__meta { font-size:.76rem; }
+ .dm-hero__stage { aspect-ratio:auto; }
+ .dm-hero__plane { clip-path:polygon(100% 13%,100% 75%,68% 52%); }
 }
 
-/* ---------- Desktop: nền chia chéo, 3 cột ---------- */
-@media (min-width: 1100px) {
-  .dm-hero {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4.6fr) minmax(14rem, 2.2fr);
-    grid-template-rows: 1fr auto;
-    column-gap: clamp(1rem, 2vw, 2rem);
-    padding-top: clamp(2rem, 4vw, 3.5rem);
-  }
-  .dm-hero__plane {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    display: block;
-    width: 34%;
-    background: var(--ink);
-    clip-path: polygon(24% 0, 100% 0, 100% 100%, 0 100%);
-  }
-  .dm-hero__copy {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: center;
-  }
-  .dm-hero__intro {
-    grid-column: 1;
-    grid-row: 2;
-    order: 0;
-    margin-top: 0;
-  }
-  .dm-hero__stage {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    order: 0;
-    width: 100%;
-    margin: 0 -9% 0 -6%;
-    width: auto;
-  }
-  .dm-hero__queue {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
-    order: 0;
-    margin: 0;
-    padding: 2rem 0;
-    background: none;
-    clip-path: none;
-  }
-  .dm-queue__list {
-    display: grid;
-    gap: 0.25rem;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-  }
+.dm-intro__title { margin:0; font:900 clamp(5rem,9.2vw,9rem)/.96 var(--font-display); letter-spacing:-.075em; }
+.dm-intro__title em { color:#a23213; font-style:normal; }
+.dm-intro__slogan { margin:0; font:800 clamp(1.2rem,2.4vw,2.3rem)/1.2 var(--font-display); letter-spacing:-.04em; }
+.dm-intro__promise { margin:.2rem 0; font-weight:600; }
+.dm-copy__price { border:0; box-shadow:none; background:transparent; padding:0; font-size:1.45rem; }
+.dm-copy__actions :deep(.qa__go) { box-shadow:none; background:#fff6de; }
+.dm-copy__desc { font-size:.94rem; }
+.dm-hero__stage { justify-self:center; }
+@media(max-width:900px) {
+ .dm-hero__copy { padding:0; }
+ .dm-copy__actions :deep(.qa) { width:auto; max-width:100%; }
+ .dm-intro__title { font-size:clamp(3.3rem,8vw,5rem); }
+ .dm-intro__meta { margin-top:.25rem; }
 }
+@media(max-width:600px) {
+ .dm-hero__intro { gap:.28rem; }
+ .dm-intro__title { font-size:clamp(2.7rem,12vw,4.5rem); max-width:calc(100% - 96px); }
+ .dm-intro__slogan { margin-top:.15rem; }
 
-/* ---------- Reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .dm-hero,
-  .dm-stage__img,
-  .copy-enter-active,
-  .copy-leave-active {
-    transition: none;
-  }
-  .dm-stage__img {
-    transform: none;
-  }
-  .copy-enter-from,
-  .copy-leave-to {
-    transform: none;
-  }
+ .dm-copy__actions { margin-top:.65rem; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .dm-hero,.dm-stage__img,.copy-enter-active,.copy-leave-active { transition:none; }
 }
 </style>

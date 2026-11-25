@@ -14,7 +14,7 @@ const stats = computed(() => {
   ];
 });
 const titleWords = computed(() =>
-  "Bận rộn không có nghĩa là phải bỏ qua món mình thích.".split(" ")
+  "Ở nhà có vợ, ở công ty có DOP.".split(" ")
 );
 </script>
 

@@ -194,12 +194,49 @@ export async function fetchPromotionUsage() {
   return data || [];
 }
 
-/** Upload ảnh sản phẩm lên storage bucket product-images (admin only) */
+/** Lấy danh sách sản phẩm admin (có phân trang, lọc, sắp xếp) */
+export async function fetchAdminProducts({
+  page = 1,
+  pageSize = 20,
+  search = "",
+  shelfSlug = "",
+  formatSlug = "",
+  sortBy = "created_at",
+  sortDir = "desc",
+} = {}) {
+  if (!supabase) throw new Error("Supabase not configured");
+  let query = supabase.from("products").select("*", { count: "exact" });
+  if (search) query = query.ilike("name", `%${search}%`);
+  if (shelfSlug) query = query.eq("shelf_slug", shelfSlug);
+  if (formatSlug) query = query.eq("format_slug", formatSlug);
+  query = query.order(sortBy, { ascending: sortDir === "asc" });
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  query = query.range(from, to);
+  const { data, error, count } = await query;
+  if (error) throw error;
+  return { data: data || [], count: count || 0 };
+}
+
+/** Cập nhật tồn kho chung của sản phẩm (không phân tầng) */
+export async function updateProductStock(productId, stock) {
+  if (!supabase) throw new Error("Supabase not configured");
+  const { data, error } = await supabase
+    .from("products")
+    .update({ stock, updated_at: new Date().toISOString() })
+    .eq("id", productId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Upload ảnh sản phẩm lên storage bucket product-images */
 export async function uploadProductImage(filePath, file) {
   if (!supabase) throw new Error("Supabase not configured");
   const { data, error } = await supabase.storage
     .from("product-images")
-    .upload(filePath, file);
+    .upload(filePath, file, { upsert: true });
   if (error) throw error;
   return data;
 }

@@ -1,285 +1,351 @@
-<script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useCartStore } from "../stores/cartStore";
-import { supabase } from "../lib/supabase";
+<script setup lang="ts">
+import { computed, shallowRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowRight, CheckCircle2, LogIn, UserPlus } from 'lucide-vue-next'
+import { useCartStore } from '../stores/cartStore'
+import {
+  getCurrentUserWithProfile,
+  isSupabaseReady,
+  supabase,
+} from '../lib/supabase'
 
-const email = ref("");
-const password = ref("");
-const loading = ref(false);
-const error = ref("");
+type AuthMode = 'login' | 'signup'
 
-const router = useRouter();
-const cart = useCartStore();
+const router = useRouter()
+const route = useRoute()
+const cart = useCartStore()
+const mode = shallowRef<AuthMode>('login')
+const email = shallowRef('')
+const password = shallowRef('')
+const loading = shallowRef(false)
+const error = shallowRef('')
+const message = shallowRef('')
 
-const isValid = computed(() => email.value && password.value);
+const isSignup = computed(() => mode.value === 'signup')
+const submitLabel = computed(() => isSignup.value ? 'Tạo tài khoản' : 'Đăng nhập')
+const canSubmit = computed(() => {
+  return email.value.trim().length > 0 && password.value.length >= 8 && !loading.value
+})
 
-async function handleLogin(e) {
-  e.preventDefault();
-  loading.value = true;
-  error.value = "";
+const redirectTarget = computed(() => {
+  const redirect = route.query.redirect
+  return typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
+    ? redirect
+    : '/'
+})
 
-  const { data, error: err } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value,
-  });
+async function finishAuthentication() {
+  await cart.init()
+  const result = await getCurrentUserWithProfile()
 
-  if (err) {
-    error.value = err.message;
-    loading.value = false;
-    return;
+  if (result?.profile?.role === 'admin') {
+    await router.push(redirectTarget.value.startsWith('/admin') ? redirectTarget.value : '/admin')
+    return
   }
 
-  // Initialize cart for user
-  if (data.user) {
-    try {
-      await cart.init();
-    } catch (e) {
-      console.warn("Cart init failed:", e);
+  await router.push(redirectTarget.value.startsWith('/admin') ? '/' : redirectTarget.value)
+}
+
+async function handleSubmit() {
+  error.value = ''
+  message.value = ''
+
+  if (!isSupabaseReady || !supabase) {
+    error.value = 'Chưa cấu hình kết nối Supabase cho môi trường này.'
+    return
+  }
+
+  if (!canSubmit.value) {
+    error.value = 'Email hợp lệ và mật khẩu tối thiểu 8 ký tự.'
+    return
+  }
+
+  loading.value = true
+
+  try {
+    if (isSignup.value) {
+      const { data, error: signupError } = await supabase.auth.signUp({
+        email: email.value.trim(),
+        password: password.value,
+      })
+
+      if (signupError) throw signupError
+
+      if (!data.session) {
+        message.value = 'Tài khoản đã được tạo. Hãy kiểm tra email để xác nhận trước khi đăng nhập.'
+        return
+      }
+    } else {
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: email.value.trim(),
+        password: password.value,
+      })
+
+      if (loginError) throw loginError
     }
+
+    await finishAuthentication()
+  } catch (cause) {
+    error.value = cause instanceof Error
+      ? cause.message
+      : 'Không thể xác thực tài khoản. Vui lòng thử lại.'
+  } finally {
+    loading.value = false
   }
+}
 
-  // Redirect to admin if admin, otherwise home
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", data.user.id)
-    .maybeSingle();
-
-  if (profile?.is_admin) {
-    await router.push("/admin");
-  } else {
-    await router.push("/");
-  }
-
-  loading.value = false;
+function switchMode(nextMode: AuthMode) {
+  mode.value = nextMode
+  error.value = ''
+  message.value = ''
 }
 </script>
 
 <template>
-  <main class="login-page">
-    <div class="login-card">
-      <div class="login-header">
-        <div class="login-brand">
-          <span class="brand-dop">DOP</span><span class="brand-mart">mart</span>
-          <small class="brand-tagline">Mini mart · Big happy</small>
-        </div>
-        <h1 class="login-title">Đăng nhập</h1>
+  <main class="auth-page">
+    <section class="auth-card" aria-labelledby="auth-title">
+      <div class="auth-brand" aria-label="DOP Mart">
+        <span>DOP</span><strong>mart</strong>
       </div>
 
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label class="form-label" for="email">Email</label>
+      <div class="auth-heading">
+        <span class="auth-kicker">DOP MART · INTERNAL ACCESS</span>
+        <h1 id="auth-title">{{ isSignup ? 'Bắt đầu mua nhanh.' : 'Chào mừng trở lại.' }}</h1>
+        <p>
+          {{ isSignup
+            ? 'Tạo tài khoản nhân viên để đặt snack và theo dõi đơn hàng.'
+            : 'Đăng nhập để đặt món và xem lịch sử mua hàng.' }}
+        </p>
+      </div>
+
+      <div class="auth-tabs" role="tablist" aria-label="Phương thức xác thực">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="mode === 'login'"
+          :class="{ active: mode === 'login' }"
+          @click="switchMode('login')"
+        >
+          <LogIn :size="17" aria-hidden="true" />
+          Đăng nhập
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="mode === 'signup'"
+          :class="{ active: mode === 'signup' }"
+          @click="switchMode('signup')"
+        >
+          <UserPlus :size="17" aria-hidden="true" />
+          Tạo tài khoản
+        </button>
+      </div>
+
+      <form class="auth-form" @submit.prevent="handleSubmit">
+        <label class="auth-field">
+          <span>Email công ty</span>
           <input
-            id="email"
             v-model="email"
             type="email"
-            placeholder="nguoidung@email.com"
-            class="form-input"
-            :class="{ 'form-input--error': error }"
+            autocomplete="email"
+            placeholder="ten@congty.vn"
             required
           />
-        </div>
+        </label>
 
-        <div class="form-group">
-          <label class="form-label" for="password">Mật khẩu</label>
+        <label class="auth-field">
+          <span>Mật khẩu</span>
           <input
-            id="password"
             v-model="password"
             type="password"
-            placeholder="••••••••"
-            class="form-input"
-            :class="{ 'form-input--error': error }"
+            :autocomplete="isSignup ? 'new-password' : 'current-password'"
+            minlength="8"
+            placeholder="Tối thiểu 8 ký tự"
             required
           />
+        </label>
+
+        <div v-if="error" class="auth-alert error" role="alert">{{ error }}</div>
+        <div v-if="message" class="auth-alert success" role="status">
+          <CheckCircle2 :size="17" aria-hidden="true" />
+          {{ message }}
         </div>
 
-        <div class="form-error" v-if="error">{{ error }}</div>
-
-        <button
-          type="submit"
-          class="login-btn"
-          :disabled="loading || !isValid"
-        >
-          <span v-if="loading">Đang đăng nhập...</span>
-          <span v-else>Đăng nhập</span>
+        <button type="submit" class="auth-submit" :disabled="!canSubmit">
+          <span v-if="loading" class="auth-spinner" aria-hidden="true" />
+          <span>{{ loading ? 'Đang xử lý…' : submitLabel }}</span>
+          <ArrowRight v-if="!loading" :size="18" aria-hidden="true" />
         </button>
       </form>
 
-      <div class="login-footer">
-        <p>Chưa có tài khoản? <a href="#" @click.prevent="router.push('/')">Quay lại trang chủ</a></p>
-      </div>
-    </div>
+      <p class="auth-note">
+        User mới sẽ được tạo profile với role <strong>customer</strong> mặc định.
+      </p>
+    </section>
   </main>
 </template>
 
 <style scoped>
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--midnight-dream, #0a0f2a);
-  color: var(--ink-well, #1a1a1a);
-  font-family: "Bricolage Grotesque", sans-serif;
-  padding: 2rem;
+.auth-page {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: 32px 16px;
+  background: #f6efe3;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  background: var(--rice-paper, #f8f6f2);
-  padding: 3rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+.auth-card {
+  width: min(100%, 460px);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  background: #fffdf7;
+  padding: clamp(24px, 6vw, 48px);
+  box-shadow: 7px 7px 0 var(--ink);
 }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.login-brand {
+.auth-brand {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-}
-
-.login-brand .brand-dop {
+  gap: 3px;
   font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--midnight-dream, #0a0f2a);
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -.06em;
 }
 
-.login-brand .brand-mart {
+.auth-brand strong { color: #e76f51; }
+
+.auth-heading { margin-top: 36px; }
+
+.auth-kicker {
+  color: #85786d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.auth-heading h1 {
+  margin: 10px 0 12px;
   font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--mango-glow, #ff6b35);
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
+  font-size: clamp(42px, 9vw, 64px);
+  line-height: .95;
+  letter-spacing: -.05em;
 }
 
-.login-brand .brand-tagline {
-  font-size: 0.75rem;
-  color: rgba(26, 26, 26, 0.5);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.login-title {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--midnight-dream, #0a0f2a);
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
+.auth-heading p {
   margin: 0;
+  color: #73685f;
+  line-height: 1.5;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 32px;
+  border-bottom: 1px solid #ddd1c4;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ink-well, #1a1a1a);
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1rem;
-  border: 1px solid rgba(26, 26, 26, 0.2);
-  border-radius: 6px;
-  background: #fff;
-  transition: border-color 0.2s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--mango-glow, #ff6b35);
-}
-
-.form-input--error {
-  border-color: var(--red, #e03e45);
-}
-
-.form-error {
-  font-size: 0.875rem;
-  color: var(--red, #e03e45);
-  margin-top: 0.25rem;
-}
-
-.login-btn {
-  width: 100%;
-  padding: 0.875rem 1.5rem;
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ink-well, #1a1a1a);
-  background: var(--mango-glow, #ff6b35);
-  border: none;
-  border-radius: 6px;
+.auth-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  padding: 12px 8px;
+  color: #82756a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
   cursor: pointer;
-  transition: transform 0.15s, background 0.2s;
-  margin-top: 0.5rem;
 }
 
-.login-btn:not(:disabled):hover {
-  transform: translateY(-2px);
-  background: #ff8a57;
+.auth-tabs button.active {
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
-.login-btn:not(:disabled):active {
-  transform: translateY(0);
+.auth-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
 }
 
-.login-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.auth-field {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
 }
 
-.login-footer {
-  margin-top: 2rem;
+.auth-field input {
+  width: 100%;
+  border: 1.5px solid #cfc1b2;
+  border-radius: 12px;
+  background: #fff;
+  padding: 13px 14px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  outline: none;
+}
+
+.auth-field input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgb(255 211 56 / 45%);
+}
+
+.auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.auth-alert.error { background: #fff0ef; color: #9b211a; }
+.auth-alert.success { background: #e8f7ea; color: #216b37; }
+
+.auth-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: #ffd338;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.auth-submit:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.auth-submit:disabled { cursor: not-allowed; opacity: .5; box-shadow: none; }
+
+.auth-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(25 25 25 / 30%);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+.auth-note {
+  margin: 24px 0 0;
+  color: #85786d;
+  font-size: 11px;
+  line-height: 1.5;
   text-align: center;
-  font-size: 0.875rem;
-  color: rgba(26, 26, 26, 0.6);
 }
 
-.login-footer a {
-  color: var(--mango-glow, #ff6b35);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.login-footer a:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 480px) {
-  .login-card {
-    padding: 2rem 1.5rem;
-  }
-
-  .login-page {
-    padding: 1rem;
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>

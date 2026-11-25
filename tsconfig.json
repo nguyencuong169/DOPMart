@@ -5,15 +5,16 @@
     "moduleResolution": "bundler",
     "strict": true,
     "jsx": "preserve",
+    "allowJs": true,
+    "checkJs": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
     "lib": ["ESNext", "DOM"]
   },
-  "include": ["src/**/*.js", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.vue"],
   "exclude": ["node_modules"]
 }

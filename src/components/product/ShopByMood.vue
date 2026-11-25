@@ -19,7 +19,6 @@ const active = shallowRef("all");
 const focusedSlug = shallowRef("all"); // roving tabindex: tracks which tab is keyboard-reachable
 const uid = Math.random().toString(36).slice(2, 7);
 
-const bySold = (arr) => [...arr].sort((a, b) => b.sold - a.sold);
 // chọn màu chữ (đen/trắng) theo độ sáng của màu sản phẩm
 const onColor = (hex) => {
   const n = parseInt(hex.replace("#", ""), 16);
@@ -97,14 +96,14 @@ const tabs = computed(() => {
   const cats = store.categories
     .map((c) => ({
       ...c,
-      items: bySold(store.products.filter((p) => p.category === c.slug)),
+      items: store.shopByMood[c.slug] ?? [],
     }))
     .filter((c) => c.items.length);
   const all = {
     slug: "all",
     name: "Tất cả",
     tagline: "Bán chạy nhất tuần này",
-    items: bySold(store.products),
+    items: store.bestSellersList,
   };
   return [all, ...cats].map((t) => ({
     ...t,
@@ -169,7 +168,9 @@ function scrollByTabs(dir) {
 }
 
 let resizeObserver;
-onMounted(() => {
+onMounted(async () => {
+  await store.init();
+  await store.fetchShopByMood();
   updateScrollState();
   tabsEl.value?.addEventListener("scroll", updateScrollState, {
     passive: true,

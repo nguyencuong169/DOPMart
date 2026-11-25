@@ -9,7 +9,7 @@ const store = useProductStore();
 const cart = useCartStore();
 const floor = useFloorStore();
 
-const ranked = computed(() => [...store.products].sort((a, b) => b.sold - a.sold));
+const ranked = computed(() => store.weeklyRankingList);
 const topSix = computed(() => ranked.value.slice(0, 6));
 
 const fmt = (n) => Number(n || 0).toLocaleString("vi-VN");
@@ -24,10 +24,11 @@ function addToCart(product) {
   cart.add(product, 1);
 }
 
-onMounted(() => {
+onMounted(async () => {
   store.init();
   cart.init();
   floor.init();
+  await store.fetchWeeklyRanking(6);
 });
 </script>
 

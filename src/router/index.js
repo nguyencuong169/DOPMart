@@ -94,7 +94,12 @@ const routes = [
   { path: "/product/:slug", name: "product", component: () => import("../views/ProductDetailView.vue") },
   { path: "/search", name: "search", component: () => import("../views/SearchView.vue") },
   { path: "/cart", name: "cart", component: () => import("../views/CartView.vue") },
-  { path: "/checkout", name: "checkout", component: () => import("../views/CheckoutView.vue") },
+  {
+    path: "/checkout",
+    name: "checkout",
+    component: () => import("../views/CheckoutView.vue"),
+    beforeEnter: authGuard,
+  },
   // ============================================
   // Admin routes (chỉ role admin)
   // ============================================

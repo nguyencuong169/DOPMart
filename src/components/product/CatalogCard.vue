@@ -25,7 +25,6 @@ const emit = defineEmits(["quick", "toggle-favorite"]);
 
 const isGrid = computed(() => props.variant === "grid");
 const soldOut = computed(() => props.stock !== null && props.stock <= 0);
-const nameVisible = ref(false);
 const lowStock = computed(
   () => props.stock !== null && props.stock > 0 && props.stock <= 3,
 );
@@ -134,6 +133,7 @@ onMounted(async () => {
         }}</span>
       </div>
       <i class="cat-card__ground" aria-hidden="true"></i>
+      <span class="cat-card__shadow" aria-hidden="true"></span>
       <button
         type="button"
         class="cat-card__shot"
@@ -167,24 +167,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="product.isNew || product.hot || discount || !isGrid" class="cat-card__tags">
-        <span
-          v-if="product.isNew"
-          class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
-          >MỚI</span
-        >
-        <span
-          v-if="product.hot"
-          class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
-          >BÁN CHẠY</span
-        >
-        <span
-          v-if="discount"
-          class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
-          >-{{ discount }}%</span
-        >
-
-
+    <div v-if="!isGrid" class="cat-card__tags">
       <span
         v-if="!isGrid"
         class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
@@ -192,21 +175,37 @@ onMounted(async () => {
       >
     </div>
 
-    <!-- grid variant: the plate that is always readable -->
+    <!-- grid variant: plate that is always readable -->
     <div v-if="isGrid && !hideInfo" class="cat-card__info">
       <span class="cat-card__cat">{{ product.categoryName }}</span>
-      <button
-        type="button"
-        class="cat-card__name-btn"
-        :data-name="product.name"
-        @mouseenter="nameVisible = true"
-        @mouseleave="nameVisible = false"
-        @click="emit('quick')"
-      >
-        <h3 class="cat-card__name" :class="{ show: nameVisible }">
-          {{ product.name }}
-        </h3>
-      </button>
+      <div class="cat-card__name-row">
+        <button
+          type="button"
+          class="cat-card__name-btn"
+          @click="emit('quick')"
+        >
+          <h3 class="cat-card__name">
+            {{ product.name }}
+          </h3>
+        </button>
+        <div class="cat-card__name-tags">
+          <span
+            v-if="product.isNew"
+            class="cat-card__tag cat-card__tag--new"
+            >MỚI</span
+          >
+          <span
+            v-if="product.hot"
+            class="cat-card__tag cat-card__tag--hot"
+            >BÁN CHẠY</span
+          >
+          <span
+            v-if="discount"
+            class="cat-card__tag cat-card__tag--save"
+            >-{{ discount }}%</span
+          >
+        </div>
+      </div>
 
       <p class="cat-card__meta">
         <span>★ {{ product.rating }}</span
@@ -236,6 +235,17 @@ onMounted(async () => {
   width: 100%;
   border-radius: 32px;
   color: var(--ink);
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  overflow: hidden;
+  box-shadow:
+    0 0 30px color-mix(in srgb, var(--c) 25%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    inset 0 0 20px color-mix(in srgb, white 60%, transparent);
   animation: cat-up 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 80ms);
 }
@@ -244,6 +254,25 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(26px) scale(0.96);
   }
+}
+.cat-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 70%, transparent) 0%,
+    transparent 40%,
+    color-mix(in srgb, white 50%, transparent) 60%,
+    transparent 100%
+  );
+  transform: rotate(-20deg);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: -1;
 }
 .cat-card__head {
   position: absolute;
@@ -281,7 +310,7 @@ onMounted(async () => {
 .cat-card__line:last-child {
   /* the shelf poster: the bottom line tucks up behind the pack, so the type and
      the artwork read as one poster instead of floating under the product */
-  top: 90cqw;
+  top: 79cqw;
   transform: translateY(-26cqw);
   color: transparent;
   -webkit-text-stroke: clamp(1.5px, 0.5cqw, 3.5px) var(--ink);
@@ -321,8 +350,30 @@ onMounted(async () => {
   transition:
     transform 0.5s cubic-bezier(0.3, 1.15, 0.5, 1),
     filter 0.4s ease-out;
-  filter: drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
-    drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
+    filter: drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
+      drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
+}
+.cat-card__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 70%;
+  height: 28%;
+  background: radial-gradient(
+    60% 40% at 50% 60%,
+    color-mix(in srgb, var(--ink) 35%, transparent),
+    transparent 80%
+  );
+  filter: blur(14px);
+  opacity: 0.85;
+  transform: translateX(-50%) rotate(var(--tilt, 3deg));
+  transform-origin: 50% 0%;
+  pointer-events: none;
+  z-index: 1;
+  transition:
+    transform 0.5s cubic-bezier(0.3, 1.15, 0.5, 1),
+    opacity 0.4s ease,
+    filter 0.4s ease;
 }
 .cat-card__shot img {
   display: block;
@@ -371,8 +422,13 @@ onMounted(async () => {
 }
 .cat-card:hover .cat-card__ground,
 .cat-card:focus-within .cat-card__ground {
-  transform: translateX(-50%) scale(0.9, 0.86);
-  opacity: 0.8;
+  opacity: 0;
+}
+.cat-card:hover .cat-card__shadow,
+.cat-card:focus-within .cat-card__shadow {
+  opacity: 0.65;
+  transform: translateX(-50%) rotate(var(--tilt, 3deg)) scale(1.06);
+  filter: blur(18px);
 }
 /* ==== tags: one box for every tag, one anchor for every string ====
    every tag shares the same padding, radius and type, so they read as one family. the
@@ -484,11 +540,6 @@ onMounted(async () => {
     opacity 0.3s ease-out,
     transform 0.45s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
-.cat-card:hover .cat-card__buy,
-.cat-card:focus-within .cat-card__buy {
-  opacity: 1;
-  transform: translateY(0);
-}
 .cat-card__add {
   flex: 1;
   display: inline-flex;
@@ -521,7 +572,7 @@ onMounted(async () => {
   padding: 122% 0 0;
 }
 .cat-card--grid .cat-card__shot {
-  top: 15cqw;
+  top: 30cqw;
   width: 72%;
 }
 .cat-card--grid .cat-card__ground {
@@ -567,6 +618,7 @@ onMounted(async () => {
   display: grid;
   gap: 2px;
   padding: var(--sp-1) 2px 0;
+  margin: 25px;
 }
 .cat-card__cat {
   font-size: var(--fs-xs);
@@ -582,6 +634,39 @@ onMounted(async () => {
   text-align: left;
   cursor: pointer;
   color: var(--ink);
+  flex: 1;
+  min-width: 0;
+}
+/* name + chips on one line: name left, chips right */
+.cat-card__name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.cat-card__name-tags {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+/* inline chips in the plate: no rotation, no hanging string */
+.cat-card__info .cat-card__tag {
+  transform: none !important;
+}
+.cat-card__info .cat-card__tag::after {
+  display: none !important;
+}
+.cat-card__info .cat-card__tag--new {
+  background: var(--green-ink);
+}
+.cat-card__info .cat-card__tag--hot {
+  background: var(--red-ink);
+}
+.cat-card__info .cat-card__tag--save {
+  background: var(--cream);
+  color: var(--red-ink);
+  border-color: var(--red-ink);
 }
 .cat-card__name {
   margin: 2px 0 0;
@@ -595,39 +680,6 @@ onMounted(async () => {
   overflow-wrap: anywhere;
   word-break: break-word;
   display: block;
-  transition: transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
-}
-/* ===== product name hover: word-by-word split reveal ===== */
-.cat-card__name-btn::after {
-  content: attr(data-name);
-  display: block;
-  font:
-    800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed",
-    "Arial Narrow",
-    Impact,
-    sans-serif;
-  line-height: 1.2;
-  letter-spacing: var(--tracking-display);
-  opacity: 0;
-  transform: translateY(4px);
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s cubic-bezier(0.3, 1.25, 0.5, 1);
-  pointer-events: none;
-  /* tên đầy đủ không tràn khi thể hiện */
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-.cat-card__name-btn:hover::after,
-.cat-card__name-btn:focus-within::after {
-  opacity: 1;
-  transform: translateY(0);
-}
-.cat-card__name-btn:hover .cat-card__name,
-.cat-card__name-btn:focus-within .cat-card__name {
-  transform: translateY(-6px);
-  color: var(--on-cream);
 }
 .cat-card__meta {
   display: flex;

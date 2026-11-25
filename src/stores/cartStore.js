@@ -40,8 +40,10 @@ export const useCartStore = defineStore("cart", {
       }
       const user = await getCurrentUser();
       if (!user) {
-        this.error = "Not authenticated";
-        this.items = [];
+        /* Chưa đăng nhập: dùng localStorage làm giỏ tạm.
+           Khi đăng nhập xong, giỏ sẽ được đồng bộ từ Supabase. */
+        this.items = load();
+        this.error = null;
         this.loading = false;
         return;
       }
@@ -99,20 +101,13 @@ export const useCartStore = defineStore("cart", {
       this.loading = false;
     },
     async add(p, qty = 1) {
-      if (!this._useSupabase) {
+      if (!this._useSupabase || !this._cartId) {
+        /* Guest cart (localStorage) hoặc chưa đăng nhập */
         const i = this.items.find((x) => x.id === p.id);
         i ? (i.qty += qty) : this.items.push({ ...p, qty });
         this.persist();
         this.open = true;
         return;
-      }
-      if (!this._cartId) {
-        const user = await getCurrentUser();
-        if (!user) {
-          this.error = "Not authenticated";
-          return;
-        }
-        this._cartId = await ensureCartForUser(user.id);
       }
       const existing = this.items.find((x) => x.id === p.id);
       if (existing) {
@@ -131,7 +126,7 @@ export const useCartStore = defineStore("cart", {
       this.open = true;
     },
     async change(id, d) {
-      if (!this._useSupabase) {
+      if (!this._useSupabase || !this._cartId) {
         const i = this.items.find((x) => x.id === id);
         if (!i) return;
         i.qty += d;
@@ -150,7 +145,7 @@ export const useCartStore = defineStore("cart", {
       await this.fetchItems();
     },
     async remove(id) {
-      if (!this._useSupabase) {
+      if (!this._useSupabase || !this._cartId) {
         this.items = this.items.filter((x) => x.id !== id);
         this.persist();
         return;
@@ -161,7 +156,7 @@ export const useCartStore = defineStore("cart", {
       await this.fetchItems();
     },
     async clear() {
-      if (!this._useSupabase) {
+      if (!this._useSupabase || !this._cartId) {
         this.items = [];
         this.persist();
         return;

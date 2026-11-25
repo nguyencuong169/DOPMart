@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, type RouteLocationNormalized } from "vue-router";
 import { getCurrentUser, isAdmin } from "../lib/supabase";
 
 const CatalogView = () => import("../views/ProductsView.vue");
@@ -15,7 +15,7 @@ const MartOperations = () => import("../views/admin/MartOperationsView.vue");
 /**
  * Guard: chỉ cho vào nếu user đã đăng nhập
  */
-async function authGuard(to) {
+async function authGuard(to: RouteLocationNormalized) {
   const user = await getCurrentUser();
   if (!user) {
     return {
@@ -29,7 +29,7 @@ async function authGuard(to) {
 /**
  * Guard: chỉ cho vào nếu user có role admin, không thì trả về trang login
  */
-async function adminGuard(to) {
+async function adminGuard(to: RouteLocationNormalized) {
   const user = await getCurrentUser();
   if (!user) {
     return {
@@ -79,7 +79,7 @@ const routes = [
     path: "/products",
     name: "products",
     component: CatalogView,
-    beforeEnter: (to) => {
+    beforeEnter: (to: RouteLocationNormalized) => {
       if (to.query.filter === "new") return { name: "new", replace: true };
       if (to.query.sort === "best") return { name: "best", replace: true };
     },
@@ -130,8 +130,12 @@ export default createRouter({
         let tries = 0;
         const waitForTarget = () => {
           const target = document.querySelector(to.hash);
-          if (target || tries++ > 20) {
-            resolve({ el: target ? to.hash : { top: 0, behavior: "smooth" } });
+          if (target) {
+            resolve({ el: target });
+            return;
+          }
+          if (tries++ > 20) {
+            resolve({ top: 0, behavior: "smooth" });
             return;
           }
           requestAnimationFrame(waitForTarget);

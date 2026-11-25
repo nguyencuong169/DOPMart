@@ -1,24 +1,38 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowUpRight, ChevronDown, PackageCheck, QrCode, ShoppingBag, Store } from "lucide-vue-next";
+import { ArrowUpRight, ChevronDown, LogOut, PackageCheck, QrCode, ShoppingBag, Store, User } from "lucide-vue-next";
 import SearchBox from "../common/SearchBox.vue";
 import { useCartStore } from "../../stores/cartStore";
 import { useProductStore } from "../../stores/productStore";
+import { useUserStore } from "../../stores/userStore";
 
 const route = useRoute();
 const cart = useCartStore();
 const catalog = useProductStore();
+const userStore = useUserStore();
 
-const scrolled = ref(false);
-const atTop = ref(true);
-const hidden = ref(false);
+const user = computed(() => userStore.user);
+const isLoggedIn = computed(() => !!user.value);
+const accountOpen = ref(false);
+
+const onHero = computed(() => true);
+
+const initial = computed(() => {
+  const email = user.value?.email ?? "";
+  return email.charAt(0).toUpperCase();
+});
+
+async function handleLogout() {
+  accountOpen.value = false;
+  await userStore.logout();
+}
+
 const menuOpen = ref(false);
+const scrolled = ref(false);
 const toggleEl = ref(null);
 const panelEl = ref(null);
 let compactMode = null;
-
-const onHero = computed(() => route.path === "/");
 
 const primaryLinks = [
   {
@@ -130,17 +144,7 @@ function syncIndicator() {
     animate,
   };
 }
-function onScroll() {
-  const y = window.scrollY;
-  scrolled.value = y > 54;
-  atTop.value = y < 24;
-  hidden.value = false;
-}
-function reveal() {
-  hidden.value = false;
-}
 function onResize() {
-  onScroll();
   const compact = window.innerWidth <= 1120;
   if (compact !== compactMode) {
     compactMode = compact;
@@ -148,6 +152,9 @@ function onResize() {
     moreOpen.value = false;
   }
   syncIndicator();
+}
+function onScroll() {
+  scrolled.value = window.scrollY > 8;
 }
 function focusables() {
   if (!panelEl.value) return [];
@@ -214,12 +221,12 @@ watch(
 
 let navObserver = null;
 onMounted(() => {
-  onScroll();
   compactMode = window.innerWidth <= 1120;
-  window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onResize);
+  window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("keydown", onKeydown);
   document.addEventListener("pointerdown", onDocPointerDown);
+  scrolled.value = false;
   nextTick(syncIndicator);
   if (document.fonts?.ready) document.fonts.ready.then(syncIndicator);
   if (window.ResizeObserver && navEl.value) {
@@ -228,8 +235,8 @@ onMounted(() => {
   }
 });
 onBeforeUnmount(() => {
-  window.removeEventListener("scroll", onScroll);
   window.removeEventListener("resize", onResize);
+  window.removeEventListener("scroll", onScroll);
   window.removeEventListener("keydown", onKeydown);
   document.removeEventListener("pointerdown", onDocPointerDown);
   navObserver?.disconnect();
@@ -238,18 +245,8 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <header
-    class="dop-header"
-    :class="{
-      scrolled,
-      'at-top': atTop && !menuOpen,
-      'on-hero': onHero,
-      'is-hidden': hidden,
-      'is-menu-open': menuOpen,
-    }"
-    @focusin="reveal"
-  >
-    <RouterLink v-if="!onHero || scrolled || menuOpen" to="/" class="dop-nav-logo" @click="closeMenu()">
+  <header class="dop-header" :class="{ scrolled, 'on-hero': onHero }">
+    <RouterLink to="/" class="dop-nav-logo" @click="closeMenu()">
       <span>DOP</span><b>mart</b><small>Small Money – Big Happy</small>
     </RouterLink>
     <nav ref="navEl" class="dop-nav" aria-label="Điều hướng chính">
@@ -335,6 +332,30 @@ onBeforeUnmount(() => {
           >{{ cart.count > 99 ? "99+" : cart.count }}</span
         >
       </button>
+
+      <div v-if="isLoggedIn" class="nav-account" @click="accountOpen = !accountOpen">
+        <div class="account-avatar">{{ initial }}</div>
+        <button type="button" class="account-toggle" aria-label="Tài khoản, mở menu" aria-expanded="accountOpen">
+          <User :size="14" />
+        </button>
+        <Transition name="dop-account">
+          <div v-if="accountOpen" class="account-panel">
+            <RouterLink to="/profile" class="account-item" @click="accountOpen = false">
+              <User :size="16" aria-hidden="true" />
+              <span>Hồ sơ</span>
+            </RouterLink>
+            <RouterLink to="/orders" class="account-item" @click="accountOpen = false">
+              <PackageCheck :size="16" aria-hidden="true" />
+              <span>Đơn của tôi</span>
+            </RouterLink>
+            <button type="button" class="account-item account-item--danger" @click="handleLogout">
+              <LogOut :size="16" aria-hidden="true" />
+              <span>Đăng xuất</span>
+            </button>
+          </div>
+        </Transition>
+      </div>
+
       <button
         ref="toggleEl"
         type="button"
@@ -348,11 +369,9 @@ onBeforeUnmount(() => {
         <span class="nav-toggle__bars" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
     </div>
-    <Teleport to="body">
-      <Transition name="dop-scrim">
-        <div v-if="menuOpen" class="dop-menu-scrim" @click="closeMenu(true)" />
-      </Transition>
-    </Teleport>
+    <Transition name="dop-scrim">
+      <div v-if="menuOpen" class="dop-menu-scrim" @click="closeMenu(true)" />
+    </Transition>
     <Transition name="dop-panel">
       <div
         v-if="menuOpen"
@@ -384,6 +403,29 @@ onBeforeUnmount(() => {
         <div class="dop-menu__tools">
           <div class="nav-search"><SearchBox /></div>
         </div>
+
+        <div v-if="isLoggedIn" class="dop-menu__account">
+          <div class="dop-menu__account__head">
+            <div class="account-avatar" style="width:40px;height:40px;font-size:18px">{{ initial }}</div>
+            <div>
+              <div class="dop-menu__account__email">{{ user.value?.email }}</div>
+              <div class="dop-menu__account__role">{{ userStore.isAdminUser ? "Quản trị viên" : "Khách hàng" }}</div>
+            </div>
+          </div>
+          <RouterLink to="/profile" class="dop-menu__account__item" @click="closeMenu()">
+            <User :size="16" aria-hidden="true" />
+            <span>Hồ sơ</span>
+          </RouterLink>
+          <RouterLink to="/orders" class="dop-menu__account__item" @click="closeMenu()">
+            <PackageCheck :size="16" aria-hidden="true" />
+            <span>Đơn của tôi</span>
+          </RouterLink>
+          <button type="button" class="dop-menu__account__item dop-menu__account__item--danger" @click="handleLogout">
+            <LogOut :size="16" aria-hidden="true" />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+
         <button type="button" class="dop-menu__cart" @click="openCart">
           <ShoppingBag :size="18" /><span>Giỏ hàng</span><b>{{ cart.count }} món</b>
         </button>
@@ -394,16 +436,18 @@ onBeforeUnmount(() => {
 
 
 <style scoped>
-.dop-header.on-hero:not(.scrolled):not(.is-menu-open) .dop-nav-actions {
-  margin-inline-start:auto;
-  grid-column:-2 / -1;
+.dop-header {
+  pointer-events:auto;
+  background: transparent;
+  transition: background 0.3s ease;
 }
-.dop-header.on-hero:not(.scrolled):not(.is-menu-open) {
-  pointer-events:none;
+.dop-header.scrolled {
+  background: var(--paper);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 .dop-header :is(.dop-nav,.dop-nav-actions,.dop-menu) { pointer-events:auto; }
 @media(min-width:1121px) {
-  .dop-header.on-hero:not(.scrolled) .dop-nav {
+  .dop-header .dop-nav {
     grid-column:1 / span 2;
     justify-self:start;
   }
@@ -426,4 +470,160 @@ onBeforeUnmount(() => {
 }
 .dop-header .nav-toggle__bars i { background:#242018; }
 .dop-header .dop-nav-actions :deep(.search-kbd) { background:transparent; color:#242018; }
+
+/* ---------- account (đăng nhập) ---------- */
+.nav-account {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.account-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--yellow);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: var(--ds-weight-heavy);
+  font-size: 15px;
+  line-height: 1;
+  box-shadow: 3px 3px 0 var(--yellow);
+  flex-shrink: 0;
+}
+.account-toggle {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.account-toggle:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.account-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(210px, 100vw - 24px);
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  z-index: 60;
+  padding: 8px;
+  animation: dopAccountPop 0.18s var(--ds-ease) both;
+}
+@keyframes dopAccountPop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.account-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--font-ui);
+  font-weight: var(--ds-weight-medium);
+  font-size: var(--fs-md);
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.account-item:hover {
+  background: var(--cream);
+  transform: translateX(3px);
+}
+.account-item svg {
+  flex-shrink: 0;
+  color: var(--ink);
+}
+.account-item--danger {
+  color: var(--red-ink);
+  border: 1px solid transparent;
+}
+.account-item--danger:hover {
+  background: #fdecec;
+  color: var(--red-ink);
+}
+
+/* ---------- mobile panel account ---------- */
+.dop-menu__account {
+  border-top: 1px solid #d7c8b4;
+  border-bottom: 1px solid #d7c8b4;
+  padding: 14px 16px;
+  background: #f1e7d7;
+}
+.dop-menu__account__head {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.dop-menu__account__email {
+  font-family: var(--font-display);
+  font-weight: var(--ds-weight-heavy);
+  font-size: 15px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.dop-menu__account__role {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.dop-menu__account__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--font-ui);
+  font-weight: var(--ds-weight-medium);
+  font-size: var(--fs-md);
+  cursor: pointer;
+  transition: background 0.16s ease;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.dop-menu__account__item:hover {
+  background: #ffe9b3;
+}
+.dop-menu__account__item svg {
+  flex-shrink: 0;
+  color: var(--ink);
+}
+.dop-menu__account__item--danger {
+  color: var(--red-ink);
+}
+.dop-menu__account__item--danger:hover {
+  background: #fdecec;
+  color: var(--red-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-panel { animation: none; }
+  .account-toggle, .account-item { transition: none; }
+}
 </style>

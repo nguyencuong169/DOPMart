@@ -2,14 +2,23 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { hmacSha256Hex } from '../_shared/hmac.ts'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 }
 
-function response(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders })
+function corsHeadersFor(request: Request) {
+  const origin = request.headers.get('Origin')
+  const appOrigin = Deno.env.get('APP_ORIGIN')
+  const isDevOrigin = origin ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) : false
+  return {
+    ...corsHeaders,
+    'Access-Control-Allow-Origin': isDevOrigin ? origin! : appOrigin ?? '*',
+  }
+}
+
+function response(body: unknown, status = 200, request?: Request) {
+  return new Response(JSON.stringify(body), { status, headers: request ? corsHeadersFor(request) : corsHeaders })
 }
 
 function payosCreateSignature(
@@ -37,14 +46,14 @@ function addReturnContext(url: string, orderId: string, payment: string) {
 Deno.serve(async (request) => {
   const requestId = crypto.randomUUID()
 
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeadersFor(request) })
   if (request.method !== 'POST') {
-    return response({ error: { code: 'METHOD_NOT_ALLOWED', requestId } }, 405)
+    return response({ error: { code: 'METHOD_NOT_ALLOWED', requestId } }, 405, request)
   }
 
   const authorization = request.headers.get('Authorization')
   if (!authorization?.startsWith('Bearer ')) {
-    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401)
+    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401, request)
   }
 
   const body = await request.json().catch(() => null) as { orderId?: string } | null
@@ -60,7 +69,7 @@ Deno.serve(async (request) => {
 
   const { data: userData, error: userError } = await userClient.auth.getUser()
   if (userError || !userData.user) {
-    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401)
+    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401, request)
   }
 
   const admin = createClient(
@@ -77,11 +86,11 @@ Deno.serve(async (request) => {
     .single()
 
   if (orderError || !order) {
-    return response({ error: { code: 'ORDER_NOT_FOUND', requestId } }, 404)
+    return response({ error: { code: 'ORDER_NOT_FOUND', requestId } }, 404, request)
   }
 
   if (order.status !== 'pending_payment') {
-    return response({ error: { code: 'ORDER_NOT_PAYABLE', requestId } }, 409)
+    return response({ error: { code: 'ORDER_NOT_PAYABLE', requestId } }, 409, request)
   }
 
   const { data: items, error: itemsError } = await admin
@@ -92,13 +101,13 @@ Deno.serve(async (request) => {
     .order('created_at', { ascending: true })
 
   if (itemsError) {
-    return response({ error: { code: 'ORDER_ITEMS_NOT_FOUND', requestId } }, 500)
+    return response({ error: { code: 'ORDER_ITEMS_NOT_FOUND', requestId } }, 500, request)
   }
 
   const digits = String(order.order_number).replace(/\D/g, '')
   const providerOrderCode = Number(digits)
   if (!Number.isSafeInteger(providerOrderCode) || providerOrderCode <= 0) {
-    return response({ error: { code: 'INVALID_PAYOS_ORDER_CODE', requestId } }, 500)
+    return response({ error: { code: 'INVALID_PAYOS_ORDER_CODE', requestId } }, 500, request)
   }
 
   const clientId = Deno.env.get('PAYOS_CLIENT_ID')
@@ -118,7 +127,7 @@ Deno.serve(async (request) => {
   )
 
   if (!clientId || !apiKey || !checksumKey) {
-    return response({ error: { code: 'PAYOS_NOT_CONFIGURED', requestId } }, 503)
+    return response({ error: { code: 'PAYOS_NOT_CONFIGURED', requestId } }, 503, request)
   }
 
   const { data: prepared, error: prepareError } = await admin.rpc('prepare_payos_payment_session', {
@@ -132,7 +141,7 @@ Deno.serve(async (request) => {
         code: prepareError?.message?.split(':')[0] ?? 'PAYMENT_SESSION_PREPARE_FAILED',
         requestId,
       },
-    }, 500)
+    }, 500, request)
   }
 
   if (prepared.checkoutUrl) {
@@ -195,7 +204,7 @@ Deno.serve(async (request) => {
         message: provider?.desc ?? 'Không thể tạo link thanh toán PayOS.',
         requestId,
       },
-    }, 502)
+    }, 502, request)
   }
 
   const { data: session, error: sessionError } = await admin.rpc('attach_payos_payment_session', {
@@ -207,11 +216,11 @@ Deno.serve(async (request) => {
   })
 
   if (sessionError) {
-    return response({ error: { code: 'PAYMENT_SESSION_SAVE_FAILED', requestId } }, 500)
+    return response({ error: { code: 'PAYMENT_SESSION_SAVE_FAILED', requestId } }, 500, request)
   }
 
   return response({
     data: session,
     meta: { requestId, provider: 'payos' },
-  })
+  }, request)
 })

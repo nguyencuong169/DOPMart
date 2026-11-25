@@ -2,32 +2,41 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { hmacSha256Hex } from '../_shared/hmac.ts'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 }
 
-function response(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders })
+function corsHeadersFor(request: Request) {
+  const origin = request.headers.get('Origin')
+  const appOrigin = Deno.env.get('APP_ORIGIN')
+  const isDevOrigin = origin ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) : false
+  return {
+    ...corsHeaders,
+    'Access-Control-Allow-Origin': isDevOrigin ? origin! : appOrigin ?? '*',
+  }
+}
+
+function response(body: unknown, status = 200, request?: Request) {
+  return new Response(JSON.stringify(body), { status, headers: request ? corsHeadersFor(request) : corsHeaders })
 }
 
 Deno.serve(async (request) => {
   const requestId = crypto.randomUUID()
 
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeadersFor(request) })
   if (request.method !== 'POST') {
-    return response({ error: { code: 'METHOD_NOT_ALLOWED', requestId } }, 405)
+    return response({ error: { code: 'METHOD_NOT_ALLOWED', requestId } }, 405, request)
   }
 
   const authorization = request.headers.get('Authorization')
   if (!authorization?.startsWith('Bearer ')) {
-    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401)
+    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401, request)
   }
 
   const body = await request.json().catch(() => null) as { orderId?: string } | null
   if (!body?.orderId) {
-    return response({ error: { code: 'ORDER_ID_REQUIRED', requestId } }, 400)
+    return response({ error: { code: 'ORDER_ID_REQUIRED', requestId } }, 400, request)
   }
 
   const supabase = createClient(
@@ -38,7 +47,7 @@ Deno.serve(async (request) => {
 
   const { data: userData, error: userError } = await supabase.auth.getUser()
   if (userError || !userData.user) {
-    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401)
+    return response({ error: { code: 'UNAUTHENTICATED', requestId } }, 401, request)
   }
 
   const admin = createClient(
@@ -55,11 +64,11 @@ Deno.serve(async (request) => {
     .single()
 
   if (orderError || !order) {
-    return response({ error: { code: 'ORDER_NOT_FOUND', requestId } }, 404)
+    return response({ error: { code: 'ORDER_NOT_FOUND', requestId } }, 404, request)
   }
 
   if (order.status !== 'pending_payment') {
-    return response({ error: { code: 'ORDER_NOT_PAYABLE', requestId } }, 409)
+    return response({ error: { code: 'ORDER_NOT_PAYABLE', requestId } }, 409, request)
   }
 
   const partnerCode = Deno.env.get('MOMO_PARTNER_CODE')
@@ -72,7 +81,7 @@ Deno.serve(async (request) => {
     ?? `${Deno.env.get('APP_ORIGIN') ?? 'http://localhost:5173'}/checkout?order=${order.id}&payment=momo`
 
   if (!partnerCode || !accessKey || !secretKey) {
-    return response({ error: { code: 'MOMO_NOT_CONFIGURED', requestId } }, 503)
+    return response({ error: { code: 'MOMO_NOT_CONFIGURED', requestId } }, 503, request)
   }
 
   const amount = Number(order.grand_total)
@@ -119,7 +128,7 @@ Deno.serve(async (request) => {
         message: provider.message ?? 'MoMo không thể tạo phiên thanh toán.',
         requestId,
       },
-    }, 502)
+    }, 502, request)
   }
 
   const { data: session, error: sessionError } = await admin.rpc('attach_momo_payment_session', {
@@ -131,7 +140,7 @@ Deno.serve(async (request) => {
   })
 
   if (sessionError) {
-    return response({ error: { code: 'PAYMENT_SESSION_SAVE_FAILED', requestId } }, 500)
+    return response({ error: { code: 'PAYMENT_SESSION_SAVE_FAILED', requestId } }, 500, request)
   }
 
   return response({
@@ -141,5 +150,5 @@ Deno.serve(async (request) => {
       resultCode: provider.resultCode,
     },
     meta: { requestId },
-  })
+  }, request)
 })

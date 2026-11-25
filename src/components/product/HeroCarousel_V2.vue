@@ -11,7 +11,7 @@ import {
 } from "lucide-vue-next";
 import { useSwipe } from "@vueuse/core";
 import QuickAdd from "./QuickAdd.vue";
-import { useProductStore } from "../../stores/productStore.js";
+import { useProductStore } from "../../stores/productStore";
 
 const store = useProductStore();
 const slides = computed(() => store.products.slice(0, 4));

@@ -1,79 +1,80 @@
 import { defineStore } from "pinia"
-import { ref } from "vue"
-import { isSupabaseReady, supabase, getCurrentUser } from "@/lib/supabase"
+import { isSupabaseReady, supabase, getCurrentUser } from "../lib/supabase"
 
 export const FLOORS = [14, 20]
 const KEY = "dopmart-floor"
-
-export const useFloorStore = defineStore("floor", () => {
-  const floor = ref(readFloor())
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const _useSupabase = isSupabaseReady
-
-  function readFloor(): number {
-    try {
-      const saved = Number(localStorage.getItem(KEY))
-      return FLOORS.includes(saved) ? saved : 20
-    } catch {
-      return 20
-    }
+function readFloor(): number {
+  try {
+    const saved = Number(localStorage.getItem(KEY))
+    return FLOORS.includes(saved) ? saved : 20
+  } catch {
+    return 20
   }
+}
 
-  async function init() {
-    _useSupabase = isSupabaseReady
-    if (!_useSupabase) {
-      floor.value = readFloor()
-      loading.value = false
-      return
-    }
-    const user = await getCurrentUser()
-    if (!user) {
-      floor.value = 20
-      loading.value = false
-      return
-    }
-    loading.value = true
-    error.value = null
-    const { data, error: err } = await supabase!
-      .from("profiles")
-      .select("floor")
-      .eq("id", user.id)
-      .maybeSingle()
-    if (err) {
-      error.value = err.message
-      floor.value = 20
-    } else if (data && FLOORS.includes(data.floor)) {
-      floor.value = data.floor
-    } else {
-      floor.value = 20
-    }
-    loading.value = false
-  }
+interface FloorState {
+  floor: number
+  loading: boolean
+  error: string | null
+  _useSupabase: boolean
+}
 
-  async function setFloor(v: number) {
-    const f = Number(v)
-    if (!FLOORS.includes(f)) return
-    floor.value = f
-    try {
-      localStorage.setItem(KEY, String(f))
-    } catch {}
-    if (!_useSupabase) return
-    const user = await getCurrentUser()
-    if (user) {
-      const { error: err } = await supabase!
+export const useFloorStore = defineStore("floor", {
+  state: (): FloorState => ({
+    floor: readFloor(),
+    loading: false,
+    error: null,
+    _useSupabase: isSupabaseReady,
+  }),
+  actions: {
+    async init() {
+      this._useSupabase = isSupabaseReady
+      if (!this._useSupabase) {
+        this.floor = readFloor()
+        this.loading = false
+        return
+      }
+      this.loading = true
+      this.error = null
+      const user = await getCurrentUser()
+      if (!user) {
+        this.floor = 20
+        this.loading = false
+        return
+      }
+      const { data, error } = await supabase!
         .from("profiles")
-        .update({ floor: f, updated_at: new Date().toISOString() })
+        .select("floor")
         .eq("id", user.id)
-      if (err) error.value = err.message
-    }
-  }
-
-  return {
-    floor,
-    loading,
-    error,
-    init,
-    setFloor,
-  }
+        .maybeSingle()
+      if (error) {
+        this.error = error.message
+        this.floor = 20
+      } else if (data && FLOORS.includes(data.floor)) {
+        this.floor = data.floor
+      } else {
+        this.floor = 20
+      }
+      this.loading = false
+    },
+    async setFloor(v: number) {
+      const floor = Number(v)
+      if (!FLOORS.includes(floor)) return
+      this.floor = floor
+      try {
+        localStorage.setItem(KEY, String(this.floor))
+      } catch {
+        /* ignore — the choice just won't survive a reload */
+      }
+      if (this._useSupabase) {
+        const user = await getCurrentUser()
+        if (user) {
+          const { error } = await supabase!
+            .from("profiles")
+            .upsert({ id: user.id, floor, updated_at: new Date().toISOString() })
+          if (error) this.error = error.message
+        }
+      }
+    },
+  },
 })

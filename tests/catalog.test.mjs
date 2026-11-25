@@ -1,5 +1,5 @@
-import assert from 'node:assert/strict'
-import {applyCatalogFilters,paginate} from '../src/data/catalog.js'
+﻿import assert from 'node:assert/strict'
+import {applyCatalogFilters,paginate} from '../src/data/catalog.ts'
 const p=[
 {id:1,category:'chips',price:12000,rating:4.6,sold:20,isNew:false,stock:{14:0,20:2}},
 {id:2,category:'drinks',price:18000,rating:4.9,sold:50,isNew:true,stock:{14:3,20:0}},
@@ -18,3 +18,4 @@ assert.deepEqual(applyCatalogFilters(p,{category:'chips',stockOnly:true,floor:14
 let r=paginate(Array.from({length:17},(_,i)=>i+1),2,8);assert.equal(r.pages,3);assert.deepEqual(r.items,[9,10,11,12,13,14,15,16]);assert.equal(r.total,17)
 r=paginate([1,2],99,8);assert.equal(r.page,1);assert.deepEqual(r.items,[1,2])
 console.log('catalog tests: 10/10 passed')
+

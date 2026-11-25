@@ -6,7 +6,7 @@ Vue 3 (Vite, Pinia, Vue Router, Tailwind, shadcn-vue/reka-nova) frontend with a 
 - `npm run dev` — Vite dev server
 - `npm run build` — Vite build. Runs `check:encoding` first via `prebuild`; a non-UTF-8 file blocks the build.
 - `npm run preview` — preview production build
-- `node tests/catalog.test.mjs` — local pure unit test (catalog filters + pagination). No services, no network. No npm script; run with node directly.
+- `node --experimental-strip-types tests/catalog.test.mjs` — local pure unit test (catalog filters + pagination). No services, no network. No npm script; run with node directly (`.ts` source, needs type-stripping flag on Node 24).
 - `npm run test:mart` — remote smoke test against live Supabase. Skips unless `DOPMART_ADMIN_EMAIL/PASSWORD` and `DOPMART_CUSTOMER_EMAIL/PASSWORD` are set; reads `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` from `.env.local`.
 - `npm run check:encoding` — validate every file is clean UTF-8. Run after any file change, before reporting done.
 - `npm run utf8 -- show|write|patch <file>` — UTF-8-safe read/write/patch (scripts/utf8.mjs)
@@ -26,20 +26,20 @@ The console on this machine is cp932 (Japanese Windows). A PowerShell `Get-Conte
 - Supabase project ref: `znwgqdaqxxynxoltuhpp`. Schema: `supabase/schema.sql`, seed: `supabase/seed.sql`, migrations: `supabase/migrations/`.
 
 ## Entrypoints & layout
-- `src/main.js` — createApp + Pinia + router, mounts `#app`
-- `src/router/index.js` — routes; lazy-loaded views under `src/views/`; `authGuard`/`adminGuard` protect `/admin`, `/profile`, `/orders`, `/checkout`
-- `src/lib/supabase.ts` — Supabase client, `getCurrentUser`, `isAdmin`, `ensureCartForUser` (a near-duplicate `src/lib/supabase.js` also exists)
-- `src/stores/` — Pinia stores (cart, favorite, floor, product, user; `.js` and `.ts` variants)
-- `src/data/catalog.js` — `applyCatalogFilters`, `paginate`
+- `src/main.ts` — createApp + Pinia + router, mounts `#app`
+- `src/router/index.ts` — routes; lazy-loaded views under `src/views/`; `authGuard`/`adminGuard` protect `/admin`, `/profile`, `/orders`, `/checkout`
+- `src/lib/supabase.ts` — Supabase client, `getCurrentUser`, `isAdmin`, `ensureCartForUser`
+- `src/stores/` — Pinia stores (cart, favorite, floor, product, user; all `.ts`)
+- `src/data/catalog.ts` — `applyCatalogFilters`, `paginate`
 - `src/services/martAdminService.ts`, `src/services/martOrderService.ts`
 - `src/features/ordering/`
 
 ## Testing
 - `tests/mart-contract.test.mjs`: remote contract tests (RPC admin/customer boundaries, self-demotion block `CANNOT_CHANGE_OWN_ROLE`). Requires credentials; skips gracefully without them.
-- `tests/catalog.test.mjs`: 10 local assertions; run with plain `node`.
+- `tests/catalog.test.mjs`: 10 local assertions; run with `node --experimental-strip-types`.
 
 ## Verification (what exists)
-There is no eslint and no `tsc`/`lint` npm script; tsconfig is `strict: true` but not enforced by a script. Practical order: `npm run check:encoding` → `npm run build` → `node tests/catalog.test.mjs` (+ `npm run test:mart` only with credentials).
+There is no eslint and no `tsc`/`lint` npm script; tsconfig is `strict: true` but not enforced by a script. Practical order: `npm run check:encoding` → `npm run build` → `node --experimental-strip-types tests/catalog.test.mjs` (+ `npm run test:mart` only with credentials).
 
 ## Existing instruction sources (preserve)
 - `.clinerules/encoding.md` — the UTF-8 rule above (source of truth; enforced by build prebuild and pre-commit)

@@ -1,119 +1,111 @@
 import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import { isSupabaseReady, supabase, getCurrentUser } from "@/lib/supabase"
+import { isSupabaseReady, supabase, getCurrentUser } from "../lib/supabase"
 
 const KEY = "dopmart-favorites-v1"
-
-export const useFavoriteStore = defineStore("favorites", () => {
-  const ids = ref<number[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const _useSupabase = isSupabaseReady
-
-  const count = computed(() => ids.value.length)
-
-  function persist() {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(ids.value))
-    } catch {}
+function load(): number[] {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY) || "[]")
+    return Array.isArray(data) ? data : []
+  } catch {
+    return []
   }
+}
 
-  function loadLocal() {
-    try {
-      const raw = localStorage.getItem(KEY)
-      return raw ? (JSON.parse(raw) as number[]) : []
-    } catch {
-      return []
-    }
-  }
+interface FavoriteState {
+  ids: number[]
+  loading: boolean
+  error: string | null
+  _useSupabase: boolean
+}
 
-  async function init() {
-    _useSupabase = isSupabaseReady
-    if (!_useSupabase) {
-      ids.value = loadLocal()
-      loading.value = false
-      return
-    }
-    const user = await getCurrentUser()
-    if (!user) {
-      ids.value = []
-      loading.value = false
-      return
-    }
-    loading.value = true
-    error.value = null
-    const { data, error: err } = await supabase!
-      .from("favorites")
-      .select("product_id")
-      .eq("user_id", user.id)
-    if (err) {
-      error.value = err.message
-      ids.value = []
-    } else {
-      ids.value = (data || []).map((row: { product_id: number }) => row.product_id)
-    }
-    loading.value = false
-  }
-
-  async function toggle(id: number) {
-    if (!_useSupabase) {
-      if (ids.value.includes(id)) {
-        ids.value = ids.value.filter((x) => x !== id)
-      } else {
-        ids.value = [...ids.value, id]
+export const useFavoriteStore = defineStore("favorites", {
+  state: (): FavoriteState => ({
+    ids: load(),
+    loading: false,
+    error: null,
+    _useSupabase: isSupabaseReady,
+  }),
+  getters: {
+    count: (s) => s.ids.length,
+  },
+  actions: {
+    persist() {
+      localStorage.setItem(KEY, JSON.stringify(this.ids))
+    },
+    async init() {
+      this._useSupabase = isSupabaseReady
+      if (!this._useSupabase) {
+        this.ids = load()
+        this.loading = false
+        return
       }
-      persist()
-      return
-    }
-    const user = await getCurrentUser()
-    if (!user) {
-      error.value = "Not authenticated"
-      return
-    }
-    if (ids.value.includes(id)) {
-      const { error: err } = await supabase!
+      this.loading = true
+      this.error = null
+      const user = await getCurrentUser()
+      if (!user) {
+        this.ids = []
+        this.loading = false
+        return
+      }
+      const { data, error } = await supabase!
         .from("favorites")
-        .delete()
+        .select("product_id")
         .eq("user_id", user.id)
-        .eq("product_id", id)
-      if (err) error.value = err.message
-      else ids.value = ids.value.filter((x) => x !== id)
-    } else {
-      const { error: err } = await supabase!
-        .from("favorites")
-        .insert({ user_id: user.id, product_id: id })
-      if (err) error.value = err.message
-      else ids.value = [...ids.value, id]
-    }
-  }
-
-  function has(id: number) {
-    return ids.value.includes(id)
-  }
-
-  async function clear() {
-    ids.value = []
-    persist()
-    if (!_useSupabase) return
-    const user = await getCurrentUser()
-    if (user) {
-      const { error: err } = await supabase!
-        .from("favorites")
-        .delete()
-        .eq("user_id", user.id)
-      if (err) error.value = err.message
-    }
-  }
-
-  return {
-    ids,
-    loading,
-    error,
-    count,
-    init,
-    toggle,
-    has,
-    clear,
-    persist,
-  }
+      if (error) {
+        this.error = error.message
+        this.ids = []
+      } else {
+        this.ids = (data || []).map((row) => row.product_id)
+      }
+      this.loading = false
+    },
+    async toggle(id: number) {
+      if (!this._useSupabase) {
+        this.ids = this.ids.includes(id)
+          ? this.ids.filter((x) => x !== id)
+          : [...this.ids, id]
+        this.persist()
+        return
+      }
+      const user = await getCurrentUser()
+      if (!user) {
+        this.error = "Not authenticated"
+        return
+      }
+      if (this.ids.includes(id)) {
+        await supabase!
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", id)
+        this.ids = this.ids.filter((x) => x !== id)
+      } else {
+        const { error } = await supabase!
+          .from("favorites")
+          .insert({ user_id: user.id, product_id: id })
+        if (error) {
+          this.error = error.message
+          return
+        }
+        this.ids = [...this.ids, id]
+      }
+    },
+    has(id: number) {
+      return this.ids.includes(id)
+    },
+    async clear() {
+      if (!this._useSupabase) {
+        this.ids = []
+        this.persist()
+        return
+      }
+      const user = await getCurrentUser()
+      if (!user) {
+        this.ids = []
+        return
+      }
+      await supabase!!.from("favorites").delete().eq("user_id", user.id)
+      this.ids = []
+    },
+  },
 })

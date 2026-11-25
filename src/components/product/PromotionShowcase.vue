@@ -12,8 +12,10 @@ const products = useProductStore(),
   root = ref();
 const offers = computed(() => products.offers.slice(0, 3));
 let animation;
-onMounted(() => {
+onMounted(async () => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  await products.init();
+  if (!products.offers.length) return;
   animation = gsap.context(() => {
     gsap
       .timeline({

@@ -87,7 +87,7 @@ The console will mangle non-ASCII on display, so never trust what you *see* in
 terminal output. Prove what the file holds:
 
 ```powershell
-npm run utf8 -- show src/data/products.js
+npm run utf8 -- show src/data/products.ts
 ```
 
 Non-ASCII comes back as `\uXXXX` escapes — `CH\u1eccN` is `CHỌN` with the

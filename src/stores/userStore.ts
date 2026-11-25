@@ -1,143 +1,133 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
-import {
-  isSupabaseReady,
-  supabase,
-  getCurrentUserWithProfile,
-  isAdmin,
-} from "@/lib/supabase"
-import type { UserProfile, AdminUser } from "@/types/database.types"
-
-interface AuthState {
-  user: any | null
-  profile: UserProfile | null
-  loading: boolean
-  error: string | null
-}
+import { getCurrentUserWithProfile, supabase } from "../lib/supabase"
 
 export const useUserStore = defineStore("user", () => {
-  const state = ref<AuthState>({
-    user: null,
-    profile: null,
-    loading: false,
-    error: null,
-  })
+  const user = ref<any | null>(null)
+  const profile = ref<any | null>(null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
-  const isLoggedIn = computed(() => !!state.value.user)
-  const isAdminUser = computed(() =>
-    Boolean(state.value.profile?.role === "admin")
-  )
-
+  // Lấy user hiện tại kèm profile từ Supabase Auth
   async function init() {
-    state.value.loading = true
-    state.value.error = null
+    await fetchCurrentUser()
+  }
+
+  async function fetchCurrentUser() {
+    if (!supabase) {
+      error.value = "Chưa cấu hình Supabase (thiếu VITE_SUPABASE_ANON_KEY)"
+      return
+    }
+    loading.value = true
+    error.value = null
     try {
       const result = await getCurrentUserWithProfile()
-      if (result) {
-        state.value.user = result.user
-        state.value.profile = result.profile
-      } else {
-        state.value.user = null
-        state.value.profile = null
-      }
-    } catch (err: any) {
-      state.value.error = err?.message ?? "Unknown error"
-      state.value.user = null
-      state.value.profile = null
+      user.value = result ? result.user : null
+      profile.value = result ? result.profile : null
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
+  // Đăng nhập
   async function login(email: string, password: string) {
-    if (!isSupabaseReady) throw new Error("Supabase not configured")
-    state.value.loading = true
-    state.value.error = null
+    if (!supabase) throw new Error("Chưa cấu hình Supabase")
+    loading.value = true
+    error.value = null
     try {
-      const { data, error } = await supabase!.auth.signInWithPassword({
+      const { data, error: err } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-      if (error) throw error
-      state.value.user = data.user
-
-      const { data: profile } = await supabase!
-        .from("profiles")
-        .select("*")
-        .eq("id", data.user.id)
-        .single()
-      state.value.profile = profile
+      if (err) throw err
+      user.value = data.user
+      if (data.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .single()
+        profile.value = prof
+      }
       return { user: data.user, error: null }
-    } catch (err: any) {
-      state.value.error = err.message
-      return { user: null, error: err.message }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
+      return { user: null, error: err }
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
+  // Đăng ký
   async function register(email: string, password: string) {
-    if (!isSupabaseReady) throw new Error("Supabase not configured")
-    state.value.loading = true
-    state.value.error = null
+    if (!supabase) throw new Error("Chưa cấu hình Supabase")
+    loading.value = true
+    error.value = null
     try {
-      const { data, error } = await supabase!.auth.signUp({
+      const { data, error: err } = await supabase.auth.signUp({
         email,
         password,
       })
-      if (error) throw error
-      state.value.user = data.user
+      if (err) throw err
+      user.value = data.user
+      // Trigger handle_new_user sẽ tự tạo profile trong DB
       return { user: data.user, error: null }
-    } catch (err: any) {
-      state.value.error = err.message
-      return { user: null, error: err.message }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
+      return { user: null, error: err }
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
+  // Đăng xuất
   async function logout() {
-    if (!isSupabaseReady) return
-    state.value.loading = true
+    if (!supabase) return
+    loading.value = true
     try {
-      await supabase!.auth.signOut()
-      state.value.user = null
-      state.value.profile = null
-    } catch (err: any) {
-      state.value.error = err.message
+      await supabase.auth.signOut()
+      user.value = null
+      profile.value = null
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
-  async function updateProfile(updates: Partial<UserProfile>) {
-    if (!isSupabaseReady || !state.value.user) {
-      throw new Error("Chưa đăng nhập hoặc Supabase chưa cấu hình")
-    }
-    state.value.loading = true
-    state.value.error = null
+  // Cập nhật profile (floor, ...)
+  async function updateProfile(updates: any) {
+    if (!supabase || !user.value) throw new Error("Chưa đăng nhập")
+    loading.value = true
+    error.value = null
     try {
-      const { data, error } = await supabase!
+      const { data, error: err } = await supabase
         .from("profiles")
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("id", state.value.user.id)
+        .eq("id", user.value.id)
         .select()
         .single()
-      if (error) throw error
-      state.value.profile = { ...state.value.profile, ...data }
+      if (err) throw err
+      profile.value = { ...profile.value, ...data }
       return { data, error: null }
-    } catch (err: any) {
-      state.value.error = err.message
-      return { data: null, error: err.message }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
+      return { data: null, error: err }
     } finally {
-      state.value.loading = false
+      loading.value = false
     }
   }
 
   return {
-    ...state,
-    isLoggedIn,
-    isAdminUser: isAdminUser,
+    user,
+    profile,
+    loading,
+    error,
+    isLoggedIn: computed(() => !!user.value),
+    isAdmin: computed(() => profile.value?.role === "admin"),
+    fetchCurrentUser,
     init,
     login,
     register,

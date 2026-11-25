@@ -176,7 +176,7 @@ const tintOfFormat = {
   instant: "#b52a26",
 }
 const seed=[
- [1,'khoai-tay-cay-bung-vi','Khoai tây cay bùng vị','chips',12000,4.9,186,0,1,8,12],
+ [1,'khoai-tay-cay-bung-vi','Khoai tây vị phô mai','chips',12000,4.9,186,0,1,8,12],
  [2,'hat-hon-hop-rang-moc','Hạt hỗn hợp rang mộc','healthy',15000,4.8,149,0,0,10,9],
  [3,'mi-ly-tom-cay','Mì ly tôm cay','noodles',18000,4.9,226,0,1,7,14],
  [4,'soda-trai-cay-nhiet-doi','Soda trái cây nhiệt đới','drinks',14000,4.7,238,0,1,16,11],
@@ -212,7 +212,7 @@ export const products=seed.map(([id,slug,name,format,price,rating,sold,isNew,hot
   hot:Boolean(hot),
   color:shelf.color,
   tint:tintOfFormat[format],
-    description:`${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
+  description:id === 1 ? 'Khoai tây giòn rụm, phủ phô mai đậm vị.' : `${name} được chọn cho DOP Mart với khẩu phần tiện lợi, phù hợp giờ nghỉ nhanh tại văn phòng tầng 14 và 20.`,
   tags:heroMeta[format].tags,
   notes:heroMeta[format].notes,
   stock:{14:s14,20:s20},

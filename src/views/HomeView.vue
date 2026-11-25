@@ -14,11 +14,12 @@ import SuperDesignPreview from "@/components/product/SuperDesignPreview.vue";
 
 const store = useProductStore();
 const favorites = useFavoriteStore();
-onMounted(() => {
+onMounted(async () => {
   store.init();
   favorites.init();
+  await store.fetchNewProducts(4);
 });
-const homeNewProducts = computed(() => store.newProducts.slice(0, 4));
+const homeNewProducts = computed(() => store.newProductsList);
 </script>
 <template>
   <main class="home">

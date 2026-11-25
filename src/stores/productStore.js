@@ -69,6 +69,10 @@ export const useProductStore = defineStore("products", {
     loading: isSupabaseReady,
     error: null,
     _initialized: false,
+    newProductsList: [],
+    bestSellersList: [],
+    weeklyRankingList: [],
+    shopByMood: {},
   }),
   getters: {
     filtered: (s) =>
@@ -168,6 +172,117 @@ export const useProductStore = defineStore("products", {
       } else {
         this.formats = (data || []).map(mapFormat);
       }
+    },
+    /* ── Section queries trực tiếp từ DB (mỗi section tự lấy đúng dữ liệu cần thiết) ── */
+    async fetchNewProducts(limit = 4) {
+      if (!isSupabaseReady) {
+        this.newProductsList = seedProducts
+          .filter((p) => p.isNew)
+          .slice(0, limit);
+        return;
+      }
+      this.loading = true;
+      this.error = null;
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_new", true)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) {
+        this.error = error.message;
+        this.newProductsList = seedProducts
+          .filter((p) => p.isNew)
+          .slice(0, limit);
+      } else {
+        this.newProductsList = (data || []).map(mapProduct);
+      }
+      this.loading = false;
+    },
+    async fetchBestSellers(limit = 5) {
+      if (!isSupabaseReady) {
+        this.bestSellersList = [...seedProducts]
+          .sort((a, b) => b.sold - a.sold)
+          .slice(0, limit);
+        return;
+      }
+      this.loading = true;
+      this.error = null;
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("sold", { ascending: false })
+        .limit(limit);
+      if (error) {
+        this.error = error.message;
+        this.bestSellersList = [...seedProducts]
+          .sort((a, b) => b.sold - a.sold)
+          .slice(0, limit);
+      } else {
+        this.bestSellersList = (data || []).map(mapProduct);
+      }
+      this.loading = false;
+    },
+    async fetchWeeklyRanking(limit = 6) {
+      if (!isSupabaseReady) {
+        this.weeklyRankingList = [...seedProducts]
+          .sort((a, b) => b.sold - a.sold)
+          .slice(0, limit);
+        return;
+      }
+      this.loading = true;
+      this.error = null;
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("sold", { ascending: false })
+        .limit(limit);
+      if (error) {
+        this.error = error.message;
+        this.weeklyRankingList = [...seedProducts]
+          .sort((a, b) => b.sold - a.sold)
+          .slice(0, limit);
+      } else {
+        this.weeklyRankingList = (data || []).map(mapProduct);
+      }
+      this.loading = false;
+    },
+    async fetchShopByMood() {
+      const MAX = 4; // số món đại diện tối đa mỗi category
+      const result = {};
+      if (!isSupabaseReady) {
+        this.categories.forEach((c) => {
+          result[c.slug] = [...seedProducts]
+            .filter((p) => p.category === c.slug)
+            .sort((a, b) => b.sold - a.sold)
+            .slice(0, MAX);
+        });
+        this.shopByMood = result;
+        return;
+      }
+      this.loading = true;
+      this.error = null;
+      await Promise.all(
+        this.categories.map(async (c) => {
+          const { data, error } = await supabase
+            .from("products")
+            .select("*")
+            .eq("shelf_slug", c.slug)
+            .order("sold", { ascending: false })
+            .limit(MAX);
+          if (error) {
+            this.error = error.message;
+            result[c.slug] = [...seedProducts]
+              .filter((p) => p.category === c.slug)
+              .sort((a, b) => b.sold - a.sold)
+              .slice(0, MAX);
+          } else {
+            result[c.slug] = (data || []).map(mapProduct);
+          }
+        }),
+      );
+      this.shopByMood = result;
+      this.loading = false;
     },
     openQuick(product) {
       this.quickProduct = product;

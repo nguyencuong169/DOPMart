@@ -21,12 +21,13 @@ const store = useProductStore();
 const floor = useFloorStore();
 const root = ref(null);
 const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
-const ranked = computed(() => store.bestSellers.slice(0, 5));
+const ranked = computed(() => store.bestSellersList);
 const top = computed(() => ranked.value[0]);
 const rest = computed(() => ranked.value.slice(1));
 
 let ctx;
-onMounted(() => {
+onMounted(async () => {
+  await store.fetchBestSellers(5);
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   ctx = gsap.context(() => {
     const track = root.value?.querySelector(".bs-rank__track");

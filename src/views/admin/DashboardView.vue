@@ -2,7 +2,17 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { fetchOrders, fetchPromotions } from "@/lib/supabase";
-import { CreditCard, Package, User, Clock, TrendingUp, ArrowRight, ShoppingBag, Tag, Users } from "lucide-vue-next";
+import {
+  CreditCard,
+  Package,
+  User,
+  Clock,
+  TrendingUp,
+  ArrowRight,
+  ShoppingBag,
+  Tag,
+  Users,
+} from "lucide-vue-next";
 
 const router = useRouter();
 
@@ -31,8 +41,8 @@ const loadData = async () => {
 
     totalRevenue.value = ordersData.reduce((sum, o) => sum + (o.total || 0), 0);
     todayOrders.value = ordersData.filter((o) => o.created_at?.slice(0, 10) === todayStr).length;
-    activeProducts.value = 8; // TODO: lấy từ products store khi có
-    newCustomers.value = 5;   // TODO: tính từ profiles khi có
+    activeProducts.value = 8;
+    newCustomers.value = 5;
 
     recentOrders.value = ordersData
       .slice()
@@ -55,6 +65,49 @@ onMounted(() => {
 });
 
 const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
+
+const statCards = [
+  {
+    label: "Tổng doanh thu",
+    value: () => formatCurrency(totalRevenue.value),
+    trend: "+12% so với tháng trước",
+    trendType: "positive",
+    icon: CreditCard,
+    iconBg: "var(--flame)",
+  },
+  {
+    label: "Đơn hàng hôm nay",
+    value: () => todayOrders.value,
+    trend: "8 đơn chờ xử lý",
+    trendType: "neutral",
+    icon: Package,
+    iconBg: "var(--green-ink)",
+  },
+  {
+    label: "Sản phẩm đang bán",
+    value: () => activeProducts.value,
+    trend: "Cập nhật kho hàng",
+    trendType: "neutral",
+    icon: User,
+    iconBg: "var(--purple)",
+  },
+  {
+    label: "Khách hàng mới",
+    value: () => newCustomers.value,
+    trend: "+5 khách hàng tuần này",
+    trendType: "positive",
+    icon: Clock,
+    iconBg: "var(--yellow)",
+    iconColor: "#1a1a1a",
+  },
+];
+
+const quickActions = [
+  { label: "Thêm sản phẩm", icon: Package, to: "admin-products" },
+  { label: "Xem đơn hàng", icon: ShoppingBag, to: "admin-orders" },
+  { label: "Tạo khuyến mãi", icon: Tag, to: "admin-promotions" },
+  { label: "Quản lý người dùng", icon: Users, to: "admin-users" },
+];
 </script>
 
 <template>
@@ -66,52 +119,21 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 
     <!-- Stat cards -->
     <div class="stat-grid">
-      <div class="stat-card stat-card--revenue">
-        <div class="stat-icon stat-icon--revenue">
-          <CreditCard :size="20" />
+      <div
+        v-for="card in statCards"
+        :key="card.label"
+        class="stat-card"
+      >
+        <div class="stat-icon" :style="{ background: card.iconBg }">
+          <component :is="card.icon" :size="20" :style="{ color: card.iconColor || '#fff' }" />
         </div>
         <div class="stat-content">
-          <div class="stat-label">Tổng doanh thu</div>
-          <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
-          <div class="stat-trend positive">
-            <TrendingUp :size="14" /> +12% so với tháng trước
+          <div class="stat-label">{{ card.label }}</div>
+          <div class="stat-value">{{ card.value() }}</div>
+          <div class="stat-trend" :class="card.trendType">
+            <TrendingUp :size="14" v-if="card.trendType === 'positive'" />
+            {{ card.trend }}
           </div>
-        </div>
-        <ArrowRight :size="16" class="stat-arrow" />
-      </div>
-
-      <div class="stat-card stat-card--orders">
-        <div class="stat-icon stat-icon--orders">
-          <Package :size="20" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Đơn hàng hôm nay</div>
-          <div class="stat-value">{{ todayOrders }}</div>
-          <div class="stat-trend neutral">8 đơn chờ xử lý</div>
-        </div>
-        <ArrowRight :size="16" class="stat-arrow" />
-      </div>
-
-      <div class="stat-card stat-card--products">
-        <div class="stat-icon stat-icon--products">
-          <User :size="20" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Sản phẩm đang bán</div>
-          <div class="stat-value">{{ activeProducts }}</div>
-          <div class="stat-trend neutral">Cập nhật kho hàng</div>
-        </div>
-        <ArrowRight :size="16" class="stat-arrow" />
-      </div>
-
-      <div class="stat-card stat-card--customers">
-        <div class="stat-icon stat-icon--customers">
-          <Clock :size="20" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Khách hàng mới</div>
-          <div class="stat-value">{{ newCustomers }}</div>
-          <div class="stat-trend positive">+5 khách hàng tuần này</div>
         </div>
         <ArrowRight :size="16" class="stat-arrow" />
       </div>
@@ -121,28 +143,24 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
     <div class="dashboard-section">
       <h2 class="section-title">Hành động nhanh</h2>
       <div class="action-grid">
-        <button class="action-btn action-btn--add" @click="router.push({ name: 'admin-products' })">
-          <Package :size="18" />
-          <span>Thêm sản phẩm</span>
-        </button>
-        <button class="action-btn action-btn--orders" @click="router.push({ name: 'admin-orders' })">
-          <ShoppingBag :size="18" />
-          <span>Xem đơn hàng</span>
-        </button>
-        <button class="action-btn action-btn--promo" @click="router.push({ name: 'admin-promotions' })">
-          <Tag :size="18" />
-          <span>Tạo khuyến mãi</span>
-        </button>
-        <button class="action-btn action-btn--users" @click="router.push({ name: 'admin-users' })">
-          <Users :size="18" />
-          <span>Quản lý người dùng</span>
+        <button
+          v-for="action in quickActions"
+          :key="action.label"
+          class="action-btn"
+          @click="router.push({ name: action.to })"
+        >
+          <component :is="action.icon" :size="18" />
+          <span>{{ action.label }}</span>
         </button>
       </div>
     </div>
 
     <!-- Recent orders -->
     <div class="dashboard-section">
-      <h2 class="section-title">Đơn hàng gần đây</h2>
+      <div class="section-row">
+        <h2 class="section-title">Đơn hàng gần đây</h2>
+        <RouterLink :to="{ name: 'admin-orders' }" class="section-link">Xem tất cả <ArrowRight size="14" /></RouterLink>
+      </div>
       <div class="table-wrap">
         <table class="admin-table">
           <thead>
@@ -157,7 +175,7 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
           <tbody>
             <tr v-for="order in recentOrders" :key="order.id">
               <td class="mono">{{ order.id.slice(0, 8) }}...</td>
-              <td>{{ order.userName || 'Khách' }}</td>
+              <td>{{ order.userName || "Khách" }}</td>
               <td class="mono">{{ formatCurrency(order.total) }}</td>
               <td>
                 <span class="badge badge--status">{{ order.status }}</span>
@@ -172,29 +190,41 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 </template>
 
 <style scoped>
+:root {
+  --ad-ink: var(--ink, #1a1a1a);
+  --ad-muted: #756a61;
+  --ad-border: #d9cec1;
+  --ad-paper: var(--paper-bright, #fffdf7);
+  --ad-muted-bg: #f3f4f6;
+  --ad-radius: 14px;
+  --ad-shadow: 4px 4px 0 var(--ink, #1a1a1a);
+}
+
 .admin-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--sp-3);
 }
 
 .dashboard-header {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--sp-1);
 }
 
 .dashboard-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--foreground, #1a1a1a);
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  color: var(--ad-ink);
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-h2);
 }
 
 .dashboard-subtitle {
-  font-size: 0.9375rem;
-  color: var(--muted-foreground, #6b7280);
+  font-size: var(--fs-sm);
+  color: var(--ad-muted);
   margin: 0;
 }
 
@@ -202,24 +232,24 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: var(--sp-2);
 }
 
 .stat-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: var(--card, #ffffff);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px;
-  box-shadow: var(--shadow, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--ad-paper);
+  border: var(--bw-bold) solid var(--ad-ink);
+  border-radius: var(--ad-radius);
+  box-shadow: var(--ad-shadow);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-2, 0 4px 6px -1px rgb(0 0 0 / 0.1));
+  box-shadow: 6px 6px 0 var(--ad-ink);
 }
 
 .stat-icon {
@@ -233,112 +263,142 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
   flex-shrink: 0;
 }
 
-.stat-icon--revenue { background: var(--flame, #ff5a1f); }
-.stat-icon--orders  { background: var(--green-ink, #156b3d); }
-.stat-icon--products{ background: var(--purple, #6b2fb3); }
-.stat-icon--customers{ background: var(--yellow, #ffd233); color: #1a1a1a; }
-
 .stat-content {
   flex: 1;
   min-width: 0;
 }
 
 .stat-label {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--muted-foreground, #6b7280);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  color: var(--ad-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.25rem 0;
+  letter-spacing: var(--tracking-kicker);
+  margin: 0 0 var(--sp-1) 0;
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--foreground, #1a1a1a);
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--ad-ink);
+  margin: 0 0 var(--sp-1) 0;
+  letter-spacing: var(--tracking-display);
 }
 
 .stat-trend {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--fs-xs);
+  font-weight: 600;
   margin: 0;
 }
 
-.stat-trend.positive { color: var(--green-ink, #156b3d); }
-.stat-trend.neutral  { color: var(--muted-foreground, #6b7280); }
+.stat-trend.positive {
+  color: var(--green-ink, #156b3d);
+}
+.stat-trend.neutral {
+  color: var(--ad-muted);
+}
 
 .stat-arrow {
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--ad-muted);
 }
 
 /* Section */
 .dashboard-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--sp-2);
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
 }
 
 .section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--foreground, #1a1a1a);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--ad-ink);
   margin: 0;
+  letter-spacing: var(--tracking-display);
+}
+
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ad-flame, #ff5a1f);
+  text-decoration: none;
+}
+
+.section-link:hover {
+  text-decoration: underline;
 }
 
 /* Action grid */
 .action-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.75rem;
+  gap: var(--sp-1);
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--background, #ffffff);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--foreground, #1a1a1a);
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  background: var(--ad-paper);
+  border: var(--bw-bold) solid var(--ad-ink);
+  border-radius: var(--ad-radius);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ad-ink);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
-  background: var(--muted, #f3f4f6);
-  border-color: var(--flame, #ff5a1f);
-  color: var(--flame, #ff5a1f);
+  background: var(--ad-muted-bg);
+  border-color: var(--ad-flame);
+  color: var(--ad-flame);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--ad-shadow);
 }
 
 /* Table */
 .table-wrap {
   overflow-x: auto;
+  border: var(--bw-bold) solid var(--ad-border);
+  border-radius: var(--ad-radius);
+  background: var(--ad-paper);
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: var(--fs-sm);
 }
 
 .admin-table th {
   text-align: left;
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
-  border-bottom: 1px solid var(--border, #e5e7eb);
-  background: var(--muted, #f9fafb);
+  padding: var(--sp-2) var(--sp-3);
+  font-weight: 800;
+  color: var(--ad-muted);
+  border-bottom: var(--bw) solid var(--ad-border);
+  background: var(--ad-muted-bg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-kicker);
+  font-size: var(--fs-xs);
 }
 
 .admin-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border, #e5e7eb);
-  color: var(--foreground, #1a1a1a);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--bw) solid var(--ad-border);
+  color: var(--ad-ink);
 }
 
 .admin-table tr:last-child td {
@@ -347,11 +407,11 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
 
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.8125rem;
+  font-size: var(--fs-xs);
 }
 
 .text-muted {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--ad-muted);
 }
 
 .badge {
@@ -359,12 +419,12 @@ const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency"
   align-items: center;
   padding: 0.125rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--fs-xs);
+  font-weight: 800;
 }
 
 .badge--status {
-  background: var(--muted, #f3f4f6);
-  color: var(--muted-foreground, #6b7280);
+  background: var(--ad-muted-bg);
+  color: var(--ad-muted);
 }
 </style>

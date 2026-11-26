@@ -1,7 +1,17 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Store, LogOut, Menu, ChevronLeft, Sun, Moon, Bell, ShoppingCart } from "lucide-vue-next";
+import {
+  Store,
+  LogOut,
+  Menu,
+  ChevronLeft,
+  Sun,
+  Moon,
+  Bell,
+  ShoppingCart,
+  ChevronRight,
+} from "lucide-vue-next";
 import { isAdmin, getCurrentUserWithProfile, supabase } from "@/lib/supabase";
 
 const route = useRoute();
@@ -15,10 +25,6 @@ const isMobile = ref(window.innerWidth < 768);
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
-};
-
-const closeSidebar = () => {
-  if (isMobile.value) sidebarOpen.value = false;
 };
 
 const toggleUserMenu = () => {
@@ -39,7 +45,21 @@ const adminLinks = [
   { name: "admin-operations", label: "Vận hành mới", icon: ShoppingCart },
 ];
 
+const linkLabels = Object.fromEntries(adminLinks.map((l) => [l.name, l.label]));
+
 const isActive = (name) => route.name === name;
+const breadcrumb = computed(() => {
+  const crumbs = [];
+  for (let i = 0; i < adminLinks.length; i++) {
+    if (adminLinks[i].name === route.name) {
+      crumbs.push(adminLinks[i].label);
+      break;
+    }
+  }
+  return crumbs;
+});
+
+const goBack = () => router.back();
 
 onMounted(async () => {
   isMobile.value = window.innerWidth < 768;
@@ -58,7 +78,17 @@ window.addEventListener("resize", () => {
 </script>
 
 <template>
-  <div class="admin-layout" :class="{ 'is-mobile': isMobile }">
+  <div class="admin-layout">
+    <!-- Mobile backdrop overlay -->
+    <transition name="fade">
+      <div
+        v-if="sidebarOpen && isMobile"
+        class="admin-overlay"
+        @click="toggleSidebar"
+        aria-hidden="true"
+      />
+    </transition>
+
     <header class="admin-topbar">
       <button class="topbar-toggle" @click="toggleSidebar" aria-label="Mở menu">
         <Menu :size="20" />
@@ -72,8 +102,14 @@ window.addEventListener("resize", () => {
         <button class="topbar-icon-btn" aria-label="Thông báo">
           <Bell :size="20" />
         </button>
-<button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
-          <img v-if="user?.user_metadata?.avatar_url && !avatarError" class="avatar" :src="user?.user_metadata?.avatar_url" alt="" @error="avatarError = true" />
+        <button class="topbar-icon-btn topbar-icon-btn--user" @click="toggleUserMenu">
+          <img
+            v-if="user?.user_metadata?.avatar_url && !avatarError"
+            class="avatar"
+            :src="user?.user_metadata?.avatar_url"
+            alt=""
+            @error="avatarError = true"
+          />
           <Store v-else :size="20" />
         </button>
       </div>
@@ -93,11 +129,10 @@ window.addEventListener("resize", () => {
 
     <aside
       class="admin-sidebar"
-      :class="{ open: sidebarOpen, hidden: isMobile && !sidebarOpen }"
-      @click.outside="closeSidebar"
+      :class="{ open: sidebarOpen }"
     >
       <div class="sidebar-header">
-        <button class="sidebar-close" @click="closeSidebar" aria-label="Đóng sidebar">
+        <button v-if="isMobile" class="sidebar-close" @click="toggleSidebar" aria-label="Đóng menu">
           <ChevronLeft :size="20" />
         </button>
       </div>
@@ -108,7 +143,7 @@ window.addEventListener("resize", () => {
           :to="{ name: link.name }"
           class="sidebar-link"
           :class="{ active: isActive(link.name) }"
-          @click="closeSidebar"
+          @click="sidebarOpen = false"
         >
           <component :is="link.icon" :size="18" class="sidebar-link-icon" />
           <span class="sidebar-link-label">{{ link.label }}</span>
@@ -120,6 +155,15 @@ window.addEventListener("resize", () => {
     </aside>
 
     <main class="admin-main">
+      <!-- Breadcrumb / back navigation -->
+      <nav class="admin-breadcrumb">
+        <button class="breadcrumb-back" @click="goBack" :disabled="!breadcrumbs.length" aria-label="Quay lại">
+          <ChevronLeft size="14" /> Trở về
+        </button>
+        <span class="breadcrumb-separator">&rsaquo;</span>
+        <span class="breadcrumb-current">{{ breadcrumb[0] || route.name }}</span>
+      </nav>
+
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" key="$route.name" />
@@ -130,12 +174,37 @@ window.addEventListener("resize", () => {
 </template>
 
 <style scoped>
+:root {
+  --admin-ink: var(--ink, #1a1a1a);
+  --admin-cream: var(--cream, #fff7e3);
+  --admin-paper: var(--paper-bright, #fffdf7);
+  --admin-border: #d9cec1;
+  --admin-muted: #756a61;
+  --admin-muted-bg: #f3f4f6;
+  --admin-flame: var(--flame, #ff5a1f);
+  --admin-yellow: var(--yellow, #ffd233);
+  --admin-radius: 14px;
+  --admin-shadow: 4px 4px 0 var(--ink, #1a1a1a);
+  --admin-sidebar-w: 260px;
+}
+
 .admin-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--background, #ffffff);
-  color: var(--foreground, #1a1a1a);
+  width: 100vw;
+  overflow: hidden;
+  background: var(--admin-cream);
+  color: var(--admin-ink);
+}
+
+/* Mobile overlay */
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 30;
+  backdrop-filter: blur(2px);
 }
 
 /* Topbar */
@@ -144,47 +213,51 @@ window.addEventListener("resize", () => {
   align-items: center;
   justify-content: space-between;
   height: 56px;
-  padding: 0 1rem;
-  background: var(--background, #ffffff);
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 0 var(--sp-2);
+  background: var(--admin-paper);
+  border-bottom: var(--bw) solid var(--admin-border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 40;
+  flex-shrink: 0;
 }
 
 .topbar-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  border: var(--bw-bold) solid var(--admin-ink);
+  border-radius: var(--admin-radius);
+  background: var(--admin-paper);
   cursor: pointer;
-  border-radius: 8px;
-  color: var(--foreground, #1a1a1a);
+  color: var(--admin-ink);
+  flex-shrink: 0;
 }
 
 .topbar-toggle:hover {
-  background: var(--muted, #f3f4f6);
+  background: var(--admin-muted-bg);
 }
 
 .topbar-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--foreground, #1a1a1a);
+  gap: var(--sp-1);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  color: var(--admin-ink);
   text-decoration: none;
+  letter-spacing: var(--tracking-display);
 }
 
 .brand-icon {
-  color: var(--flame, #ff5a1f);
+  color: var(--admin-flame);
 }
 
 .brand-name-accent {
-  color: var(--flame, #ff5a1f);
+  color: var(--admin-flame);
 }
 
 .topbar-spacer {
@@ -195,24 +268,25 @@ window.addEventListener("resize", () => {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--sp-1);
 }
 
 .topbar-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  border: var(--bw-bold) solid var(--admin-ink);
+  border-radius: var(--admin-radius);
+  background: var(--admin-paper);
   cursor: pointer;
-  border-radius: 8px;
-  color: var(--foreground, #1a1a1a);
+  color: var(--admin-ink);
+  flex-shrink: 0;
 }
 
 .topbar-icon-btn:hover {
-  background: var(--muted, #f3f4f6);
+  background: var(--admin-muted-bg);
 }
 
 .avatar {
@@ -220,36 +294,37 @@ window.addEventListener("resize", () => {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: var(--bw) solid var(--admin-border);
 }
 
 /* User dropdown */
 .user-dropdown {
   position: absolute;
   top: 64px;
-  right: 1rem;
-  width: 180px;
-  background: var(--popover, #ffffff);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 8px;
-  box-shadow: var(--shadow, 0 4px 6px -1px rgb(0 0 0 / 0.1));
+  right: var(--sp-2);
+  width: 200px;
+  background: var(--admin-paper);
+  border: var(--bw-bold) solid var(--admin-ink);
+  border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow);
   z-index: 50;
   overflow: hidden;
 }
 
 .dropdown-item {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: var(--foreground, #1a1a1a);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--admin-ink);
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .dropdown-item:hover {
-  background: var(--muted, #f3f4f6);
+  background: var(--admin-muted-bg);
 }
 
 .dropdown-item.text-destructive {
-  color: var(--destructive, #ef4444);
+  color: var(--red-ink, #b81f2b);
 }
 
 .dropdown-item.text-destructive:hover {
@@ -258,8 +333,8 @@ window.addEventListener("resize", () => {
 
 .dropdown-divider {
   height: 1px;
-  background: var(--border, #e5e7eb);
-  margin: 0.25rem 0;
+  background: var(--admin-border);
+  margin: var(--sp-1) 0;
 }
 
 /* Sidebar */
@@ -267,21 +342,23 @@ window.addEventListener("resize", () => {
   position: fixed;
   top: 56px;
   left: 0;
-  width: 260px;
+  width: var(--admin-sidebar-w);
   height: calc(100vh - 56px);
-  background: var(--background, #ffffff);
-  border-right: 1px solid var(--border, #e5e7eb);
-  z-index: 20;
-  transition: transform 0.25s ease;
+  background: var(--admin-paper);
+  border-right: var(--bw-bold) solid var(--admin-ink);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
   transform: translateX(0);
+  transition: transform 0.25s ease;
 }
 
-.admin-sidebar.hidden {
+.admin-sidebar:not(.open) {
   transform: translateX(-100%);
 }
 
 .sidebar-header {
-  padding: 1rem;
+  padding: var(--sp-2);
   display: flex;
   justify-content: flex-end;
 }
@@ -290,42 +367,45 @@ window.addEventListener("resize", () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
+  width: 36px;
+  height: 36px;
+  border: var(--bw-bold) solid var(--admin-ink);
+  border-radius: var(--admin-radius);
+  background: var(--admin-paper);
   cursor: pointer;
-  border-radius: 6px;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--admin-ink);
 }
 
 .sidebar-nav {
-  padding: 0.5rem 0;
+  padding: var(--sp-2) 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 1rem;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--muted-foreground, #6b7280);
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--admin-muted);
   text-decoration: none;
   border-radius: 0;
+  border-left: var(--bw-bold) solid transparent;
   transition: all 0.15s;
-  border-left: 3px solid transparent;
+  cursor: pointer;
 }
 
 .sidebar-link:hover {
-  background: var(--muted, #f3f4f6);
-  color: var(--foreground, #1a1a1a);
+  background: var(--admin-muted-bg);
+  color: var(--admin-ink);
 }
 
 .sidebar-link.active {
-  background: var(--accent, #eff6ff);
-  color: var(--accent-foreground, #1a1a1a);
-  border-left: 3px solid var(--flame, #ff5a1f);
+  background: color-mix(in srgb, var(--admin-yellow) 20%, var(--admin-paper));
+  color: var(--admin-ink);
+  border-left-color: var(--admin-flame);
 }
 
 .sidebar-link-icon {
@@ -333,43 +413,81 @@ window.addEventListener("resize", () => {
 }
 
 .sidebar-footer {
-  padding: 1rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground, #9ca3af);
+  padding: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--admin-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--tracking-kicker);
 }
 
 /* Main content */
 .admin-main {
   flex: 1;
-  overflow: auto;
-  padding: 1.5rem;
-  margin-left: 260px;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  margin-left: var(--admin-sidebar-w);
+  background: var(--admin-cream);
   transition: margin-left 0.25s ease;
 }
 
-.is-mobile .admin-main {
-  margin-left: 0;
+/* Breadcrumb */
+.admin-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+}
+
+.breadcrumb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  border: var(--bw-bold) solid var(--admin-ink);
+  border-radius: var(--admin-radius);
+  background: var(--admin-paper);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--admin-ink);
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.breadcrumb-back:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.breadcrumb-back:hover:not(:disabled) {
+  background: var(--admin-muted-bg);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--admin-shadow);
+}
+
+.breadcrumb-separator {
+  font-size: var(--fs-sm);
+  color: var(--admin-muted);
+}
+
+.breadcrumb-current {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--admin-muted);
+  font-family: var(--font-ui);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .admin-topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 30;
-  }
-  .topbar-spacer {
-    display: block;
-  }
   .admin-sidebar {
     z-index: 40;
   }
   .admin-main {
-    padding-top: 72px;
+    margin-left: 0;
+    padding: var(--sp-2);
+    padding-top: 80px;
+  }
+  .topbar-spacer {
+    display: block;
   }
 }
 

@@ -145,8 +145,10 @@ window.addEventListener("resize", () => {
           :class="{ active: isActive(link.name) }"
           @click="sidebarOpen = false"
         >
-          <component :is="link.icon" :size="18" class="sidebar-link-icon" />
-          <span class="sidebar-link-label">{{ link.label }}</span>
+          <div class="sidebar-link-row">
+            <component :is="link.icon" :size="18" class="sidebar-link-icon" />
+            <span class="sidebar-link-label">{{ link.label }}</span>
+          </div>
         </RouterLink>
       </nav>
       <div class="sidebar-footer">
@@ -380,12 +382,13 @@ window.addEventListener("resize", () => {
   padding: var(--sp-2) 0;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  display: block;
+  width: 100%;
   padding: var(--sp-2) var(--sp-3);
   font-size: var(--fs-sm);
   font-weight: 600;
@@ -410,6 +413,12 @@ window.addEventListener("resize", () => {
 
 .sidebar-link-icon {
   flex-shrink: 0;
+}
+
+.sidebar-link-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .sidebar-footer {

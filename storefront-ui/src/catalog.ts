@@ -1,0 +1,3 @@
+export interface Product {id:number;name:string;category:string;price:number;art:string;color:string;stock:number;taste:string}
+export const products:Product[]=[{id:1,name:'Coca-Cola',category:'Đồ uống',price:15000,art:'🥤',color:'#ff5b57',stock:50,taste:'Có ga'},{id:2,name:'Khoai tây Lay’s',category:'Snack',price:18000,art:'🍟',color:'#ffc531',stock:40,taste:'Mặn giòn'},{id:3,name:'Choco Pie',category:'Bánh kẹo',price:10000,art:'🍫',color:'#6b5be6',stock:30,taste:'Ngọt'},{id:4,name:'Cà phê',category:'Đồ uống',price:18000,art:'☕',color:'#12b3a4',stock:24,taste:'Đậm vị'}]
+export const money=(n:number)=>n.toLocaleString('vi-VN')+' đ'

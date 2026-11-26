@@ -157,7 +157,7 @@ window.addEventListener("resize", () => {
     <main class="admin-main">
       <!-- Breadcrumb / back navigation -->
       <nav class="admin-breadcrumb">
-        <button class="breadcrumb-back" @click="goBack" :disabled="!breadcrumbs.length" aria-label="Quay lại">
+        <button class="breadcrumb-back" @click="goBack" :disabled="!breadcrumb.length" aria-label="Quay lại">
           <ChevronLeft size="14" /> Trở về
         </button>
         <span class="breadcrumb-separator">&rsaquo;</span>

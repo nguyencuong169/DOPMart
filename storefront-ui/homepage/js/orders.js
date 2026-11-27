@@ -35,11 +35,12 @@ function filteredOrders() {
 }
 function row(order) {
  const {id,date,time,state,total,items} = order;
- const photos = items.slice(0,3).map(key=>'<img src="assets/images/'+key+'.webp" alt="'+catalog[key][0]+'">').join('');
+ const previewSize = id === 'DOP241125-0027' ? 2 : 3;
+ const photos = items.slice(0,previewSize).map(key=>'<img src="assets/images/'+key+'.webp" alt="'+catalog[key][0]+'">').join('');
  const buttons = (state==='done'?'<button class="buy" data-action="buy">Mua lại</button>':'')
    + '<button data-action="detail">Xem chi tiết →</button>'
    + (state==='waiting'?'<button data-action="cancel">Hủy đơn</button>':'');
- return '<article class="order" data-id="'+id+'"><div><b>Đơn hàng #'+id+'</b><small>'+displayDate(date)+' · '+time+'</small></div><div class="thumbs">'+photos+(items.length>3?'<span>+'+(items.length-3)+'</span>':'')+'</div><div>Tổng tiền<strong>'+money(total)+'</strong></div><div><span class="badge-state '+state+'">'+states[state]+'</span><small>'+({done:'Đã nhận hàng',shipping:'Đang giao hàng',waiting:'Đang xử lý đơn hàng',cancelled:'Đơn hàng đã được hủy'}[state])+'</small></div><div class="actions-row">'+buttons+'</div></article>';
+ return '<article class="order" data-id="'+id+'"><div><b>Đơn hàng #'+id+'</b><small>'+displayDate(date)+' · '+time+'</small></div><div class="thumbs">'+photos+(items.length>previewSize?'<span>+'+(items.length-previewSize)+'</span>':'')+'</div><div>Tổng tiền<strong>'+money(total)+'</strong></div><div><span class="badge-state '+state+'">'+states[state]+'</span><small>'+({done:'Đã nhận hàng: '+displayDate(date),shipping:id==='DOP241126-0029'?'Dự kiến: 26/11/2026 (15:30)':'Đang giao hàng',waiting:'Đang xử lý đơn hàng',cancelled:'Đơn hàng đã được hủy'}[state])+'</small></div><div class="actions-row">'+buttons+'</div></article>';
 }
 function render() {
  tabs.innerHTML = Object.entries(states).map(([key,label])=>'<button data-state="'+key+'" aria-pressed="'+(stateSelect.value===key)+'">'+label+' ('+orders.filter(o=>key==='all'||o.state===key).length+')</button>').join('');
@@ -48,7 +49,7 @@ function render() {
  const visible=matches.slice((page-1)*5,page*5);
  list.innerHTML=visible.map(row).join('') || '<p class="empty">Không tìm thấy đơn hàng phù hợp.</p>';
  document.querySelector('#count').textContent='Hiển thị '+visible.length+' / '+matches.length+' đơn hàng';
- document.querySelector('#pages').innerHTML=Array.from({length:pages},(_,i)=>'<button data-page="'+(i+1)+'" '+(i+1===page?'aria-current="page"':'')+'>'+(i+1)+'</button>').join('');
+ document.querySelector('#pages').innerHTML=(!pages?'':'<button aria-label="Trang trước" data-page="'+(page-1)+'" '+(page===1?'disabled':'')+'>‹</button>')+Array.from({length:pages},(_,i)=>'<button data-page="'+(i+1)+'" '+(i+1===page?'aria-current="page"':'')+'>'+(i+1)+'</button>').join('')+(!pages?'':'<button aria-label="Trang sau" data-page="'+(page+1)+'" '+(page===pages?'disabled':'')+'>›</button>');
 }
 form.oninput=()=>{page=1;render()};
 form.onsubmit=e=>e.preventDefault();

@@ -2,7 +2,8 @@
 from pathlib import Path
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
+from collections import deque
 
 source = Image.open(sys.argv[1])
 if source.size != (1536, 1024):
@@ -27,10 +28,34 @@ outlines = {
     "noodles": [(1056,748),(1118,745),(1118,669),(1209,669),(1207,746),(1254,746),(1254,805),(1056,805)],
     "hero": [(699,250),(722,245),(714,190),(763,164),(790,163),(791,118),(972,118),(965,173),(999,161),(1006,117),(1051,123),(1059,136),(1047,159),(1063,198),(1054,241),(1072,245),(1069,283),(1043,309),(1030,382),(1001,419),(763,392),(742,380),(731,305),(704,290)],
 }
+# Remove only background connected to a crop edge, preserving pale details inside packs.
+def remove_card_background(image, color):
+    width, height = image.size
+    pixels = image.load()
+    alpha = Image.new("L", image.size, 255)
+    mask = alpha.load()
+    edge = deque([(x, y) for x in range(width) for y in (0, height - 1)]
+                 + [(x, y) for y in range(height) for x in (0, width - 1)])
+    while edge:
+        x, y = edge.popleft()
+        if not (0 <= x < width and 0 <= y < height) or mask[x, y] == 0:
+            continue
+        if max(abs(a - b) for a, b in zip(pixels[x, y][:3], color)) > 42:
+            continue
+        mask[x, y] = 0
+        edge.extend(((x-1,y), (x+1,y), (x,y-1), (x,y+1)))
+    image.putalpha(alpha.filter(ImageFilter.GaussianBlur(0.45)))
+    return image
+
+card_colors = {"drink": (255,218,205), "snack": (255,235,182),
+               "instant": (237,220,239), "candy": (213,240,220), "bundle": (215,234,246)}
 for name, bounds in regions.items():
     artwork = source.convert("RGBA")
     if name in outlines:
         alpha = Image.new("L", source.size)
         ImageDraw.Draw(alpha).polygon(outlines[name], fill=255)
         artwork.putalpha(alpha)
-    artwork.crop(bounds).save(output / f"{name}.webp", quality=94)
+    crop = artwork.crop(bounds)
+    if name in card_colors:
+        crop = remove_card_background(crop, card_colors[name])
+    crop.save(output / f"{name}.webp", quality=94)

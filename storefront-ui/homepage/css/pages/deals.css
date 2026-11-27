@@ -22,7 +22,7 @@
 .header .nav [aria-current]{background:#ffe4dc;border-radius:22px;padding:6px 14px}
 .offer-hero .deal-art{max-height:20.1vw}
 .deal-combo .deal-art{height:clamp(105px,9vw,145px)}
-.deal-categories img{border-radius:12px;mix-blend-mode:multiply}
+.deal-categories img{border-radius:0}
 @media(max-width:600px){.offer-hero .deal-art{max-height:none}}
 
 .offer-copy h1 img{width:clamp(180px,28vw,435px);height:auto}
@@ -41,3 +41,13 @@
  .offer-hero::after{content:"";position:absolute;bottom:1.6vw;left:33%;width:46px;height:14px;border-radius:10px;background:radial-gradient(circle at 17% 50%,var(--brand) 0 3px,transparent 4px),radial-gradient(circle at 50% 50%,#d6ac86 0 3px,transparent 4px),radial-gradient(circle at 83% 50%,#d6ac86 0 3px,transparent 4px),#fff7e7}
 }
 @media(max-width:600px){.offer-copy h1 img{width:100%;max-width:260px}}
+
+.deal-combo button {display:grid;place-items:center;width:clamp(36px,3vw,48px);height:clamp(36px,3vw,48px);padding:0;color:white}
+.deal-combo button svg {width:52%;height:52%}
+.offer-stamp strong {display:flex;align-items:center;gap:.45em;transform:rotate(-7deg);background:#ffdc68;border:3px solid #ffe991;box-shadow:inset 0 0 0 2px #ffcf4e}
+.offer-stamp strong svg {color:#ec5630;width:1.4em;height:1.4em}
+.offer-stamp strong b {font-size:1em;line-height:1.08}
+.offer-copy h1,.offer-copy>b {position:relative;width:fit-content}
+.offer-copy h1::after {content:"";position:absolute;right:-1.5vw;top:35%;width:2vw;height:2.2vw;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 32' fill='none' stroke='%23fa8041' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M4 10l10-6M6 18h15M4 25l9 4'/%3E%3C/svg%3E") center/contain no-repeat}
+.offer-copy>b::after {content:"";position:absolute;width:25%;height:.35em;right:6%;bottom:-.5em;border-top:.14em solid #ffc531;border-radius:70%;transform:rotate(2deg)}
+@media(min-width:1001px){.offer-stamp{gap:.9vw}.offer-stamp span{font-size:2.25vw;padding:.65em .95em}.offer-stamp strong{width:18.5vw;justify-content:center;padding:.45em .3em}}

@@ -3,3 +3,10 @@ const cards=[...document.querySelectorAll('.product')];let cart=JSON.parse(local
  input.classList.toggle('open');
  if (input.classList.contains('open')) input.focus();
 };document.querySelector('.menu').onclick=()=>location.hash='categories';count();
+
+// Resolve links from the offers page through the same controls as a category tap.
+const categoryIds = new Map([['drink', '0'], ['snack', '1'], ['instant', '2'], ['candy', '3']]);
+const linkedCategory = categoryIds.get(new URLSearchParams(location.search).get('category'));
+if (linkedCategory !== undefined) {
+  document.querySelector('.category[data-category="' + linkedCategory + '"]').click();
+}

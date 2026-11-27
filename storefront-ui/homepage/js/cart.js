@@ -1,10 +1,3 @@
-const catalog = {
-  cola: ['Coca-Cola 330ml', 15000, 50],
-  lays: ['Lay’s Classic 52g', 18000, 40],
-  noodle: ['Mì Hảo Hảo tôm chua cay', 8000, 35],
-  water: ['Nước suối Lavie 500ml', 7000],
-  choco: ['Choco Pie 12 cái', 45000]
-};
 const cart = JSON.parse(localStorage.getItem('dop-cart') || '{}');
 const selected = new Set(Object.keys(cart));
 const get = id => document.getElementById(id);
@@ -60,9 +53,8 @@ get('remove-selected').onclick = () => {
   selected.forEach(id => delete cart[id]); selected.clear(); save();
 };
 document.querySelector('.pay').onclick = () => {
-  const toast = document.querySelector('.toast');
-  toast.textContent = 'Màn hình Thanh toán đang chờ triển khai.'; toast.hidden = false;
-  setTimeout(() => toast.hidden = true, 2500);
+  sessionStorage.setItem('dop-checkout-selection', JSON.stringify([...selected]));
+  location.href = 'checkout.html';
 };
 document.querySelector('.menu').onclick = () => location.href = 'index.html#categories';
 get('favorites').onclick = () => location.href = 'index.html#products';

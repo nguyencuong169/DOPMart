@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập | DOP Mart</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/login.css">
+</head>
+<body>
+<main class="login-layout">
+  <section class="campaign" aria-label="DOP Mart">
+    <a class="logo" href="index.html"><b>DOP</b> Mart <i class="rays" aria-hidden="true"></i></a>
+    <div class="slogan"><span>Shop Happy</span><span>Live Colorful.</span></div>
+    <div class="perks"><div><span aria-hidden="true">♧</span>Đồ ăn &amp; đồ uống<br>tiện lợi</div><div><span aria-hidden="true">ϟ</span>Giao nhanh<br>trong 2 giờ</div><div><span aria-hidden="true">%</span>Ưu đãi<br>mỗi ngày</div></div>
+    <div class="basket" role="img" aria-label="Giỏ sản phẩm DOP Mart"></div>
+  </section>
+  <section class="login-card" aria-labelledby="login-title">
+    <h1 id="login-title">Đăng nhập <i class="rays" aria-hidden="true"></i><br>tài khoản</h1>
+    <p>Đăng nhập để mua sắm, theo dõi đơn hàng<br class="desktop-break"> và nhận ưu đãi riêng từ DOP Mart.</p>
+    <form id="login">
+      <label class="field"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 6 9 7 9-7"/></svg><input id="identity" autocomplete="username" required aria-label="Email hoặc số điện thoại" placeholder="Email hoặc số điện thoại"></label>
+      <label class="field"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="password" type="password" autocomplete="current-password" required aria-label="Mật khẩu" placeholder="Mật khẩu"><button type="button" id="reveal" aria-label="Hiện mật khẩu" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12q10-15 20 0-10 15-20 0Z"/><circle cx="12" cy="12" r="3"/><path id="slash" d="m3 3 18 18"/></svg></button></label>
+      <div class="options"><label><input type="checkbox" checked> Ghi nhớ đăng nhập</label><button type="button" data-preview="Khôi phục mật khẩu">Quên mật khẩu?</button></div>
+      <button class="btn submit">Đăng nhập →</button>
+    </form>
+    <div class="separator">Hoặc đăng nhập với</div>
+    <div class="providers"><button data-preview="Google"><b class="google">G</b>Google</button><button data-preview="Facebook"><b class="facebook">f</b>Facebook</button><button data-preview="Apple"><svg class="apple" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 2q0 4-4 5 0-4 4-5zm3 6q-4 3 0 7-1 4-4 6-2 0-3-1-2 1-4 1-5-5-5-10 0-6 5-6l4 1q4-2 7 2z"/></svg>Apple</button></div>
+    <p id="status" role="status"></p>
+    <div class="register">Bạn chưa có tài khoản? <a href="/register">Đăng ký ngay →</a></div>
+  </section>
+</main><script src="js/login.js"></script></body></html>

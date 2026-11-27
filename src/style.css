@@ -20,12 +20,12 @@
   --green-ink: #156b3d;
   --red: #e03e45;
   --red-ink: #b81f2b;
-  --yellow: #ffd233;
+  --yellow: #FFC531;
   --purple: #6b2fb3;
-  --ink: #1a1a1a;
-  --cream: #fff7e3;
+  --ink: #17140D;
+  --cream: #F7F5F0;
   /* accents the brief does not name but the sheet still paints with */
-  --flame: #ff5a1f;
+  --flame: #FF5B57;
   --clay: #ea5b34;
   /* legacy aliases used across the stylesheet */
   --paper: var(--cream);
@@ -255,13 +255,14 @@ nav a {
 .search,
 .floor {
   height: 44px;
-  border: 1.5px solid #222;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent);
   border-radius: 999px;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0 14px;
-  background: white;
+  background: #FFFFFF;
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 20%, transparent);
 }
 
 .search input {
@@ -375,9 +376,28 @@ nav a {
 
 .primary,
 .checkout {
-  background: #191919;
-  color: white;
-  box-shadow: 5px 5px 0 var(--yellow);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
+  box-shadow: 5px 5px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.primary:hover,
+.checkout:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
+}
+.primary:active,
+.checkout:active {
+  transform: translate(1px, 1px);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+.primary:focus-visible,
+.checkout:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 .secondary {
@@ -535,22 +555,26 @@ nav a {
 }
 
 .product-card {
-  background: white;
-  border: 2px solid #191919;
+  background: #FFFFFF;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   border-radius: 26px;
   overflow: hidden;
   position: relative;
   transition: 0.25s;
-  box-shadow: 0 0 0 #191919;
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 8px 8px 0 #191919;
+  transform: translateY(-4px);
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 12px 28px color-mix(in srgb, var(--ink) 10%, transparent);
 }
 
 .product-card:hover .product-visual img {
-  transform: translateY(-8px) rotate(3deg) scale(1.05);
+  transform: translateY(-4px) rotate(2deg) scale(1.03);
 }
 
 .badges {
@@ -587,9 +611,28 @@ nav a {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  background: #fff;
+  color: var(--ink);
   z-index: 3;
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 25%, transparent);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    border-color 0.2s;
+}
+.heart:hover {
+  transform: translate(-1px, -1px);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+}
+.heart:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.heart:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 .product-visual {
@@ -658,8 +701,25 @@ nav a {
   height: 44px;
   border-radius: 50%;
   border: 0;
-  background: #191919;
-  color: white;
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.add:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
+}
+.add:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+.add:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 .showcase {
@@ -2301,12 +2361,22 @@ header nav a.router-link-active {
 }
 
 .search {
-  border: 2px solid #191919;
-  box-shadow: none;
+  border: 2px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 20%, transparent);
+  background: #fff;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.15s;
 }
-
 .search:focus-within {
-  box-shadow: 3px 3px 0 #ffd338;
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 40%, transparent);
+  transform: translate(-1px, -1px);
+}
+.search:hover {
+  border-color: color-mix(in srgb, var(--ink) 60%, transparent);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
 }
 
 .floor {
@@ -2334,9 +2404,26 @@ header nav a.router-link-active {
 }
 
 .cart-button {
-  border: 2px solid #191919;
-  background: #ff5a1f;
-  box-shadow: 3px 3px 0 #191919;
+  border: 2px solid var(--ink);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.cart-button:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
+}
+.cart-button:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+.cart-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 /* Balanced hero typography */
@@ -2427,9 +2514,11 @@ header nav a.router-link-active {
 
 /* Product card polish */
 .product-card {
-  border: 2px solid #191919;
-  background: #fffaf2;
-  box-shadow: 5px 5px 0 #dfd1bd;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background: #FFFFFF;
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 .card-quick {
@@ -2499,15 +2588,19 @@ header nav a.router-link-active {
 }
 
 .add {
-  border: 2px solid #191919;
-  background: #ffd338;
-  color: #191919;
-  box-shadow: 3px 3px 0 #191919;
+  border: 2px solid var(--ink);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
 .add:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 #191919;
+  box-shadow: 5px 5px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
 }
 
 /* Purposeful scroll storytelling showcase */

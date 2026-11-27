@@ -516,22 +516,28 @@ onMounted(async () => {
   padding: 10px 12px;
   border: 2.5px solid var(--ink);
   border-radius: 999px;
-  background: #ffc72c;
-  color: var(--ink);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
   font: 700 clamp(12px, 3.6cqw, 15px) / 1 var(--fd, var(--font-display));
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
   transition:
     transform 0.15s,
-    box-shadow 0.15s;
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .cat-card__add:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 4px 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
 }
 .cat-card__add:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
+  box-shadow: 1px 1px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+.cat-card__add:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 /* ==== grid variant ==== the same pack and reveal, with a plate underneath that is
@@ -564,7 +570,7 @@ onMounted(async () => {
   border-radius: var(--r-pill);
   background: #fff;
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
   cursor: pointer;
   transition:
     transform 0.15s,
@@ -573,7 +579,15 @@ onMounted(async () => {
 }
 .cat-card__fav:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 50%, transparent);
+}
+.cat-card__fav:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.cat-card__fav:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 .cat-card__fav.liked {
   background: var(--red-ink);

@@ -103,6 +103,8 @@
   padding: 8px;
   font-weight: bold;
   min-height: 88px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.15s ease-out,
     opacity 0.2s ease-out;
@@ -150,10 +152,24 @@
   position: absolute;
   right: 5px;
   top: 3px;
+  transition:
+    transform 0.15s ease-out,
+    color 0.2s ease-out;
+}
+
+.heart:active {
+  transform: scale(0.97);
 }
 
 .heart.active {
   color: var(--brand);
+  transition:
+    transform 0.15s ease-out,
+    color 0.2s ease-out;
+}
+
+.heart.active:active {
+  transform: scale(0.97);
 }
 
 .product img {
@@ -162,6 +178,8 @@
   object-fit: contain;
   margin-top: 15px;
   mix-blend-mode: multiply;
+  /* bo góc đồng tâm với card cha (--radius: 16px, padding: 12px → inner ~12px) */
+  border-radius: 12px;
 }
 
 .product h3 {
@@ -179,16 +197,38 @@
 }
 
 .add {
-  background: var(--brand);
+  /* gradient cam-đỏ nhẹ, đồng tone với nút Primary */
+  background: linear-gradient(180deg, #FF5B57, #e84542);
   color: white;
-  min-height: 44px;
+  /* vùng chạm >= 40px (accessibility) */
+  min-width: 44px;
+  height: 44px;
+  font-size: 20px;
   transition:
     transform 0.15s ease-out,
-    opacity 0.2s ease-out;
+    box-shadow 0.15s ease-out,
+    background 0.15s ease-out;
   border-radius: 10px;
-  min-width: 36px;
-  height: 36px;
-  font-size: 20px;
+  /* shadow pha ấm theo tông brand */
+  box-shadow: 2px 2px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.add:hover {
+  background: linear-gradient(180deg, #ff706d, #e84542);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  transform: translate(-1px, -1px);
+}
+
+.add:active {
+  transform: translate(1px, 1px) scale(0.97);
+  box-shadow: 1px 1px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+
+.add:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 .combo {
@@ -423,14 +463,6 @@
 .price {
   font-variant-numeric: tabular-nums;
 }
-
-.add:hover {
-  opacity: 0.92;
-}
-
-.add:active {
-  transform: scale(0.96);
-}
 @media (min-width: 601px) and (max-width: 1000px) {
   .hero-buttons .btn {
     padding: 6px 12px;
@@ -649,5 +681,19 @@
 
   .hero-buttons .secondary {
     display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add,
+  .heart,
+  .category,
+  .product img {
+    transition: none !important;
+  }
+  .add:active,
+  .heart:active,
+  .category:active {
+    transform: none;
   }
 }

@@ -1,13 +1,19 @@
 :root {
-  --brand: #ff3d27;
-  --accent: #ffc123;
-  --ink: #11100a;
-  --background: #faf3e8;
-  --surface: #ffffff;
+  --brand: #FF5B57;
+  --accent: #FFC531;
+  --ink: #17140D;
+  --background: #F7F5F0;
+  --surface: #FFFFFF;
   --border: #e6dcce;
   --muted: #6b6159;
   --radius: 16px;
-  --shadow: 0 0 0 1px #17140d0f, 0 1px 2px -1px #17140d0f, 0 2px 4px 0 #17140d0a;
+  /* shadow pha sắc ấm theo tông --ink (#17140D), không đen thuần */
+  --shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 1px 2px -1px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 2px 4px 0 color-mix(in srgb, var(--ink) 6%, transparent);
+  --shadow-hover: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 4px 8px -1px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 8px 24px 0 color-mix(in srgb, var(--ink) 8%, transparent);
   --container: 1380px;
   --font: 'Be Vietnam Pro', Arial, sans-serif;
 }

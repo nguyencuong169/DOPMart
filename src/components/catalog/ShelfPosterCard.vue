@@ -324,7 +324,7 @@ const lastWordHollow = computed(() => {
   border-radius: 50%;
   background: #fff;
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
   cursor: pointer;
   transition:
     transform 0.15s,
@@ -333,14 +333,18 @@ const lastWordHollow = computed(() => {
 }
 .shelf-card__fav:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 50%, transparent);
+}
+.shelf-card__fav:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .shelf-card__fav.liked {
   background: var(--red-ink);
   color: var(--cream);
 }
 .shelf-card__fav:focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
   outline-offset: 2px;
 }
 

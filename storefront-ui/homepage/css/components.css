@@ -1,0 +1,5 @@
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 24px;border-radius:16px;background:var(--brand);color:white;font-weight:800}.btn.secondary{background:transparent;color:var(--ink);border:1px solid #dbc9ba}.card{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow)}.icon{background:none;font-size:25px;min-width:44px;min-height:44px}.badge{background:#ffbc00;color:white;border-radius:20px;padding:4px 10px;font-size:13px;font-weight:bold}.price{color:var(--brand);font-size:20px;font-weight:800}.logo{font-size:32px;font-weight:950;white-space:nowrap;letter-spacing:-1.5px}.logo b{background:var(--brand);color:white;padding:4px 8px;border-radius:10px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 16px}.section-head h2{font-size:30px;letter-spacing:-1px}.section-head a{color:var(--brand);font-weight:bold}
+
+svg {width:1.15em;height:1.15em;vertical-align:middle;}
+.account {display:grid;place-items:center;}
+.benefit span {color:#ed581b;}

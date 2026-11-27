@@ -9,7 +9,7 @@ function render() {
   const fee = chosen.length ? 20000 : 0;
   get('caption').textContent = 'Có ' + ids.length + ' sản phẩm trong giỏ';
   get('row-count').textContent = 'Sản phẩm (' + ids.length + ')';
-  document.querySelector('.cart-count').textContent = ids.reduce((sum,id) => sum + cart[id],0);
+  document.querySelector('.cart-count').textContent = ids.length;
   get('rows').innerHTML = ids.map(id => {
     const [name, price, stock] = catalog[id];
     return `<div class="line" data-id="${id}">

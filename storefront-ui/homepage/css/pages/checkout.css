@@ -7,3 +7,9 @@
 .order-line{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}.order-line img{width:42px;height:45px;object-fit:contain;mix-blend-mode:multiply}.order-line small{display:block}.order-line strong{color:var(--brand)}.summary .total strong:first-child{color:var(--ink);font-size:18px}.summary .btn:disabled{opacity:.5}.summary #status:empty{display:none}
 @media(max-width:1000px){.checkout{grid-template-columns:minmax(0,1.4fr) minmax(230px,1fr)}.lead{grid-column:1/-1;position:relative;padding:4px 125px 4px 0}.lead h1 br{display:none}.lead h1 em:before{content:" "}.lead p{max-width:none}.bag{position:absolute;right:0;bottom:0;width:100px}.methods{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.checkout{display:flex;flex-direction:column;padding:12px}.steps{font-size:11px}.lead p{font-size:13px}.fields{gap:8px}.summary .btn{width:100%}}
+.address-choice select {width:100%;min-width:0;font:inherit;font-size:14px;padding:7px;border:1px solid var(--border);border-radius:8px;color:var(--ink);background:var(--surface)}
+.address-choice input:not([hidden]) {margin-top:5px}
+.methods svg {width:22px;height:22px;margin:2px auto 4px;color:var(--brand)}
+.methods label:nth-child(2) svg {color:#52431d}
+.methods label:nth-child(3) svg {color:#bb1674}
+.methods label:nth-child(4) svg {color:var(--ink)}

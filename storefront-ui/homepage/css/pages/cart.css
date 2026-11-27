@@ -57,3 +57,13 @@ summary small {float:right;color:var(--brand)}
  .service {margin-top:10px}
  body {padding-bottom:0}
 }
+
+@media (min-width:1101px) {
+ .header-inner .search {max-width:min(27vw,390px)}
+ .intro {position:relative;isolation:isolate;background:none}
+ .intro::before {content:"";position:absolute;inset:auto 0 0;height:61%;z-index:-1;background:url('../../assets/images/cart-basket.webp') left bottom / 100% 100% no-repeat;mask-image:linear-gradient(transparent,#000 13%)}
+ .intro h1 {position:relative;width:fit-content}
+ .intro h1::before,.intro h1::after {content:"";position:absolute;width:28px;height:30px;background:currentColor;clip-path:polygon(0 5%,10% 0,40% 32%,33% 39%,0 5%,0 49%,5% 40%,38% 53%,34% 63%,0 49%,0 93%,0 83%,32% 77%,34% 87%,0 93%)}
+ .intro h1::before {top:-6px;left:-22px}
+ .intro h1::after {bottom:15%;right:-25px;color:var(--brand);transform:scaleX(-1)}
+}

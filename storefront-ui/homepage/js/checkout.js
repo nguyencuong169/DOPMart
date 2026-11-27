@@ -2,6 +2,23 @@ const form = document.querySelector('#delivery');
 const fieldNames = ['name','phone','city','ward','street'];
 const saved = JSON.parse(localStorage.getItem('dop-delivery') || '{}');
 for (const key of fieldNames) form.elements[key].value = saved[key] || '';
+document.querySelectorAll('.address-choice select').forEach(select => {
+  const field = form.elements[select.dataset.field];
+  const known = [...select.options].some(option => option.value === field.value);
+  select.value = known ? field.value : 'other';
+  function sync() {
+    const custom = select.value === 'other';
+    field.hidden = !custom;
+    field.required = custom;
+    if (!custom) field.value = select.value;
+  }
+  select.onchange = () => {
+    if (select.value === 'other') field.value = '';
+    sync();
+    if (!field.hidden) field.focus();
+  };
+  sync();
+});
 form.elements.remember.checked = Boolean(saved.street);
 function renderOrder() {
   const cart = JSON.parse(localStorage.getItem('dop-cart') || '{}');
@@ -20,7 +37,7 @@ function renderOrder() {
   document.querySelector('#fee').textContent = money(ids.length ? 20000 : 0);
   document.querySelector('#offer').textContent = ids.length ? '−20.000đ' : '0đ';
   document.querySelector('#place').disabled = !ids.length;
-  document.querySelector('.cart-count').textContent = Object.values(cart).filter(Number.isSafeInteger).reduce((sum,n) => sum+n,0);
+  document.querySelector('.cart-count').textContent = Object.keys(catalog).filter(id => cart[id] > 0).length;
 }
 renderOrder();
 window.addEventListener('pageshow',renderOrder);

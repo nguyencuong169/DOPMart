@@ -1,7 +1,7 @@
 body {background:#fbf6ef}
 .announcement {padding:5px;font-size:12px}
 .header-inner {min-height:59px;width:90%;justify-content:space-between}
-.logo {font-size:27px}
+
 .basket-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.04fr) minmax(0,1fr);gap:1.3vw;padding:20px 2.5vw 20px 0;background:radial-gradient(circle at 102% 25%,#ffda63 0 7%,transparent 7.1%),#fcf4e9}
 .intro {min-height:365px;padding:12px 0 0 16%;background:url('../../assets/images/cart-basket.webp') left bottom / 100% auto no-repeat}
 .intro h1 {font-size:clamp(36px,3.5vw,58px);letter-spacing:-2px;line-height:1.06}

@@ -37,7 +37,7 @@ function renderOrder() {
   document.querySelector('#fee').textContent = money(ids.length ? 20000 : 0);
   document.querySelector('#offer').textContent = ids.length ? '−20.000đ' : '0đ';
   document.querySelector('#place').disabled = !ids.length;
-  document.querySelector('.cart-count').textContent = Object.keys(catalog).filter(id => cart[id] > 0).length;
+  updateCartBadge(Object.keys(catalog).filter(id => cart[id] > 0).length);
 }
 renderOrder();
 window.addEventListener('pageshow',renderOrder);

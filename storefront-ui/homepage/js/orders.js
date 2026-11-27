@@ -42,12 +42,33 @@ function row(order) {
    + (state==='waiting'?'<button data-action="cancel">Hủy đơn</button>':'');
  return '<article class="order" data-id="'+id+'"><div><b>Đơn hàng #'+id+'</b><small>'+displayDate(date)+' · '+time+'</small></div><div class="thumbs">'+photos+(items.length>previewSize?'<span>+'+(items.length-previewSize)+'</span>':'')+'</div><div>Tổng tiền<strong>'+money(total)+'</strong></div><div><span class="badge-state '+state+'">'+states[state]+'</span><small>'+({done:'Đã nhận hàng: '+displayDate(date),shipping:id==='DOP241126-0029'?'Dự kiến: 26/11/2026 (15:30)':'Đang giao hàng',waiting:'Đang xử lý đơn hàng',cancelled:'Đơn hàng đã được hủy'}[state])+'</small></div><div class="actions-row">'+buttons+'</div></article>';
 }
+const phoneTabs = window.matchMedia('(max-width: 600px)');
+let revealedState;
+function updateTabEdges() {
+ const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+ tabs.classList.toggle('more-left', tabs.scrollLeft > 1);
+ tabs.classList.toggle('more-right', maxScroll - tabs.scrollLeft > 1);
+}
+function revealSelectedTab() {
+ if (phoneTabs.matches && revealedState !== stateSelect.value) {
+  const active = tabs.querySelector('[aria-pressed="true"]');
+  const bounds = tabs.getBoundingClientRect();
+  const item = active.getBoundingClientRect();
+  if (item.right > bounds.right - 18) tabs.scrollLeft += item.right - bounds.right + 18;
+  else if (item.left < bounds.left + 12) tabs.scrollLeft += item.left - bounds.left - 12;
+  revealedState = stateSelect.value;
+ }
+ updateTabEdges();
+}
+tabs.addEventListener('scroll', updateTabEdges, {passive:true});
+new ResizeObserver(() => { revealedState = undefined; revealSelectedTab(); }).observe(tabs);
 function render() {
  for (const key of ['from','to']) {
   const input = form.elements[key];
   input.parentElement.classList.toggle('has-value', Boolean(input.value));
  }
  tabs.innerHTML = Object.entries(states).map(([key,label])=>'<button data-state="'+key+'" aria-pressed="'+(stateSelect.value===key)+'">'+label+' ('+orders.filter(o=>key==='all'||o.state===key).length+')</button>').join('');
+ revealSelectedTab();
  const matches=filteredOrders(), pages=Math.ceil(matches.length/5);
  page=Math.min(page,Math.max(1,pages));
  const visible=matches.slice((page-1)*5,page*5);
@@ -68,7 +89,7 @@ tabs.onclick=e=>{if(e.target.dataset.state){stateSelect.value=e.target.dataset.s
 document.querySelector('#pages').onclick=e=>{if(e.target.dataset.page){page=Number(e.target.dataset.page);render()}};
 function cartCount(){
  const cart=JSON.parse(localStorage.getItem('dop-cart')||'{}');
- document.querySelector('.cart-count').textContent=Object.values(cart).filter(q=>q>0).length;
+ updateCartBadge(Object.values(cart).filter(q=>q>0).length);
 }
 list.onclick=e=>{
  const button=e.target.closest('[data-action]'); if(!button)return;

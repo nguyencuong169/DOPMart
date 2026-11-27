@@ -203,3 +203,27 @@
     transform: none;
   }
 }
+
+@media (max-width: 600px) {
+  .header .actions #cart {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .header .actions #cart sup.cart-count {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    min-width: 18px;
+    min-height: 18px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 4px;
+    border-radius: 20px;
+    font-size: 11px;
+    pointer-events: none;
+  }
+  .header .actions #cart .cart-count.is-empty { display: none; }
+}

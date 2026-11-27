@@ -13,8 +13,8 @@ for (const button of document.querySelectorAll('.voucher [data-code]')) {
 }
 
 const cart = JSON.parse(localStorage.getItem('dop-cart') || '{}');
-const count = document.querySelector('.cart-count');
-function updateCount() { count.textContent = Object.values(cart).filter(n => n > 0).length; }
+
+function updateCount() { updateCartBadge(Object.values(cart).filter(n => n > 0).length); }
 updateCount();
 document.querySelectorAll('[data-add]').forEach(button => button.onclick = () => {
   const id = button.dataset.add;

@@ -88,3 +88,8 @@
  .pager{align-items:center;flex-wrap:wrap;row-gap:10px}.pager button{min-width:44px;min-height:44px}
  #detail{max-width:calc(100vw - 32px);max-height:80svh;overflow:auto}
 }
+@media (max-width:600px) {
+  #tabs {--left-edge:#000;--right-edge:#000;mask-image:linear-gradient(to right,var(--left-edge),#000 14px,#000 calc(100% - 20px),var(--right-edge))}
+  #tabs.more-left {--left-edge:transparent}
+  #tabs.more-right {--right-edge:transparent}
+}

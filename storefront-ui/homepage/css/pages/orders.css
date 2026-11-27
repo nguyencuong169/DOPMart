@@ -55,3 +55,36 @@
 
 .header .actions #cart{position:relative;display:inline-grid;place-items:center}
 .header .actions #cart .cart-count{position:absolute;top:-2px;right:-3px;min-width:17px;height:17px;line-height:17px;padding:0 3px}
+
+/* Compact order history: keep the first order in view, with optional filter controls. */
+.filters .mobile-filter-toggle{display:none}
+@media(max-width:600px){
+ .orders-layout{padding:12px clamp(12px,3.8vw,18px) max(20px,env(safe-area-inset-bottom))}
+ .history-hero{min-height:92px;padding:4px 0 10px;align-items:center;gap:8px}
+ .history-hero h1{font-size:clamp(21px,5.75vw,26px);line-height:1.22}
+ .history-hero p{margin:6px 0 0;font-size:12px;line-height:1.45}
+ .history-hero img{width:24%;height:68px;object-fit:cover;object-position:74% center;border-radius:12px}
+ #tabs{margin:0 0 12px;gap:4px;scroll-padding-inline:4px}
+ #tabs button{min-height:44px;padding:8px 9px;font-size:14px}
+ .filters{grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px}
+ .filters>input{grid-column:1;font-size:16px;min-height:44px}
+ .filters .mobile-filter-toggle{display:inline-flex;min-height:44px;padding:0 12px;font-weight:600}
+ .filters:not(.filters-open) :is(.dates,#order-state,#order-reset){display:none}
+ .filters .dates{grid-column:1/-1;padding-inline:6px}
+ .filters :is(select,#order-reset,.date-field input){min-height:44px}
+ .filters select,.date-field input{font-size:16px}
+ .order{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"identity price" "products products" "status status" "actions actions";gap:10px;padding:14px;border-radius:16px}
+ .order>div:first-child{grid-area:identity;min-width:0}
+ .order>div:first-child b{font-size:clamp(13px,3.65vw,16px);overflow-wrap:anywhere;line-height:1.35}
+ .order>div:nth-child(3){grid-area:price;text-align:right;font-size:12px}
+ .order>div:nth-child(3) strong{font-size:17px;line-height:1.35}
+ .order .thumbs{grid-area:products;gap:7px}
+ .order .thumbs img{width:41px;height:46px;padding:3px}
+ .order>div:nth-child(4){grid-area:status;display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px}
+ .order small{font-size:12px;line-height:1.4}
+ .order>div:nth-child(4) small{margin:0}
+ .order .actions-row{grid-area:actions;gap:8px}
+ .order .actions-row button{min-height:44px;font-size:14px;flex:1}
+ .pager{align-items:center;flex-wrap:wrap;row-gap:10px}.pager button{min-width:44px;min-height:44px}
+ #detail{max-width:calc(100vw - 32px);max-height:80svh;overflow:auto}
+}

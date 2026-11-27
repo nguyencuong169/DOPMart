@@ -89,3 +89,9 @@ document.querySelector('#cart').onclick=()=>location.href='cart.html';
 document.querySelector('.menu').onclick=()=>location.href='index.html#categories';
 document.querySelector('.search').oninput=e=>{form.elements.query.value=e.target.value;page=1;render()};
 cartCount();render();
+
+const mobileFilters = form.querySelector('.mobile-filter-toggle');
+mobileFilters.onclick = () => {
+ const open = form.classList.toggle('filters-open');
+ mobileFilters.setAttribute('aria-expanded', String(open));
+};

@@ -1,5 +1,29 @@
-:root{--brand:#ff4938;--accent:#ffc531;--ink:#17140d;--background:#faf6f0;--surface:#fffdfa;--border:#eae7e2;--muted:#71675f;--radius:16px;--shadow:0 3px 12px #38220d08;--container:1380px;--font:'Be Vietnam Pro', Arial, sans-serif}
+:root {
+  --brand: #ff3d27;
+  --accent: #ffc123;
+  --ink: #11100a;
+  --background: #faf3e8;
+  --surface: #ffffff;
+  --border: #e6dcce;
+  --muted: #6b6159;
+  --radius: 16px;
+  --shadow: 0 0 0 1px #17140d0f, 0 1px 2px -1px #17140d0f, 0 2px 4px 0 #17140d0a;
+  --container: 1380px;
+  --font: 'Be Vietnam Pro', Arial, sans-serif;
+}
 
-@font-face { font-family:'Be Vietnam Pro'; src:url('../assets/fonts/BeVietnamPro-Regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../assets/fonts/BeVietnamPro-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
-@font-face { font-family:'Be Vietnam Pro'; src:url('../assets/fonts/BeVietnamPro-Bold.ttf') format('truetype'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../assets/fonts/BeVietnamPro-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

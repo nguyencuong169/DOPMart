@@ -1,7 +1,7 @@
 <script setup>
-import { computed, ref, watch } from "vue";
-import { Minus, Plus, ShoppingBag } from "lucide-vue-next";
-import { useCartStore } from "../../stores/cartStore";
+import { computed, ref, watch } from 'vue'
+import { Minus, Plus, ShoppingBag } from 'lucide-vue-next'
+import { useCartStore } from '../../stores/cartStore'
 
 /* The one add-to-cart control in the app: the card buy row, the card's quick button,
    the quick view and the detail page all mount this, so the quantity stepper, the
@@ -11,34 +11,36 @@ const props = defineProps({
   /* stock on the floor being shopped; null means unknown, so the control stays live */
   stock: { type: Number, default: null },
   /* "row" = stepper + button, "icon" = the single 48px button a small tile has room for */
-  variant: { type: String, default: "row" },
-  label: { type: String, default: "Thêm vào giỏ" },
-});
-const emit = defineEmits(["added"]);
+  variant: { type: String, default: 'row' },
+  label: { type: String, default: 'Thêm vào giỏ' },
+})
+const emit = defineEmits(['added'])
 
-const cart = useCartStore();
-const qty = ref(1);
-const soldOut = computed(() => props.stock !== null && props.stock <= 0);
-const ceiling = computed(() => (props.stock === null ? 99 : Math.max(1, props.stock)));
-const added = ref(false);
+const cart = useCartStore()
+const qty = ref(1)
+const soldOut = computed(() => props.stock !== null && props.stock <= 0)
+const ceiling = computed(() => (props.stock === null ? 99 : Math.max(1, props.stock)))
+const added = ref(false)
 
 /* a new product means a new quantity */
 watch(
   () => props.product?.id,
-  () => (qty.value = 1),
-);
+  () => (qty.value = 1)
+)
 
-const step = (delta) => {
-  qty.value = Math.min(ceiling.value, Math.max(1, qty.value + delta));
-};
+const step = delta => {
+  qty.value = Math.min(ceiling.value, Math.max(1, qty.value + delta))
+}
 const add = () => {
-  if (soldOut.value) return;
-  cart.add(props.product, qty.value);
-  emit("added", qty.value);
-  added.value = true;
-  qty.value = 1;
-  setTimeout(() => { added.value = false; }, 1500);
-};
+  if (soldOut.value) return
+  cart.add(props.product, qty.value)
+  emit('added', qty.value)
+  added.value = true
+  qty.value = 1
+  setTimeout(() => {
+    added.value = false
+  }, 1500)
+}
 </script>
 <template>
   <div class="qa" :class="`qa--${variant}`">
@@ -67,9 +69,7 @@ const add = () => {
       type="button"
       class="qa__go"
       :disabled="soldOut"
-      :aria-label="
-        soldOut ? `${product.name} đã hết hàng` : `Thêm ${product.name} vào giỏ`
-      "
+      :aria-label="soldOut ? `${product.name} đã hết hàng` : `Thêm ${product.name} vào giỏ`"
       @click="add"
     >
       <template v-if="added && variant === 'icon'">
@@ -78,7 +78,7 @@ const add = () => {
       <template v-else-if="added && variant === 'row'">Đã thêm</template>
       <template v-else>
         <Plus v-if="variant === 'icon'" :size="20" />
-        <span v-else>{{ soldOut ? "Hết hàng" : label }}</span><ShoppingBag :size="16"
+        <span v-else>{{ soldOut ? 'Hết hàng' : label }}</span><ShoppingBag :size="16"
       /></template>
     </button>
   </div>
@@ -117,13 +117,25 @@ const add = () => {
   background: #fff;
   color: var(--ink);
   cursor: pointer;
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 30%, transparent);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .qa__step:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+  box-shadow: none;
 }
 .qa__step:hover:not(:disabled) {
-  background: #f3f3f3;
+  background: #f7f5f0;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.qa__step:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .qa__n {
   min-width: 22px;
@@ -141,23 +153,25 @@ const add = () => {
   padding: 0 20px;
   border: var(--bw-bold) solid var(--ink);
   border-radius: var(--r-pill);
-  background: var(--yellow);
-  color: var(--ink);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
   font-weight: 800;
   font-size: var(--fs-md);
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
   transition:
     transform 0.15s,
-    box-shadow 0.15s;
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .qa__go:hover:not(:disabled) {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 4px 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
 }
 .qa__go:active:not(:disabled) {
   transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
 }
 .qa__go:disabled {
   background: color-mix(in srgb, var(--ink) 8%, transparent);
@@ -177,7 +191,7 @@ const add = () => {
 }
 .qa__go:focus-visible,
 .qa__step:focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
   outline-offset: 2px;
 }
 /* the icon form is the same 48px box, just square */

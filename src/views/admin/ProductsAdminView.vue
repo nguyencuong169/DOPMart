@@ -1,138 +1,162 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, shallowRef } from "vue";
-import { Edit, Package, Plus, RefreshCw, Search, Trash2, X, Upload, Image, FileText } from "lucide-vue-next";
-import { deleteMartProduct, upsertMartProduct, type MartAdminProduct } from "../../services/martAdminService";
-import { fetchAdminProducts, updateProductStock, uploadProductImage, getProductImageUrl } from "../../lib/supabase";
+import { computed, onMounted, reactive, shallowRef } from 'vue'
+import {
+  Edit,
+  Package,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  X,
+  Upload,
+  Image,
+  FileText,
+} from 'lucide-vue-next'
+import {
+  deleteMartProduct,
+  upsertMartProduct,
+  type MartAdminProduct,
+} from '../../services/martAdminService'
+import {
+  fetchAdminProducts,
+  updateProductStock,
+  uploadProductImage,
+  getProductImageUrl,
+} from '../../lib/supabase'
 
 interface ProductForm {
-  name: string;
-  slug: string;
-  categoryName: string;
-  formatSlug: string;
-  shelfSlug: string;
-  price: number;
-  rating: number;
-  color: string;
-  tint: string;
-  description: string;
-  isNew: boolean;
-  hot: boolean;
-  stock: number;
-  imageFile: File | null;
-  imageUrl: string | null;
+  name: string
+  slug: string
+  categoryName: string
+  formatSlug: string
+  shelfSlug: string
+  price: number
+  rating: number
+  color: string
+  tint: string
+  description: string
+  isNew: boolean
+  hot: boolean
+  stock: number
+  imageFile: File | null
+  imageUrl: string | null
 }
 
 interface ImportResult {
-  total: number;
-  success: number;
-  failed: number;
-  errors: Array<{ row: number; name?: string; error: string }>;
+  total: number
+  success: number
+  failed: number
+  errors: Array<{ row: number; name?: string; error: string }>
 }
 
-const products = shallowRef<MartAdminProduct[]>([]);
-const total = shallowRef(0);
-const loading = shallowRef(true);
-const saving = shallowRef(false);
-const errorMessage = shallowRef("");
-const message = shallowRef("");
+const products = shallowRef<MartAdminProduct[]>([])
+const total = shallowRef(0)
+const loading = shallowRef(true)
+const saving = shallowRef(false)
+const errorMessage = shallowRef('')
+const message = shallowRef('')
 
-const page = shallowRef(1);
-const pageSize = shallowRef(20);
+const page = shallowRef(1)
+const pageSize = shallowRef(20)
 
-const searchQuery = shallowRef("");
-const filterShelf = shallowRef("");
-const filterFormat = shallowRef("");
-const sortBy = shallowRef("created_at");
-const sortDir = shallowRef("desc");
+const searchQuery = shallowRef('')
+const filterShelf = shallowRef('')
+const filterFormat = shallowRef('')
+const sortBy = shallowRef('created_at')
+const sortDir = shallowRef('desc')
 
-const showForm = shallowRef(false);
-const editingId = shallowRef<number | null>(null);
-const stockEditId = shallowRef<number | null>(null);
-const stockValue = shallowRef("");
+const showForm = shallowRef(false)
+const editingId = shallowRef<number | null>(null)
+const stockEditId = shallowRef<number | null>(null)
+const stockValue = shallowRef('')
 
-const uploadFile = shallowRef<File | null>(null);
-const imagePreview = shallowRef<string | null>(null);
+const uploadFile = shallowRef<File | null>(null)
+const imagePreview = shallowRef<string | null>(null)
 
-const showImport = shallowRef(false);
-const importCsv = shallowRef("");
-const importFile = shallowRef<File | null>(null);
-const importLoading = shallowRef(false);
-const importResult = shallowRef<ImportResult | null>(null);
+const showImport = shallowRef(false)
+const importCsv = shallowRef('')
+const importFile = shallowRef<File | null>(null)
+const importLoading = shallowRef(false)
+const importResult = shallowRef<ImportResult | null>(null)
 
 const formats = [
-  { value: "chips", label: "Bim bim" },
-  { value: "noodles", label: "Mì và đồ ăn liền" },
-  { value: "instant", label: "Xúc xích" },
-  { value: "chocolate", label: "Chocolate" },
-  { value: "drinks", label: "Nước uống" },
-  { value: "spicy", label: "Đồ cay" },
-  { value: "candy", label: "Kẹo" },
-  { value: "healthy", label: "Snack lành mạnh" },
-];
+  { value: 'chips', label: 'Bim bim' },
+  { value: 'noodles', label: 'Mì và đồ ăn liền' },
+  { value: 'instant', label: 'Xúc xích' },
+  { value: 'chocolate', label: 'Chocolate' },
+  { value: 'drinks', label: 'Nước uống' },
+  { value: 'spicy', label: 'Đồ cay' },
+  { value: 'candy', label: 'Kẹo' },
+  { value: 'healthy', label: 'Snack lành mạnh' },
+]
 
 const shelves = [
-  { value: "snack-man", label: "Snack mặn" },
-  { value: "do-cay", label: "Đồ cay" },
-  { value: "ngot", label: "Ngọt và bánh" },
-  { value: "healthy", label: "Snack lành mạnh" },
-  { value: "bua-nhanh", label: "Bữa nhanh" },
-  { value: "do-uong", label: "Đồ uống" },
-];
+  { value: 'snack-man', label: 'Snack mặn' },
+  { value: 'do-cay', label: 'Đồ cay' },
+  { value: 'ngot', label: 'Ngọt và bánh' },
+  { value: 'healthy', label: 'Snack lành mạnh' },
+  { value: 'bua-nhanh', label: 'Bữa nhanh' },
+  { value: 'do-uong', label: 'Đồ uống' },
+]
 
 const form = reactive<ProductForm>({
-  name: "",
-  slug: "",
-  categoryName: "",
-  formatSlug: "chips",
-  shelfSlug: "snack-man",
+  name: '',
+  slug: '',
+  categoryName: '',
+  formatSlug: 'chips',
+  shelfSlug: 'snack-man',
   price: 0,
   rating: 0,
-  color: "#ffb82e",
-  tint: "#f5a623",
-  description: "",
+  color: '#ffb82e',
+  tint: '#f5a623',
+  description: '',
   isNew: false,
   hot: false,
   stock: 0,
   imageFile: null,
   imageUrl: null,
-});
+})
 
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(value || 0);
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value || 0)
 }
 
 function resetForm() {
   Object.assign(form, {
-    name: "",
-    slug: "",
-    categoryName: "",
-    formatSlug: "chips",
-    shelfSlug: "snack-man",
+    name: '',
+    slug: '',
+    categoryName: '',
+    formatSlug: 'chips',
+    shelfSlug: 'snack-man',
     price: 0,
     rating: 0,
-    color: "#ffb82e",
-    tint: "#f5a623",
-    description: "",
+    color: '#ffb82e',
+    tint: '#f5a623',
+    description: '',
     isNew: false,
     hot: false,
     stock: 0,
     imageFile: null,
     imageUrl: null,
-  });
-  uploadFile.value = null;
-  imagePreview.value = null;
+  })
+  uploadFile.value = null
+  imagePreview.value = null
 }
 
 function openCreate() {
-  editingId.value = null;
-  resetForm();
-  showForm.value = true;
+  editingId.value = null
+  resetForm()
+  showForm.value = true
 }
 
 function openEdit(product: MartAdminProduct) {
-  editingId.value = product.id;
+  editingId.value = product.id
   Object.assign(form, {
     name: product.name,
     slug: product.slug,
@@ -149,26 +173,26 @@ function openEdit(product: MartAdminProduct) {
     stock: product.stock,
     imageFile: null,
     imageUrl: product.image ?? null,
-  });
-  uploadFile.value = null;
-  imagePreview.value = product.image ?? null;
-  showForm.value = true;
+  })
+  uploadFile.value = null
+  imagePreview.value = product.image ?? null
+  showForm.value = true
 }
 
 function getErrorMessage(cause: unknown, fallback: string) {
-  const raw = cause instanceof Error ? cause.message : "";
-  const code = raw.split(":")[0];
+  const raw = cause instanceof Error ? cause.message : ''
+  const code = raw.split(':')[0]
   const messages: Record<string, string> = {
-    PRODUCT_NOT_FOUND: "Không tìm thấy sản phẩm.",
-    OUT_OF_STOCK: "Không đủ tồn kho.",
-    INVALID_ORDER_ITEM: "Dữ liệu đơn hàng không hợp lệ.",
-  };
-  return messages[code] || raw || fallback;
+    PRODUCT_NOT_FOUND: 'Không tìm thấy sản phẩm.',
+    OUT_OF_STOCK: 'Không đủ tồn kho.',
+    INVALID_ORDER_ITEM: 'Dữ liệu đơn hàng không hợp lệ.',
+  }
+  return messages[code] || raw || fallback
 }
 
 async function loadProducts() {
-  loading.value = true;
-  errorMessage.value = "";
+  loading.value = true
+  errorMessage.value = ''
   try {
     const { data, count } = await fetchAdminProducts({
       page: page.value,
@@ -178,43 +202,43 @@ async function loadProducts() {
       formatSlug: filterFormat.value,
       sortBy: sortBy.value,
       sortDir: sortDir.value,
-    });
-    products.value = (data as MartAdminProduct[]).map((p) => ({
+    })
+    products.value = (data as MartAdminProduct[]).map(p => ({
       ...p,
       image: p.image ?? getProductImageUrl(`products/${p.slug}.webp`),
-    }));
-    total.value = count;
+    }))
+    total.value = count
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể tải danh sách sản phẩm.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể tải danh sách sản phẩm.')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function saveProduct() {
   if (!form.name.trim()) {
-    errorMessage.value = "Vui lòng nhập tên sản phẩm.";
-    return;
+    errorMessage.value = 'Vui lòng nhập tên sản phẩm.'
+    return
   }
   if (!form.slug.trim()) {
-    errorMessage.value = "Vui lòng nhập mã định danh (slug).";
-    return;
+    errorMessage.value = 'Vui lòng nhập mã định danh (slug).'
+    return
   }
   if (form.price < 0) {
-    errorMessage.value = "Giá không được âm.";
-    return;
+    errorMessage.value = 'Giá không được âm.'
+    return
   }
 
-  saving.value = true;
-  errorMessage.value = "";
-  message.value = "";
+  saving.value = true
+  errorMessage.value = ''
+  message.value = ''
 
   try {
-    let imageUrl = form.imageUrl;
+    let imageUrl = form.imageUrl
     if (uploadFile.value) {
-      const filePath = `products/${form.slug}/${Date.now()}-${uploadFile.value.name}`;
-      await uploadProductImage(filePath, uploadFile.value);
-      imageUrl = getProductImageUrl(filePath);
+      const filePath = `products/${form.slug}/${Date.now()}-${uploadFile.value.name}`
+      await uploadProductImage(filePath, uploadFile.value)
+      imageUrl = getProductImageUrl(filePath)
     }
 
     const payload = {
@@ -232,70 +256,70 @@ async function saveProduct() {
       hot: form.hot,
       stock: form.stock,
       image: imageUrl,
-    };
-
-    if (editingId.value) {
-      await upsertMartProduct({ ...payload, id: editingId.value });
-      message.value = "Đã cập nhật sản phẩm.";
-    } else {
-      await upsertMartProduct(payload);
-      message.value = "Đã tạo sản phẩm mới.";
     }
 
-    showForm.value = false;
-    resetForm();
-    await loadProducts();
+    if (editingId.value) {
+      await upsertMartProduct({ ...payload, id: editingId.value })
+      message.value = 'Đã cập nhật sản phẩm.'
+    } else {
+      await upsertMartProduct(payload)
+      message.value = 'Đã tạo sản phẩm mới.'
+    }
+
+    showForm.value = false
+    resetForm()
+    await loadProducts()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể lưu sản phẩm.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể lưu sản phẩm.')
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
 async function deleteProduct(id: number, name: string) {
-  if (!window.confirm(`Xóa sản phẩm "${name}"?`)) return;
+  if (!window.confirm(`Xóa sản phẩm "${name}"?`)) return
   try {
-    await deleteMartProduct(id);
-    message.value = "Đã xóa sản phẩm.";
-    await loadProducts();
+    await deleteMartProduct(id)
+    message.value = 'Đã xóa sản phẩm.'
+    await loadProducts()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể xóa sản phẩm.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể xóa sản phẩm.')
   }
 }
 
 function openStockEdit(product: MartAdminProduct) {
-  stockEditId.value = product.id;
-  stockValue.value = String(product.stock ?? 0);
+  stockEditId.value = product.id
+  stockValue.value = String(product.stock ?? 0)
 }
 
 async function saveStock() {
-  const stock = Number(stockValue.value);
+  const stock = Number(stockValue.value)
   if (!Number.isInteger(stock) || stock < 0) {
-    errorMessage.value = "Tồn kho phải là số nguyên không âm.";
-    return;
+    errorMessage.value = 'Tồn kho phải là số nguyên không âm.'
+    return
   }
-  if (!stockEditId.value) return;
+  if (!stockEditId.value) return
   try {
-    await updateProductStock(stockEditId.value, stock);
-    message.value = "Đã cập nhật tồn kho.";
-    stockEditId.value = null;
-    stockValue.value = "";
-    await loadProducts();
+    await updateProductStock(stockEditId.value, stock)
+    message.value = 'Đã cập nhật tồn kho.'
+    stockEditId.value = null
+    stockValue.value = ''
+    await loadProducts()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể cập nhật tồn kho.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể cập nhật tồn kho.')
   }
 }
 
 function onImageChange(event: Event) {
-  const input = event.target as HTMLInputElement;
-  if (!input.files?.[0]) return;
-  uploadFile.value = input.files[0];
-  imagePreview.value = URL.createObjectURL(input.files[0]);
+  const input = event.target as HTMLInputElement
+  if (!input.files?.[0]) return
+  uploadFile.value = input.files[0]
+  imagePreview.value = URL.createObjectURL(input.files[0])
 }
 
 function removeImage() {
-  uploadFile.value = null;
-  imagePreview.value = editingId.value ? form.imageUrl : null;
+  uploadFile.value = null
+  imagePreview.value = editingId.value ? form.imageUrl : null
 }
 
 /* ---------------- Import CSV ---------------- */
@@ -303,93 +327,93 @@ function removeImage() {
 const importTemplate = `name,slug,categoryName,formatSlug,shelfSlug,price,rating,color,tint,description,isNew,hot,stock,image
 Khoai tây cay,khoai-tay-cay,Snack mặn,chips,snack-man,12000,4.9,#ffb82e,#f5a623,"Giòn, cay",1,0,50,
 Mì ly tôm,mì-ly-tom,Snack mặn,noodles,snack-man,18000,4.8,#ef3340,#d13a1f,"Mì ly tôm",0,1,40,
-`;
+`
 
 function parseCsv(text: string): Array<Record<string, string>> {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length === 0) return [];
-  const header = lines[0].split(",").map((h) => h.trim());
-  const rows: Array<Record<string, string>> = [];
+  const lines = text.split(/\r?\n/).filter(l => l.trim())
+  if (lines.length === 0) return []
+  const header = lines[0].split(',').map(h => h.trim())
+  const rows: Array<Record<string, string>> = []
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",");
-    const obj: Record<string, string> = {};
+    const values = lines[i].split(',')
+    const obj: Record<string, string> = {}
     header.forEach((h, idx) => {
-      obj[h] = (values[idx] ?? "").trim();
-    });
-    rows.push(obj);
+      obj[h] = (values[idx] ?? '').trim()
+    })
+    rows.push(obj)
   }
-  return rows;
+  return rows
 }
 
 function boolVal(v: string): boolean {
-  return ["1", "true", "yes", "có", "mới"].includes(String(v).trim().toLowerCase());
+  return ['1', 'true', 'yes', 'có', 'mới'].includes(String(v).trim().toLowerCase())
 }
 
 async function runImport() {
-  let rows: Array<Record<string, string>> = [];
+  let rows: Array<Record<string, string>> = []
   if (importFile.value) {
-    const text = await importFile.value.text();
-    rows = parseCsv(text);
+    const text = await importFile.value.text()
+    rows = parseCsv(text)
   } else if (importCsv.value.trim()) {
-    rows = parseCsv(importCsv.value);
+    rows = parseCsv(importCsv.value)
   } else {
-    errorMessage.value = "Vui lòng dán CSV hoặc chọn file.";
-    return;
+    errorMessage.value = 'Vui lòng dán CSV hoặc chọn file.'
+    return
   }
 
-  importLoading.value = true;
-  errorMessage.value = "";
-  const result: ImportResult = { total: rows.length, success: 0, failed: 0, errors: [] };
+  importLoading.value = true
+  errorMessage.value = ''
+  const result: ImportResult = { total: rows.length, success: 0, failed: 0, errors: [] }
 
   for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
-    const rowNum = i + 2;
+    const r = rows[i]
+    const rowNum = i + 2
     try {
-      const name = r.name?.trim();
-      const slug = r.slug?.trim();
-      if (!name || !slug) throw new Error("Thiếu tên hoặc slug");
-      if (Number(r.price) < 0) throw new Error("Giá không được âm");
+      const name = r.name?.trim()
+      const slug = r.slug?.trim()
+      if (!name || !slug) throw new Error('Thiếu tên hoặc slug')
+      if (Number(r.price) < 0) throw new Error('Giá không được âm')
 
       await upsertMartProduct({
         name,
         slug,
-        category_name: r.categoryName?.trim() || "",
-        format_slug: r.formatSlug?.trim() || "chips",
-        shelf_slug: r.shelfSlug?.trim() || "snack-man",
+        category_name: r.categoryName?.trim() || '',
+        format_slug: r.formatSlug?.trim() || 'chips',
+        shelf_slug: r.shelfSlug?.trim() || 'snack-man',
         price: Number(r.price) || 0,
         rating: Number(r.rating) || 0,
-        color: r.color?.trim() || "#ffb82e",
-        tint: r.tint?.trim() || "#f5a623",
-        description: r.description?.trim() || "",
-        is_new: boolVal(r.isNew ?? "0"),
-        hot: boolVal(r.hot ?? "0"),
+        color: r.color?.trim() || '#ffb82e',
+        tint: r.tint?.trim() || '#f5a623',
+        description: r.description?.trim() || '',
+        is_new: boolVal(r.isNew ?? '0'),
+        hot: boolVal(r.hot ?? '0'),
         stock: Number(r.stock) || 0,
         image: r.image?.trim() || null,
-      });
-      result.success++;
+      })
+      result.success++
     } catch (e) {
-      result.failed++;
+      result.failed++
       result.errors.push({
         row: rowNum,
         name: r.name?.trim(),
         error: e instanceof Error ? e.message : String(e),
-      });
+      })
     }
   }
 
-  importResult.value = result;
-  importLoading.value = false;
-  await loadProducts();
+  importResult.value = result
+  importLoading.value = false
+  await loadProducts()
 }
 
 function closeImport() {
-  showImport.value = false;
-  importResult.value = null;
-  importCsv.value = "";
-  importFile.value = null;
+  showImport.value = false
+  importResult.value = null
+  importCsv.value = ''
+  importFile.value = null
 }
 
-onMounted(loadProducts);
+onMounted(loadProducts)
 </script>
 
 <template>
@@ -403,9 +427,7 @@ onMounted(loadProducts);
         <button class="btn-secondary" @click="showImport = true">
           <FileText size="17" /> Import CSV
         </button>
-        <button class="btn-primary" @click="openCreate">
-          <Plus size="17" /> Thêm sản phẩm
-        </button>
+        <button class="btn-primary" @click="openCreate"><Plus size="17" /> Thêm sản phẩm</button>
       </div>
     </header>
 
@@ -415,7 +437,12 @@ onMounted(loadProducts);
     <div class="filters-bar">
       <div class="ad-search">
         <Search size="16" />
-        <input v-model="searchQuery" type="search" placeholder="Tìm theo tên, mã, danh mục…" @change="loadProducts" />
+        <input
+          v-model="searchQuery"
+          type="search"
+          placeholder="Tìm theo tên, mã, danh mục…"
+          @change="loadProducts"
+        />
       </div>
       <select v-model="filterShelf" @change="loadProducts" class="ad-select">
         <option value="">Tất cả danh mục</option>
@@ -445,14 +472,14 @@ onMounted(loadProducts);
       <table class="ad-table">
         <thead>
           <tr>
-            <th style="width: 52px;">Ảnh</th>
+            <th style="width: 52px">Ảnh</th>
             <th>Sản phẩm</th>
-            <th style="width: 150px;">Danh mục</th>
-            <th style="width: 130px;">Định dạng</th>
-            <th style="width: 110px;" class="amount">Giá</th>
-            <th style="width: 110px;" class="amount">Tồn kho</th>
-            <th style="width: 110px;">Trạng thái</th>
-            <th style="width: 170px;">Hành động</th>
+            <th style="width: 150px">Danh mục</th>
+            <th style="width: 130px">Định dạng</th>
+            <th style="width: 110px" class="amount">Giá</th>
+            <th style="width: 110px" class="amount">Tồn kho</th>
+            <th style="width: 110px">Trạng thái</th>
+            <th style="width: 170px">Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -472,7 +499,9 @@ onMounted(loadProducts);
             <td>{{ product.categoryName }}</td>
             <td>{{ product.format_slug }}</td>
             <td class="amount">{{ formatCurrency(product.price) }}</td>
-            <td class="amount" :class="{ 'low-stock': (product.stock ?? 0) <= 5 }">{{ product.stock ?? 0 }}</td>
+            <td class="amount" :class="{ 'low-stock': (product.stock ?? 0) <= 5 }">
+              {{ product.stock ?? 0 }}
+            </td>
             <td>
               <span
                 class="ad-tag"
@@ -481,7 +510,7 @@ onMounted(loadProducts);
                   'ad-tag--hot': product.hot,
                 }"
               >
-                {{ product.is_new ? "Mới" : product.hot ? "Nổi bật" : "" }}
+                {{ product.is_new ? 'Mới' : product.hot ? 'Nổi bật' : '' }}
               </span>
             </td>
             <td class="actions">
@@ -491,7 +520,11 @@ onMounted(loadProducts);
               <button class="ad-icon-btn" title="Cập nhật tồn kho" @click="openStockEdit(product)">
                 <Image size="16" />
               </button>
-              <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" @click="deleteProduct(product.id, product.name)">
+              <button
+                class="ad-icon-btn ad-icon-btn--danger"
+                title="Xóa"
+                @click="deleteProduct(product.id, product.name)"
+              >
                 <Trash2 size="16" />
               </button>
             </td>
@@ -503,10 +536,30 @@ onMounted(loadProducts);
     <div v-if="products.length === 0 && !loading" class="ad-empty">Chưa có sản phẩm nào.</div>
 
     <div class="pagination" v-if="total > 0">
-      <span class="pagination-info">Trang {{ page }} / {{ totalPages }} ({{ total }} sản phẩm)</span>
+      <span class="pagination-info"
+        >Trang {{ page }} / {{ totalPages }} ({{ total }} sản phẩm)</span
+      >
       <div class="pagination-controls">
-        <button class="ad-pagination-btn" :disabled="page === 1" @click="page--; loadProducts()">Trước</button>
-        <button class="ad-pagination-btn" :disabled="page >= totalPages" @click="page++; loadProducts()">Tiếp</button>
+        <button
+          class="ad-pagination-btn"
+          :disabled="page === 1"
+          @click="
+            page--
+            loadProducts()
+          "
+        >
+          Trước
+        </button>
+        <button
+          class="ad-pagination-btn"
+          :disabled="page >= totalPages"
+          @click="
+            page++
+            loadProducts()
+          "
+        >
+          Tiếp
+        </button>
       </div>
     </div>
 
@@ -514,7 +567,7 @@ onMounted(loadProducts);
     <div v-if="showForm" class="ad-modal-layer" @click.self="showForm = false">
       <form class="ad-modal" @submit.prevent="saveProduct">
         <div class="ad-modal-header">
-          <h2>{{ editingId ? "Sửa sản phẩm" : "Thêm sản phẩm mới" }}</h2>
+          <h2>{{ editingId ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h2>
           <button type="button" class="ad-icon-btn" @click="showForm = false">
             <X size="19" />
           </button>
@@ -522,7 +575,12 @@ onMounted(loadProducts);
         <div class="ad-form-grid">
           <label class="ad-field">
             <span>Tên sản phẩm <span class="req">*</span></span>
-            <input v-model="form.name" type="text" required placeholder="Ví dụ: Khoai tây cay bùng vị" />
+            <input
+              v-model="form.name"
+              type="text"
+              required
+              placeholder="Ví dụ: Khoai tây cay bùng vị"
+            />
           </label>
           <label class="ad-field">
             <span>Mã định danh (slug) <span class="req">*</span></span>
@@ -584,14 +642,23 @@ onMounted(loadProducts);
               <div class="ad-image-preview">
                 <img v-if="imagePreview" :src="imagePreview" alt="preview" />
                 <Upload v-else size="28" />
-                <button type="button" class="ad-remove-image" v-if="imagePreview && editingId" @click="removeImage">Xóa ảnh</button>
+                <button
+                  type="button"
+                  class="ad-remove-image"
+                  v-if="imagePreview && editingId"
+                  @click="removeImage"
+                >
+                  Xóa ảnh
+                </button>
               </div>
             </div>
           </label>
         </div>
         <div class="ad-modal-footer">
           <button type="button" class="btn-secondary" @click="showForm = false">Hủy</button>
-          <button type="submit" class="btn-primary" :disabled="saving">{{ saving ? "Đang lưu…" : "Lưu sản phẩm" }}</button>
+          <button type="submit" class="btn-primary" :disabled="saving">
+            {{ saving ? 'Đang lưu…' : 'Lưu sản phẩm' }}
+          </button>
         </div>
       </form>
     </div>
@@ -630,54 +697,137 @@ onMounted(loadProducts);
         <div class="ad-form-grid ad-form-grid--wide">
           <label class="ad-field">
             <span>Tệp CSV <span class="req">*</span></span>
-            <input type="file" accept=".csv" @change="(e) => { importFile.value = (e.target as HTMLInputElement).files?.[0] ?? null; }" />
+            <input
+              type="file"
+              accept=".csv"
+              @change="
+                e => {
+                  importFile.value = (e.target as HTMLInputElement).files?.[0] ?? null
+                }
+              "
+            />
             <small class="ad-muted">Hoặc dán nội dung CSV bên dưới</small>
           </label>
           <label class="ad-field ad-field--wide">
-            <textarea v-model="importCsv" rows="8" placeholder="name,slug,categoryName,formatSlug,shelfSlug,price,rating,color,tint,description,isNew,hot,stock,image"></textarea>
+            <textarea
+              v-model="importCsv"
+              rows="8"
+              placeholder="name,slug,categoryName,formatSlug,shelfSlug,price,rating,color,tint,description,isNew,hot,stock,image"
+            ></textarea>
           </label>
           <details class="ad-csv-help">
-            <summary style="cursor: pointer; font-weight: 800;">Mẫu CSV (nhấn để xem)</summary>
+            <summary style="cursor: pointer; font-weight: 800">Mẫu CSV (nhấn để xem)</summary>
             <pre>{{ importTemplate }}</pre>
           </details>
-          <small class="ad-muted">Lưu ý: cột <code>isNew</code>, <code>hot</code> nhận 1/0. Cột <code>image</code> để trống nếu không có ảnh.</small>
+          <small class="ad-muted"
+            >Lưu ý: cột <code>isNew</code>, <code>hot</code> nhận 1/0. Cột <code>image</code> để
+            trống nếu không có ảnh.</small
+          >
         </div>
         <div class="ad-modal-footer">
           <button type="button" class="btn-secondary" @click="closeImport">Hủy</button>
-          <button type="submit" class="btn-primary" :disabled="importLoading">{{ importLoading ? "Đang nhập…" : "Chạy import" }}</button>
+          <button type="submit" class="btn-primary" :disabled="importLoading">
+            {{ importLoading ? 'Đang nhập…' : 'Chạy import' }}
+          </button>
         </div>
       </form>
     </div>
 
     <!-- Import result modal -->
     <div v-if="importResult" class="ad-modal-layer" @click.self="importResult = null">
-      <form class="ad-modal" style="max-width: 700px;">
+      <form class="ad-modal" style="max-width: 700px">
         <div class="ad-modal-header">
           <h2>Kết quả import</h2>
           <button type="button" class="ad-icon-btn" @click="importResult = null">
             <X size="19" />
           </button>
         </div>
-        <div class="ad-form-grid ad-form-grid--wide" style="gap: var(--sp-3);">
-          <div style="background: #e8f7ea; border: var(--bw) solid #b9e3cc; border-radius: var(--ad-radius); padding: var(--sp-3);">
-            <div style="font-size: var(--fs-xs); color: #216b37; font-weight: 800; text-transform: uppercase; letter-spacing: var(--tracking-kicker);">Thành công</div>
-            <div style="font-size: 32px; font-weight: 900; color: var(--ink);">{{ importResult.success }}</div>
+        <div class="ad-form-grid ad-form-grid--wide" style="gap: var(--sp-3)">
+          <div
+            style="
+              background: #e8f7ea;
+              border: var(--bw) solid #b9e3cc;
+              border-radius: var(--ad-radius);
+              padding: var(--sp-3);
+            "
+          >
+            <div
+              style="
+                font-size: var(--fs-xs);
+                color: #216b37;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: var(--tracking-kicker);
+              "
+            >
+              Thành công
+            </div>
+            <div style="font-size: 32px; font-weight: 900; color: var(--ink)">
+              {{ importResult.success }}
+            </div>
           </div>
-          <div v-if="importResult.failed > 0" style="background: #fff0ef; border: var(--bw) solid #f5c6bf; border-radius: var(--ad-radius); padding: var(--sp-3);">
-            <div style="font-size: var(--fs-xs); color: #9b211a; font-weight: 800; text-transform: uppercase; letter-spacing: var(--tracking-kicker);">Thất bại</div>
-            <div style="font-size: 32px; font-weight: 900; color: var(--ink);">{{ importResult.failed }}</div>
+          <div
+            v-if="importResult.failed > 0"
+            style="
+              background: #fff0ef;
+              border: var(--bw) solid #f5c6bf;
+              border-radius: var(--ad-radius);
+              padding: var(--sp-3);
+            "
+          >
+            <div
+              style="
+                font-size: var(--fs-xs);
+                color: #9b211a;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: var(--tracking-kicker);
+              "
+            >
+              Thất bại
+            </div>
+            <div style="font-size: 32px; font-weight: 900; color: var(--ink)">
+              {{ importResult.failed }}
+            </div>
           </div>
           <div v-if="importResult.failed > 0">
-            <label style="font-size: var(--fs-xs); font-weight: 800; color: #645b53;">Chi tiết lỗi</label>
-            <ul style="margin: var(--sp-1) 0 0; padding-left: var(--sp-3); color: #191919; font-size: var(--fs-sm); max-height: 200px; overflow: auto; border: var(--bw) solid #d9cec1; border-radius: var(--ad-radius); background: #fff; padding: var(--sp-2);">
+            <label style="font-size: var(--fs-xs); font-weight: 800; color: #645b53"
+              >Chi tiết lỗi</label
+            >
+            <ul
+              style="
+                margin: var(--sp-1) 0 0;
+                padding-left: var(--sp-3);
+                color: #191919;
+                font-size: var(--fs-sm);
+                max-height: 200px;
+                overflow: auto;
+                border: var(--bw) solid #d9cec1;
+                border-radius: var(--ad-radius);
+                background: #fff;
+                padding: var(--sp-2);
+              "
+            >
               <li v-for="err in importResult.errors" :key="err.row">
-                Dòng {{ err.row }}<span v-if="err.name" style="color: #645b53; font-weight: 600;"> ({{ err.name }})</span>: {{ err.error }}
+                Dòng {{ err.row
+                }}<span v-if="err.name" style="color: #645b53; font-weight: 600">
+                  ({{ err.name }})</span
+                >: {{ err.error }}
               </li>
             </ul>
           </div>
         </div>
         <div class="ad-modal-footer">
-          <button type="button" class="btn-primary" @click="importResult = null; closeImport()">Đóng</button>
+          <button
+            type="button"
+            class="btn-primary"
+            @click="
+              importResult = null
+              closeImport()
+            "
+          >
+            Đóng
+          </button>
         </div>
       </form>
     </div>
@@ -753,7 +903,9 @@ onMounted(loadProducts);
   font-weight: 800;
   font-family: var(--font-ui);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   font-size: var(--fs-sm);
 }
 
@@ -1095,7 +1247,7 @@ onMounted(loadProducts);
   gap: var(--sp-1) !important;
 }
 
-.ad-field input:not([type="checkbox"]),
+.ad-field input:not([type='checkbox']),
 .ad-field select,
 .ad-field textarea {
   width: 100%;
@@ -1109,7 +1261,7 @@ onMounted(loadProducts);
   outline: 0;
 }
 
-.ad-field input[type="color"] {
+.ad-field input[type='color'] {
   width: 100%;
   height: 40px;
   border: 0;
@@ -1140,7 +1292,7 @@ onMounted(loadProducts);
   position: relative;
 }
 
-.ad-image-uploader input[type="file"] {
+.ad-image-uploader input[type='file'] {
   position: absolute;
   inset: 0;
   opacity: 0;

@@ -1,92 +1,87 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { Heart } from "lucide-vue-next";
-import QuickAdd from "./QuickAdd.vue";
-import { headWords } from "../../data/products";
+import { computed, onMounted, ref } from 'vue'
+import { Heart } from 'lucide-vue-next'
+import QuickAdd from './QuickAdd.vue'
+import { headWords } from '../../data/products'
 
 const props = defineProps({
   product: { type: Object, required: true },
   index: { type: Number, default: 0 },
-  variant: { type: String, default: "shelf" },
+  variant: { type: String, default: 'shelf' },
   favorited: { type: Boolean, default: false },
   stock: { type: Number, default: null },
-  floor: { type: [Number, String], default: "" },
+  floor: { type: [Number, String], default: '' },
   hideInfo: { type: Boolean, default: false },
-});
-const emit = defineEmits(["quick", "toggle-favorite"]);
+})
+const emit = defineEmits(['quick', 'toggle-favorite'])
 
-const isGrid = computed(() => props.variant === "grid");
-const soldOut = computed(() => props.stock !== null && props.stock <= 0);
-const nameVisible = ref(false);
-const lowStock = computed(
-  () => props.stock !== null && props.stock > 0 && props.stock <= 3,
-);
+const isGrid = computed(() => props.variant === 'grid')
+const soldOut = computed(() => props.stock !== null && props.stock <= 0)
+const nameVisible = ref(false)
+const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3)
 const stockLabel = computed(() => {
-  if (props.stock === null) return "";
-  const at = props.floor === "" ? "" : `Tầng ${props.floor}`;
-  const tail = at ? ` · ${at}` : "";
-  if (soldOut.value) return `Hết hàng${tail}`;
-  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`;
-  return `Còn ${props.stock}${tail}`;
-});
+  if (props.stock === null) return ''
+  const at = props.floor === '' ? '' : `Tầng ${props.floor}`
+  const tail = at ? ` · ${at}` : ''
+  if (soldOut.value) return `Hết hàng${tail}`
+  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`
+  return `Còn ${props.stock}${tail}`
+})
 
-const fmt = (n) => n.toLocaleString("vi-VN");
-const onColor = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const l =
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#1a1a1a" : "#ffffff";
-};
+const fmt = n => n.toLocaleString('vi-VN')
+const onColor = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#1a1a1a' : '#ffffff'
+}
 
 const discount = computed(() =>
   props.product.oldPrice > props.product.price
     ? Math.round((1 - props.product.price / props.product.oldPrice) * 100)
-    : 0,
-);
+    : 0
+)
 
-const splitName = (name) => {
-  const words = String(name ?? "")
+const splitName = name => {
+  const words = String(name ?? '')
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
-  if (words.length < 2) return [words[0] ?? "", ""];
-  if (words.length === 2) return [words[0], words[1]];
-  const cut = words.length - 2;
-  return [words.slice(0, cut).join(" "), words.slice(cut).join(" ")];
-};
+    .filter(Boolean)
+  if (words.length < 2) return [words[0] ?? '', '']
+  if (words.length === 2) return [words[0], words[1]]
+  const cut = words.length - 2
+  return [words.slice(0, cut).join(' '), words.slice(cut).join(' ')]
+}
 
-let ctx = null;
-const fontTick = ref(0);
+let ctx = null
+const fontTick = ref(0)
 const head = computed(() => {
-  fontTick.value;
-  if (typeof document !== "undefined" && !ctx)
-    ctx = document.createElement("canvas").getContext("2d");
-  if (ctx)
-    ctx.font =
-      'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
+  fontTick.value
+  if (typeof document !== 'undefined' && !ctx)
+    ctx = document.createElement('canvas').getContext('2d')
+  if (ctx) ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif'
   const slogan = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
-    "",
-  ];
-  const lines = isGrid.value ? slogan : splitName(props.product.name);
+    '',
+  ]
+  const lines = isGrid.value ? slogan : splitName(props.product.name)
   const widest = Math.max(
-    ...lines.map((l) => {
-      const text = (l ?? "").toUpperCase();
-      return Math.max(ctx ? ctx.measureText(text).width : text.length * 42, 1);
+    ...lines.map(l => {
+      const text = (l ?? '').toUpperCase()
+      return Math.max(ctx ? ctx.measureText(text).width : text.length * 42, 1)
     }),
-    1,
-  );
-  const size = Math.min(26, Math.max(12, 9600 / widest));
-  return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
-});
+    1
+  )
+  const size = Math.min(26, Math.max(12, 9600 / widest))
+  return { lines, style: { '--hs': `${size.toFixed(2)}cqw` } }
+})
 onMounted(async () => {
   try {
-    await document.fonts.load('italic 900 100px "Barlow Condensed"');
+    await document.fonts.load('italic 900 100px "Barlow Condensed"')
   } catch {
-    fontTick.value += 1;
+    fontTick.value += 1
   }
-  fontTick.value += 1;
-});
+  fontTick.value += 1
+})
 </script>
 
 <template>
@@ -102,9 +97,7 @@ onMounted(async () => {
     <div class="cat-card__stage">
       <div class="cat-card__head" aria-hidden="true" :style="head.style">
         <span class="cat-card__line">{{ head.lines[0] }}</span>
-        <span class="cat-card__line cat-card__line--hollow">{{
-          head.lines[1]
-        }}</span>
+        <span class="cat-card__line cat-card__line--hollow">{{ head.lines[1] }}</span>
       </div>
       <i class="cat-card__ground" aria-hidden="true"></i>
       <button
@@ -113,28 +106,17 @@ onMounted(async () => {
         :aria-label="`Xem nhanh ${product.name}`"
         @click="emit('quick')"
       >
-        <img
-          :src="product.image"
-          :alt="product.name"
-          loading="lazy"
-          decoding="async"
-        />
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
 
       <div class="cat-card__tags">
-        <span
-          v-if="product.isNew"
-          class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
+        <span v-if="product.isNew" class="cat-card__tag cat-card__tag--new cat-card__tag--hang-left"
           >MỚI</span
         >
-        <span
-          v-if="product.hot"
-          class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
+        <span v-if="product.hot" class="cat-card__tag cat-card__tag--hot cat-card__tag--hang-left"
           >BÁN CHẠY</span
         >
-        <span
-          v-if="discount"
-          class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
+        <span v-if="discount" class="cat-card__tag cat-card__tag--save cat-card__tag--hang-left"
           >-{{ discount }}%</span
         >
       </div>
@@ -151,9 +133,7 @@ onMounted(async () => {
         type="button"
         class="cat-card__fav"
         :class="{ liked: favorited }"
-        :aria-label="
-          favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`
-        "
+        :aria-label="favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`"
         :aria-pressed="favorited"
         @click="emit('toggle-favorite')"
       >
@@ -184,11 +164,7 @@ onMounted(async () => {
         <span>★ {{ product.rating }}</span
         ><span>{{ product.sold }} đã bán</span>
       </p>
-      <p
-        v-if="stockLabel"
-        class="cat-card__stock"
-        :class="{ low: lowStock, out: soldOut }"
-      >
+      <p v-if="stockLabel" class="cat-card__stock" :class="{ low: lowStock, out: soldOut }">
         {{ stockLabel }}
       </p>
       <div class="cat-card__price-row">
@@ -225,7 +201,7 @@ onMounted(async () => {
   -moz-user-select: none;
   user-select: none;
   opacity: 0;
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
   font-size: var(--hs, 22cqw);
@@ -334,8 +310,7 @@ onMounted(async () => {
 }
 .cat-card:hover .cat-card__shot,
 .cat-card:focus-within .cat-card__shot {
-  transform: translateX(-50%) translateY(-10px) rotate(var(--tilt, 3deg))
-    scale(1.08);
+  transform: translateX(-50%) translateY(-10px) rotate(var(--tilt, 3deg)) scale(1.08);
   filter: drop-shadow(2px 8px 4px rgba(0, 0, 0, 0.16))
     drop-shadow(18px 40px 30px rgba(0, 0, 0, 0.22));
 }
@@ -372,7 +347,7 @@ onMounted(async () => {
   box-shadow: 2px 3px 0 var(--ink);
 }
 .cat-card__tag::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 6px;
@@ -383,7 +358,7 @@ onMounted(async () => {
   background: inherit;
 }
 .cat-card__tag::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 26px;
@@ -460,22 +435,28 @@ onMounted(async () => {
   padding: 10px 12px;
   border: 2.5px solid var(--ink);
   border-radius: 999px;
-  background: #ffc72c;
-  color: var(--ink);
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: #fff;
   font: 700 clamp(12px, 3.6cqw, 15px) / 1 var(--fd, var(--font-display));
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
   transition:
     transform 0.15s,
-    box-shadow 0.15s;
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .cat-card__add:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 4px 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  background: linear-gradient(180deg, #ff706d, #e84542);
 }
 .cat-card__add:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
+  box-shadow: 1px 1px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+.cat-card__add:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
 }
 
 .cat-card--grid .cat-card__stage {
@@ -505,7 +486,7 @@ onMounted(async () => {
   border-radius: var(--r-pill);
   background: #fff;
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
   cursor: pointer;
   transition:
     transform 0.15s,
@@ -514,7 +495,11 @@ onMounted(async () => {
 }
 .cat-card__fav:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 50%, transparent);
+}
+.cat-card__fav:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .cat-card__fav.liked {
   background: var(--red-ink);
@@ -560,8 +545,8 @@ onMounted(async () => {
   content: attr(data-name);
   display: block;
   font:
-    800 clamp(14px, 3.2cqw, 22px) "Barlow Condensed",
-    "Arial Narrow",
+    800 clamp(14px, 3.2cqw, 22px) 'Barlow Condensed',
+    'Arial Narrow',
     Impact,
     sans-serif;
   line-height: 1.2;

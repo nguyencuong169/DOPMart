@@ -1,31 +1,22 @@
 <script setup>
-import {
-  computed,
-  shallowRef,
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-  watch,
-} from "vue";
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from "lucide-vue-next";
-import SectionHeader from "../common/SectionHeader.vue";
-import NewCatalogCard from "./NewCatalogCard.vue";
-import { useProductStore } from "../../stores/productStore";
+import { computed, shallowRef, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import SectionHeader from '../common/SectionHeader.vue'
+import NewCatalogCard from './NewCatalogCard.vue'
+import { useProductStore } from '../../stores/productStore'
 
-const MAX = 4; // số món đại diện tối đa mỗi category
-const store = useProductStore();
-const active = shallowRef("all");
-const focusedSlug = shallowRef("all"); // roving tabindex: tracks which tab is keyboard-reachable
-const uid = Math.random().toString(36).slice(2, 7);
+const MAX = 4 // số món đại diện tối đa mỗi category
+const store = useProductStore()
+const active = shallowRef('all')
+const focusedSlug = shallowRef('all') // roving tabindex: tracks which tab is keyboard-reachable
+const uid = Math.random().toString(36).slice(2, 7)
 
 // chọn màu chữ (đen/trắng) theo độ sáng của màu sản phẩm
-const onColor = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const l =
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#1a1a1a" : "#ffffff";
-};
+const onColor = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#1a1a1a' : '#ffffff'
+}
 
 // --- accent color handling ---------------------------------------------
 // Raw product-art colors vary wildly in saturation/lightness (a pale latte
@@ -35,114 +26,107 @@ const onColor = (hex) => {
 // product happens to be this week's bestseller. Pin a slug in BRAND_COLORS
 // to lock an exact color instead of the auto-normalized one.
 const BRAND_COLORS = {
-  all: "#ffc72c",
-};
-const ACCENT_SAT = [58, 74]; // %
-const ACCENT_LIGHT = [46, 58]; // %
+  all: '#ffc72c',
+}
+const ACCENT_SAT = [58, 74] // %
+const ACCENT_LIGHT = [46, 58] // %
 
-const hexToHsl = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const r = ((n >> 16) & 255) / 255;
-  const g = ((n >> 8) & 255) / 255;
-  const b = (n & 255) / 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  const d = max - min;
-  let h = 0;
-  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+const hexToHsl = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const r = ((n >> 16) & 255) / 255
+  const g = ((n >> 8) & 255) / 255
+  const b = (n & 255) / 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  const d = max - min
+  let h = 0
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1))
   if (d !== 0) {
     switch (max) {
       case r:
-        h = ((g - b) / d) % 6;
-        break;
+        h = ((g - b) / d) % 6
+        break
       case g:
-        h = (b - r) / d + 2;
-        break;
+        h = (b - r) / d + 2
+        break
       default:
-        h = (r - g) / d + 4;
+        h = (r - g) / d + 4
     }
-    h *= 60;
-    if (h < 0) h += 360;
+    h *= 60
+    if (h < 0) h += 360
   }
-  return [h, s * 100, l * 100];
-};
+  return [h, s * 100, l * 100]
+}
 
 const hslToHex = (h, s, l) => {
-  s /= 100;
-  l /= 100;
-  const k = (n) => (n + h / 30) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n) =>
-    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  const toHex = (x) =>
+  s /= 100
+  l /= 100
+  const k = n => (n + h / 30) % 12
+  const a = s * Math.min(l, 1 - l)
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+  const toHex = x =>
     Math.round(255 * x)
       .toString(16)
-      .padStart(2, "0");
-  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
-};
+      .padStart(2, '0')
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`
+}
 
-const clamp = (v, [min, max]) => Math.min(max, Math.max(min, v));
+const clamp = (v, [min, max]) => Math.min(max, Math.max(min, v))
 
-const toAccent = (hex) => {
-  const [h, s, l] = hexToHsl(hex);
-  return hslToHex(h, clamp(s, ACCENT_SAT), clamp(l, ACCENT_LIGHT));
-};
+const toAccent = hex => {
+  const [h, s, l] = hexToHsl(hex)
+  return hslToHex(h, clamp(s, ACCENT_SAT), clamp(l, ACCENT_LIGHT))
+}
 
-const resolveColor = (slug, fallbackHex) =>
-  BRAND_COLORS[slug] ?? toAccent(fallbackHex);
+const resolveColor = (slug, fallbackHex) => BRAND_COLORS[slug] ?? toAccent(fallbackHex)
 
 const tabs = computed(() => {
   const cats = store.categories
-    .map((c) => ({
+    .map(c => ({
       ...c,
       items: store.shopByMood[c.slug] ?? [],
     }))
-    .filter((c) => c.items.length);
+    .filter(c => c.items.length)
   const all = {
-    slug: "all",
-    name: "Tất cả",
-    tagline: "Bán chạy nhất tuần này",
+    slug: 'all',
+    name: 'Tất cả',
+    tagline: 'Bán chạy nhất tuần này',
     items: store.bestSellersList,
-  };
-  return [all, ...cats].map((t) => ({
+  }
+  return [all, ...cats].map(t => ({
     ...t,
     color: resolveColor(t.slug, t.items[0]?.color),
-    imgs: t.items.slice(0, t.slug === "all" ? 3 : 2).map((p) => p.image),
-  }));
-});
-const current = computed(
-  () => tabs.value.find((t) => t.slug === active.value) ?? tabs.value[0],
-);
-const shown = computed(() => current.value.items.slice(0, MAX));
+    imgs: t.items.slice(0, t.slug === 'all' ? 3 : 2).map(p => p.image),
+  }))
+})
+const current = computed(() => tabs.value.find(t => t.slug === active.value) ?? tabs.value[0])
+const shown = computed(() => current.value.items.slice(0, MAX))
 const link = computed(() =>
-  current.value.slug === "all"
-    ? "/products"
-    : `/category/${current.value.slug}`,
-);
+  current.value.slug === 'all' ? '/products' : `/category/${current.value.slug}`
+)
 
 function select(slug) {
-  active.value = slug;
-  focusedSlug.value = slug;
+  active.value = slug
+  focusedSlug.value = slug
 }
 
 function onTabFocus(slug) {
-  focusedSlug.value = slug;
+  focusedSlug.value = slug
 }
 
 function onTabKeydown(e) {
-  const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
-  if (!keys.includes(e.key)) return;
-  e.preventDefault();
-  const list = Array.from(e.currentTarget.parentElement.children);
-  const idx = list.indexOf(e.currentTarget);
-  let nextIdx = idx;
-  if (e.key === "ArrowRight") nextIdx = (idx + 1) % list.length;
-  else if (e.key === "ArrowLeft")
-    nextIdx = (idx - 1 + list.length) % list.length;
-  else if (e.key === "Home") nextIdx = 0;
-  else if (e.key === "End") nextIdx = list.length - 1;
-  list[nextIdx].focus(); // fires @focus -> onTabFocus, which moves the roving tabindex
+  const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End']
+  if (!keys.includes(e.key)) return
+  e.preventDefault()
+  const list = Array.from(e.currentTarget.parentElement.children)
+  const idx = list.indexOf(e.currentTarget)
+  let nextIdx = idx
+  if (e.key === 'ArrowRight') nextIdx = (idx + 1) % list.length
+  else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + list.length) % list.length
+  else if (e.key === 'Home') nextIdx = 0
+  else if (e.key === 'End') nextIdx = list.length - 1
+  list[nextIdx].focus() // fires @focus -> onTabFocus, which moves the roving tabindex
 }
 
 // --- scroll affordance ---------------------------------------------------
@@ -150,39 +134,39 @@ function onTabKeydown(e) {
 // mouse/trackpad users (no natural horizontal-scroll gesture). Chevron
 // buttons appear only when there's somewhere to scroll to; touch devices
 // already have swipe, so the buttons hide themselves there (see CSS).
-const tabsEl = ref(null);
-const canScrollLeft = ref(false);
-const canScrollRight = ref(false);
+const tabsEl = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
 
 function updateScrollState() {
-  const el = tabsEl.value;
-  if (!el) return;
-  canScrollLeft.value = el.scrollLeft > 4;
-  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+  const el = tabsEl.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 4
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 4
 }
 
 function scrollByTabs(dir) {
-  const el = tabsEl.value;
-  if (!el) return;
-  el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+  const el = tabsEl.value
+  if (!el) return
+  el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
 }
 
-let resizeObserver;
+let resizeObserver
 onMounted(async () => {
-  await store.init();
-  await store.fetchShopByMood();
-  updateScrollState();
-  tabsEl.value?.addEventListener("scroll", updateScrollState, {
+  await store.init()
+  await store.fetchShopByMood()
+  updateScrollState()
+  tabsEl.value?.addEventListener('scroll', updateScrollState, {
     passive: true,
-  });
-  resizeObserver = new ResizeObserver(updateScrollState);
-  if (tabsEl.value) resizeObserver.observe(tabsEl.value);
-});
+  })
+  resizeObserver = new ResizeObserver(updateScrollState)
+  if (tabsEl.value) resizeObserver.observe(tabsEl.value)
+})
 onBeforeUnmount(() => {
-  tabsEl.value?.removeEventListener("scroll", updateScrollState);
-  resizeObserver?.disconnect();
-});
-watch(tabs, () => nextTick(updateScrollState));
+  tabsEl.value?.removeEventListener('scroll', updateScrollState)
+  resizeObserver?.disconnect()
+})
+watch(tabs, () => nextTick(updateScrollState))
 </script>
 
 <template>
@@ -257,7 +241,7 @@ watch(tabs, () => nextTick(updateScrollState));
         :id="`${uid}-panel`"
         :aria-labelledby="`${uid}-tab-${current.slug}`"
       >
-          <NewCatalogCard
+        <NewCatalogCard
           v-for="(p, i) in shown"
           :key="p.id ?? p.slug"
           :product="p"
@@ -331,21 +315,18 @@ watch(tabs, () => nextTick(updateScrollState));
 }
 /* Atmospheric noise texture to remove digital sterility */
 .cat-stage::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(
-    circle at 25% 25%,
-    rgba(255, 255, 255, 0.03),
-    transparent 40%
-  ),
-  repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.02),
-    rgba(0, 0, 0, 0.02) 1px,
-    transparent 1px,
-    transparent 2px
-  );
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.03), transparent 40%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.02),
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 2px
+    );
   opacity: 0.6;
   pointer-events: none;
   z-index: 0;
@@ -358,17 +339,12 @@ watch(tabs, () => nextTick(updateScrollState));
   width: 100%;
   padding: var(--sp-4) 0 var(--sp-3);
   scroll-padding-inline: var(--gutter, 12px);
-  mask-image: linear-gradient(
-    to right,
-    #000 0,
-    #000 calc(100% - 72px),
-    transparent 100%
-  );
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 72px), transparent 100%);
   scroll-snap-type: x proximity;
   scrollbar-width: none;
 }
 .cat-tabs::after {
-  content: "";
+  content: '';
   flex: none;
   width: 72px;
 }
@@ -398,16 +374,11 @@ watch(tabs, () => nextTick(updateScrollState));
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   background: var(--c);
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--c) 90%, #fff),
-    var(--c) 70%
-  );
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c) 90%, #fff), var(--c) 70%);
   box-shadow:
     0 6px 0 var(--cd),
     0 16px 18px -6px rgba(0, 0, 0, 0.35);
-  transition:
-    transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+  transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .cat-tab:active {
   transform: translateY(2px);
@@ -420,7 +391,7 @@ watch(tabs, () => nextTick(updateScrollState));
   outline-offset: 4px;
   border-radius: var(--r-md);
 }
-.cat-tab[aria-selected="true"] {
+.cat-tab[aria-selected='true'] {
   transform: translateY(-8px);
   box-shadow:
     0 0 0 3px #fff,
@@ -428,8 +399,8 @@ watch(tabs, () => nextTick(updateScrollState));
     0 13px 0 3px var(--cd),
     0 24px 26px -8px rgba(0, 0, 0, 0.4);
 }
-.cat-tab[aria-selected="true"]:after {
-  content: "";
+.cat-tab[aria-selected='true']:after {
+  content: '';
   position: absolute;
   left: 50%;
   top: calc(100% + var(--sp-2));
@@ -463,17 +434,13 @@ watch(tabs, () => nextTick(updateScrollState));
   transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .cat-tab__pop:before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -4% -14% -2%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 255, 255, 0.55),
-    transparent
-  );
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.55), transparent);
   z-index: 0;
 }
-.cat-tab[aria-selected="true"] .cat-tab__pop {
+.cat-tab[aria-selected='true'] .cat-tab__pop {
   transform: translateY(-7px) scale(1.1);
 }
 .cat-tab__pop img {
@@ -484,8 +451,7 @@ watch(tabs, () => nextTick(updateScrollState));
   max-width: 100%;
   object-fit: contain;
   z-index: 3;
-  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.25))
-    drop-shadow(0 9px 6px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.25)) drop-shadow(0 9px 6px rgba(0, 0, 0, 0.25));
 }
 .cat-tab__pop img:nth-child(2) {
   right: 30%;
@@ -528,7 +494,9 @@ watch(tabs, () => nextTick(updateScrollState));
   font-weight: 700;
   text-decoration: none;
   box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   position: relative;
 }
 .cat-more__down {
@@ -586,10 +554,10 @@ watch(tabs, () => nextTick(updateScrollState));
   .cat-tab:active {
     transform: none;
   }
-  .cat-tab[aria-selected="true"] {
+  .cat-tab[aria-selected='true'] {
     transform: none;
   }
-  .cat-tab[aria-selected="true"] .cat-tab__pop {
+  .cat-tab[aria-selected='true'] .cat-tab__pop {
     transform: none;
   }
   .cat-scroll:hover {

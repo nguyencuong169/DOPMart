@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { Minus, Plus, X } from "lucide-vue-next";
-import { useCartStore } from "../../stores/cartStore";
-defineProps({ item: Object });
-const cart = useCartStore();
+import { computed } from 'vue'
+import { Minus, Plus, X } from 'lucide-vue-next'
+import { useCartStore } from '../../stores/cartStore'
+defineProps({ item: Object })
+const cart = useCartStore()
 
 const formatVnd = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
     maximumFractionDigits: 0,
-  }).format(amount ?? 0);
+  }).format(amount ?? 0)
 </script>
 <template>
   <article class="cart-item" :class="{ 'is-empty': !item.image }">
     <div class="cart-item__visual">
-      <img
-        v-if="item.image"
-        :src="item.image"
-        :alt="item.name"
-        loading="lazy"
-        decoding="async"
-      />
+      <img v-if="item.image" :src="item.image" :alt="item.name" loading="lazy" decoding="async" />
       <span v-else class="cart-item__badge">{{ item.name.slice(0, 1).toUpperCase() }}</span>
     </div>
     <div class="cart-item__body">
@@ -70,11 +64,11 @@ const formatVnd = (amount: number) =>
   position: relative;
 }
 .cart-item::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 -40px -40px 0;
   background: var(--yellow);
-  opacity: 0.10;
+  opacity: 0.1;
   z-index: 0;
   transform: rotate(-2deg);
   transform-origin: top left;
@@ -179,7 +173,9 @@ const formatVnd = (amount: number) =>
   place-items: center;
   cursor: pointer;
   box-shadow: 2px 2px 0 var(--ink);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .cart-item__qty:hover {
   transform: translate(-1px, -1px);

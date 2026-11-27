@@ -1,7 +1,7 @@
 <script setup>
-import SectionHeader from "../common/SectionHeader.vue";
-import ProductGrid from "./ProductGrid.vue";
-defineProps({ products: { type: Array, default: () => [] } });
+import SectionHeader from '../common/SectionHeader.vue'
+import ProductGrid from './ProductGrid.vue'
+defineProps({ products: { type: Array, default: () => [] } })
 </script>
 <template>
   <section id="moi-len-ke" class="new-strip">
@@ -21,7 +21,7 @@ defineProps({ products: { type: Array, default: () => [] } });
 .new-strip {
   --ink: #1a1a1a;
   --cream: #fffaf0;
-  --fd: var(--font-display, "Bricolage Grotesque", system-ui, sans-serif);
+  --fd: var(--font-display, 'Bricolage Grotesque', system-ui, sans-serif);
   --fresh-ink: #17251b;
   --fresh-green: #0e5934;
   --fresh-paper: #fff9ed;
@@ -32,28 +32,14 @@ defineProps({ products: { type: Array, default: () => [] } });
   padding: var(--section-y) var(--edge);
   color: var(--fresh-ink);
   background:
-    radial-gradient(
-      ellipse 120% 70% at 50% -10%,
-      #ffffff 0%,
-      #ffffff 38%,
-      transparent 72%
-    ),
-    radial-gradient(
-      ellipse 100% 55% at 50% 55%,
-      #ffffff 0%,
-      #ffffff 55%,
-      transparent 100%
-    ),
-    repeating-conic-gradient(
-      from -7deg at 50% 40%,
-      #315e360a 0deg 5deg,
-      transparent 5deg 12deg
-    ),
+    radial-gradient(ellipse 120% 70% at 50% -10%, #ffffff 0%, #ffffff 38%, transparent 72%),
+    radial-gradient(ellipse 100% 55% at 50% 55%, #ffffff 0%, #ffffff 55%, transparent 100%),
+    repeating-conic-gradient(from -7deg at 50% 40%, #315e360a 0deg 5deg, transparent 5deg 12deg),
     #ffffff;
 }
 
 .new-strip::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -103,14 +89,14 @@ defineProps({ products: { type: Array, default: () => [] } });
 }
 
 .new-strip :deep(.section-head .kicker)::before {
-  content: "✳";
+  content: '✳';
   color: var(--red-ink);
   font-size: 17px;
 }
 
 .new-strip :deep(.section-head h2) {
   color: var(--fresh-green);
-  font-family: "Barlow Condensed", var(--font-display), sans-serif;
+  font-family: 'Barlow Condensed', var(--font-display), sans-serif;
   font-size: clamp(38px, 5.2vw, 68px);
   font-style: italic;
   font-weight: 900;
@@ -170,7 +156,7 @@ defineProps({ products: { type: Array, default: () => [] } });
 
 .new-strip :deep(.cat-card)::before,
 .new-strip :deep(.cat-card)::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -180,17 +166,7 @@ defineProps({ products: { type: Array, default: () => [] } });
   inset: 58% -10% -8%;
   z-index: 0;
   background: linear-gradient(155deg, #33754a 0%, var(--fresh-green) 100%);
-  clip-path: polygon(
-    0 18%,
-    15% 11%,
-    34% 16%,
-    51% 5%,
-    68% 13%,
-    84% 8%,
-    100% 14%,
-    100% 100%,
-    0 100%
-  );
+  clip-path: polygon(0 18%, 15% 11%, 34% 16%, 51% 5%, 68% 13%, 84% 8%, 100% 14%, 100% 100%, 0 100%);
   filter: drop-shadow(0 6px 6px #001b1466);
 }
 
@@ -259,7 +235,7 @@ defineProps({ products: { type: Array, default: () => [] } });
   right: 7%;
   z-index: 3;
   color: var(--fresh-green);
-  font-family: "Segoe Script", "Comic Sans MS", cursive;
+  font-family: 'Segoe Script', 'Comic Sans MS', cursive;
   font-size: clamp(10px, 3.4cqw, 15px);
   font-style: italic;
   transform: rotate(-8deg);
@@ -340,27 +316,50 @@ defineProps({ products: { type: Array, default: () => [] } });
 }
 @media (max-width: 767px) {
   .new-strip :deep(.section-head) {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto;
-    align-items:center;
-    gap:8px 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 12px;
   }
-  .new-strip :deep(.section-head__copy) { display:contents; }
-  .new-strip :deep(.section-head h2) { font-size:clamp(30px,8vw,42px); margin:0; }
-  .new-strip :deep(.section-head p) { grid-row:2; grid-column:1 / -1; margin:0; }
-  .new-strip :deep(.section-head > a) { grid-column:2; grid-row:1; }
+  .new-strip :deep(.section-head__copy) {
+    display: contents;
+  }
+  .new-strip :deep(.section-head h2) {
+    font-size: clamp(30px, 8vw, 42px);
+    margin: 0;
+  }
+  .new-strip :deep(.section-head p) {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .new-strip :deep(.section-head > a) {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
-@media(max-width:1199px) {
+@media (max-width: 1199px) {
   .new-strip :deep(.cat-card__line:last-child) {
-    color:var(--fresh-ink);
-    -webkit-text-stroke:0;
+    color: var(--fresh-ink);
+    -webkit-text-stroke: 0;
   }
-  .new-strip :deep(.cat-card__shot) { top:calc(46cqw + 12px); width:70%; }
+  .new-strip :deep(.cat-card__shot) {
+    top: calc(46cqw + 12px);
+    width: 70%;
+  }
 }
-@media(min-width:1200px) {
-  .new-strip { padding-top:clamp(24px,2.5vw,40px); }
-  .new-strip :deep(.section-head) { margin-bottom:12px; }
-  .new-strip :deep(.section-head__copy) { padding-block:8px; }
-  .new-strip :deep(.cat-card__tag--price) { font-size:clamp(15px,4cqw,18px); }
+@media (min-width: 1200px) {
+  .new-strip {
+    padding-top: clamp(24px, 2.5vw, 40px);
+  }
+  .new-strip :deep(.section-head) {
+    margin-bottom: 12px;
+  }
+  .new-strip :deep(.section-head__copy) {
+    padding-block: 8px;
+  }
+  .new-strip :deep(.cat-card__tag--price) {
+    font-size: clamp(15px, 4cqw, 18px);
+  }
 }
 </style>

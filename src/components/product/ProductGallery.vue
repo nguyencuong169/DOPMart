@@ -1,5 +1,5 @@
 <script setup>
-defineProps({ product: Object });
+defineProps({ product: Object })
 </script>
 <template>
   <div class="detail-image" :style="{ background: product.color }">

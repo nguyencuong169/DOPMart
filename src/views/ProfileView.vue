@@ -5,7 +5,8 @@
         <span class="kicker">HỒ SƠ · TÀI KHOẢN</span>
         <h1>Hồ sơ của bạn.</h1>
         <p class="profile-lead">
-          Quản lý thông tin cá nhân, lớp và vai trò. Tùy chọn hiển thị của bạn sẽ áp dụng trên mọi đơn hàng.
+          Quản lý thông tin cá nhân, lớp và vai trò. Tùy chọn hiển thị của bạn sẽ áp dụng trên mọi
+          đơn hàng.
         </p>
       </div>
       <RouterLink to="/orders" class="profile-cta">
@@ -83,11 +84,7 @@
             {{ profileError }}
           </div>
 
-          <button
-            type="submit"
-            :disabled="profileLoading"
-            class="profile-btn profile-btn--primary"
-          >
+          <button type="submit" :disabled="profileLoading" class="profile-btn profile-btn--primary">
             <span v-if="profileLoading" class="profile-spin-small"></span>
             {{ profileLoading ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
@@ -105,7 +102,8 @@
         </div>
 
         <p class="profile-card__desc">
-          Đăng xuất sẽ thoát phiên hiện tại trên thiết bị này. Bạn có thể đăng nhập lại bất cứ lúc nào.
+          Đăng xuất sẽ thoát phiên hiện tại trên thiết bị này. Bạn có thể đăng nhập lại bất cứ lúc
+          nào.
         </p>
 
         <button @click="handleLogout" class="profile-btn profile-btn--danger">
@@ -231,7 +229,9 @@ store.init()
   font-weight: var(--ds-weight-heavy);
   padding: 11px 18px;
   box-shadow: 4px 4px 0 var(--ink);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .profile-cta:hover {
   transform: translate(-1px, -1px);
@@ -259,7 +259,9 @@ store.init()
   font-weight: var(--ds-weight-semibold);
 }
 @keyframes profileSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .profile-empty {
   display: grid;
@@ -302,7 +304,10 @@ store.init()
   font-size: var(--fs-md);
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 .profile-btn:hover {
   transform: translate(-1px, -1px);
@@ -491,7 +496,9 @@ store.init()
   font: inherit;
   font-weight: var(--ds-weight-medium);
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .profile-field__input:focus {
   border-color: var(--yellow);
@@ -545,7 +552,8 @@ store.init()
   .profile-btn {
     transition: none;
   }
-  .profile-spin, .profile-spin-small {
+  .profile-spin,
+  .profile-spin-small {
     animation: none;
   }
   .profile-card::before {

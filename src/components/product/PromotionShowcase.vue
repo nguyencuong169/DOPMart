@@ -1,36 +1,36 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger.js";
-import { ArrowRight, Clock3, Tag } from "lucide-vue-next";
-import { useProductStore } from "../../stores/productStore";
-import { useCartStore } from "../../stores/cartStore";
-import { surfaceTone } from "../../utils/color";
-gsap.registerPlugin(ScrollTrigger);
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger.js'
+import { ArrowRight, Clock3, Tag } from 'lucide-vue-next'
+import { useProductStore } from '../../stores/productStore'
+import { useCartStore } from '../../stores/cartStore'
+import { surfaceTone } from '../../utils/color'
+gsap.registerPlugin(ScrollTrigger)
 const products = useProductStore(),
   cart = useCartStore(),
-  root = ref();
-const offers = computed(() => products.offers.slice(0, 3));
-let animation;
+  root = ref()
+const offers = computed(() => products.offers.slice(0, 3))
+let animation
 onMounted(async () => {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  await products.init();
-  if (!products.offers.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  await products.init()
+  if (!products.offers.length) return
   animation = gsap.context(() => {
     gsap
       .timeline({
         scrollTrigger: {
           trigger: root.value,
-          start: "top 78%",
-          end: "center 48%",
+          start: 'top 78%',
+          end: 'center 48%',
           scrub: 0.8,
         },
       })
-      .from(".promo-copy > *", { x: -100, opacity: 0, stagger: 0.12 })
-      .from(".promo-card", { y: 100, rotation: 6, opacity: 0, stagger: 0.12 }, 0);
-  }, root.value);
-});
-onBeforeUnmount(() => animation?.revert());
+      .from('.promo-copy > *', { x: -100, opacity: 0, stagger: 0.12 })
+      .from('.promo-card', { y: 100, rotation: 6, opacity: 0, stagger: 0.12 }, 0)
+  }, root.value)
+})
+onBeforeUnmount(() => animation?.revert())
 </script>
 <template>
   <section ref="root" class="promo-showcase">
@@ -38,8 +38,8 @@ onBeforeUnmount(() => animation?.revert());
       <span class="promo-kicker"><Tag /> HAPPY DEALS</span>
       <h2>Giá nhỏ hơn.<br /><em>Niềm vui lớn hơn.</em></h2>
       <p>
-        Ưu đãi giới hạn cho giờ nghỉ văn phòng. Số lượng khuyến mãi được áp dụng theo tồn
-        kho tại tầng nhận hàng.
+        Ưu đãi giới hạn cho giờ nghỉ văn phòng. Số lượng khuyến mãi được áp dụng theo tồn kho tại
+        tầng nhận hàng.
       </p>
       <div class="promo-time"><Clock3 /> Ưu đãi trong tuần này</div>
       <RouterLink to="/deals" class="primary">Săn deal ngay <ArrowRight /></RouterLink>
@@ -53,20 +53,23 @@ onBeforeUnmount(() => animation?.revert());
         :style="{ '--promo-color': offer.tint || offer.color }"
       >
         <div class="promo-media">
-          <img :src="offer.image" :alt="offer.name" loading="lazy" decoding="async" width="400" height="300" />
+          <img
+            :src="offer.image"
+            :alt="offer.name"
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="300"
+          />
         </div>
         <div class="promo-body">
           <small>{{ offer.categoryName }}</small>
           <h3>{{ offer.name }}</h3>
           <span class="promo-price"
-            ><s>{{ offer.oldPrice.toLocaleString("vi-VN") }} ₫</s
-            ><b>{{ offer.price.toLocaleString("vi-VN") }} ₫</b></span
+            ><s>{{ offer.oldPrice.toLocaleString('vi-VN') }} ₫</s
+            ><b>{{ offer.price.toLocaleString('vi-VN') }} ₫</b></span
           >
-          <button
-            type="button"
-            :aria-label="`Thêm ${offer.name} vào giỏ`"
-            @click="cart.add(offer)"
-          >
+          <button type="button" :aria-label="`Thêm ${offer.name} vào giỏ`" @click="cart.add(offer)">
             Thêm nhanh <ArrowRight />
           </button>
         </div>

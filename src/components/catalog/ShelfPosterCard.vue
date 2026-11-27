@@ -1,77 +1,72 @@
 <script setup>
-import { computed } from "vue";
-import { Heart, ArrowUpRight } from "lucide-vue-next";
-import QuickAdd from "../product/QuickAdd.vue";
-import { headWords } from "../../data/products";
+import { computed } from 'vue'
+import { Heart, ArrowUpRight } from 'lucide-vue-next'
+import QuickAdd from '../product/QuickAdd.vue'
+import { headWords } from '../../data/products'
 
 const props = defineProps({
   product: { type: Object, required: true },
   index: { type: Number, default: 0 },
   stock: { type: Number, default: null },
-  floor: { type: [Number, String], default: "" },
+  floor: { type: [Number, String], default: '' },
   featured: { type: Boolean, default: false },
   favorited: { type: Boolean, default: false },
-});
-const emit = defineEmits(["quick", "toggle-favorite"]);
+})
+const emit = defineEmits(['quick', 'toggle-favorite'])
 
-const soldOut = computed(() => props.stock !== null && props.stock <= 0);
-const lowStock = computed(
-  () => props.stock !== null && props.stock > 0 && props.stock <= 3,
-);
+const soldOut = computed(() => props.stock !== null && props.stock <= 0)
+const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3)
 const discount = computed(() => {
-  const oldPrice = props.product.oldPrice;
-  const price = props.product.price;
-  return oldPrice && oldPrice > price
-    ? Math.round((1 - price / oldPrice) * 100)
-    : 0;
-});
+  const oldPrice = props.product.oldPrice
+  const price = props.product.price
+  return oldPrice && oldPrice > price ? Math.round((1 - price / oldPrice) * 100) : 0
+})
 
-const handleQuick = () => emit("quick");
-const handleToggleFavorite = () => emit("toggle-favorite");
+const handleQuick = () => emit('quick')
+const handleToggleFavorite = () => emit('toggle-favorite')
 
-const fmt = (n) => n.toLocaleString("vi-VN");
+const fmt = n => n.toLocaleString('vi-VN')
 
-const onColor = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const l =
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#1a1a1a" : "#ffffff";
-};
+const onColor = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#1a1a1a' : '#ffffff'
+}
 
 const stockLabel = computed(() => {
-  if (props.stock === null) return "";
-  const at = props.floor === "" ? "" : `Tầng ${props.floor}`;
-  const tail = at ? ` · ${at}` : "";
-  if (soldOut.value) return `Hết hàng${tail}`;
-  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`;
-  return `Còn ${props.stock}${tail}`;
-});
+  if (props.stock === null) return ''
+  const at = props.floor === '' ? '' : `Tầng ${props.floor}`
+  const tail = at ? ` · ${at}` : ''
+  if (soldOut.value) return `Hết hàng${tail}`
+  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`
+  return `Còn ${props.stock}${tail}`
+})
 
 const stockDotColor = computed(() => {
-  if (props.stock === null) return "";
-  if (props.stock <= 0) return "var(--red-ink)";
-  if (props.stock <= 3) return "#8a4b00";
-  return "var(--green-ink)";
-});
+  if (props.stock === null) return ''
+  if (props.stock <= 0) return 'var(--red-ink)'
+  if (props.stock <= 3) return '#8a4b00'
+  return 'var(--green-ink)'
+})
 
 const slogan = computed(() => {
-  const cat = props.product.category;
-  const hw = headWords[cat];
-  if (hw) return hw;
-  const name = (props.product.categoryName ?? "").toUpperCase();
-  return [name, ""];
-});
+  const cat = props.product.category
+  const hw = headWords[cat]
+  if (hw) return hw
+  const name = (props.product.categoryName ?? '').toUpperCase()
+  return [name, '']
+})
 
 const lastWordHollow = computed(() => {
-  const words = String(props.product.name ?? "")
+  const words = String(props.product.name ?? '')
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
-  if (words.length === 0) return { head: "", last: "" };
-  if (words.length === 1) return { head: "", last: words[0] };
-  const last = words.pop();
-  return { head: words.join(" "), last };
-});
+    .filter(Boolean)
+  if (words.length === 0) return { head: '', last: '' }
+  if (words.length === 1) return { head: '', last: words[0] }
+  const last = words.pop()
+  return { head: words.join(' '), last }
+})
 </script>
 
 <template>
@@ -90,7 +85,7 @@ const lastWordHollow = computed(() => {
     <!-- TOP RAIL -->
     <div class="shelf-card__rail" v-if="!featured">
       <span class="shelf-card__index" aria-hidden="true">
-        {{ String(index + 1).padStart(2, "0") }}
+        {{ String(index + 1).padStart(2, '0') }}
       </span>
       <span class="shelf-card__cat">{{ product.categoryName }}</span>
       <button
@@ -108,14 +103,8 @@ const lastWordHollow = computed(() => {
     <!-- STAGE -->
     <div class="shelf-card__stage" v-if="!featured">
       <div class="shelf-card__poster" aria-hidden="true">
-        <span
-          class="shelf-card__poster-line shelf-card__poster-line--solid"
-          >{{ slogan[0] }}</span
-        >
-        <span
-          class="shelf-card__poster-line shelf-card__poster-line--hollow"
-          >{{ slogan[1] }}</span
-        >
+        <span class="shelf-card__poster-line shelf-card__poster-line--solid">{{ slogan[0] }}</span>
+        <span class="shelf-card__poster-line shelf-card__poster-line--hollow">{{ slogan[1] }}</span>
       </div>
 
       <i class="shelf-card__ground" />
@@ -127,12 +116,7 @@ const lastWordHollow = computed(() => {
         @click="handleQuick"
         :disabled="soldOut"
       >
-        <img
-          :src="product.image"
-          :alt="product.name"
-          loading="lazy"
-          decoding="async"
-        />
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
 
       <span class="shelf-card__quick-label" aria-hidden="true">XEM NHANH</span>
@@ -166,23 +150,14 @@ const lastWordHollow = computed(() => {
 
     <!-- PLATE -->
     <div class="shelf-card__plate" v-if="!featured">
-      <button
-        type="button"
-        class="shelf-card__name-btn"
-        :title="product.name"
-        @click="handleQuick"
-      >
+      <button type="button" class="shelf-card__name-btn" :title="product.name" @click="handleQuick">
         <h3 class="shelf-card__name">{{ product.name }}</h3>
       </button>
       <p class="shelf-card__meta">
         <span>★ {{ product.rating }}</span
         ><span>{{ product.sold }} đã bán</span>
       </p>
-      <p
-        v-if="stockLabel"
-        class="shelf-card__stock"
-        :class="{ low: lowStock, out: soldOut }"
-      >
+      <p v-if="stockLabel" class="shelf-card__stock" :class="{ low: lowStock, out: soldOut }">
         <span
           class="shelf-card__stock-dot"
           :style="{ background: stockDotColor }"
@@ -193,11 +168,7 @@ const lastWordHollow = computed(() => {
       <div class="shelf-card__price-row">
         <div class="shelf-card__prices">
           <strong class="shelf-card__price">{{ fmt(product.price) }} ₫</strong>
-          <span
-            v-if="discount"
-            class="shelf-card__old-price"
-            >{{ fmt(product.oldPrice) }} ₫</span
-          >
+          <span v-if="discount" class="shelf-card__old-price">{{ fmt(product.oldPrice) }} ₫</span>
         </div>
         <QuickAdd :product="product" :stock="stock" variant="icon" />
       </div>
@@ -220,12 +191,9 @@ const lastWordHollow = computed(() => {
           </span>
         </h2>
         <div class="shelf-card__feature-tags">
-          <span
-            v-for="tag in product.tags"
-            :key="tag"
-            class="shelf-card__feature-tag"
-            >{{ tag }}</span
-          >
+          <span v-for="tag in product.tags" :key="tag" class="shelf-card__feature-tag">{{
+            tag
+          }}</span>
         </div>
         <p class="shelf-card__feature-desc">{{ product.description }}</p>
         <div class="shelf-card__feature-price">
@@ -233,24 +201,13 @@ const lastWordHollow = computed(() => {
           <strong class="shelf-card__feature-price-value"
             >{{ fmt(product.price) }} <span>/món</span></strong
           >
-          <span
-            v-if="discount && !soldOut"
-            class="shelf-card__feature-old"
+          <span v-if="discount && !soldOut" class="shelf-card__feature-old"
             >{{ fmt(product.oldPrice) }} ₫</span
           >
         </div>
         <div class="shelf-card__feature-actions">
-          <QuickAdd
-            :product="product"
-            :stock="stock"
-            variant="row"
-            label="Thêm vào giỏ"
-          />
-          <button
-            type="button"
-            class="shelf-card__feature-detail"
-            @click="handleQuick"
-          >
+          <QuickAdd :product="product" :stock="stock" variant="row" label="Thêm vào giỏ" />
+          <button type="button" class="shelf-card__feature-detail" @click="handleQuick">
             Xem chi tiết
             <ArrowUpRight :size="14" />
           </button>
@@ -266,23 +223,15 @@ const lastWordHollow = computed(() => {
           @click="handleQuick"
           :disabled="soldOut"
         >
-          <img
-            :src="product.image"
-            :alt="product.name"
-            loading="lazy"
-            decoding="async"
-          />
+          <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
         </button>
         <div class="shelf-card__feature-sparks" aria-hidden="true">
-          <i class="shelf-card__spark" style="--d: 0; --c: var(--yellow);" />
-          <i class="shelf-card__spark" style="--d: 90deg; --c: var(--red-ink);" />
-          <i class="shelf-card__spark" style="--d: 180deg; --c: var(--yellow);" />
-          <i class="shelf-card__spark" style="--d: 270deg; --c: var(--red-ink);" />
+          <i class="shelf-card__spark" style="--d: 0; --c: var(--yellow)" />
+          <i class="shelf-card__spark" style="--d: 90deg; --c: var(--red-ink)" />
+          <i class="shelf-card__spark" style="--d: 180deg; --c: var(--yellow)" />
+          <i class="shelf-card__spark" style="--d: 270deg; --c: var(--red-ink)" />
         </div>
-        <span
-          v-if="discount && !soldOut"
-          class="shelf-card__feature-save"
-          aria-hidden="true"
+        <span v-if="discount && !soldOut" class="shelf-card__feature-save" aria-hidden="true"
           >-{{ discount }}%</span
         >
       </div>
@@ -320,7 +269,7 @@ const lastWordHollow = computed(() => {
   box-shadow: 7px 7px 0 var(--ink);
 }
 .shelf-card__after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -346,7 +295,7 @@ const lastWordHollow = computed(() => {
   padding: 10px 14px 6px;
 }
 .shelf-card__index {
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-size: 22px;
   line-height: 1;
@@ -375,7 +324,7 @@ const lastWordHollow = computed(() => {
   border-radius: 50%;
   background: #fff;
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
   cursor: pointer;
   transition:
     transform 0.15s,
@@ -384,14 +333,18 @@ const lastWordHollow = computed(() => {
 }
 .shelf-card__fav:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 50%, transparent);
+}
+.shelf-card__fav:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .shelf-card__fav.liked {
   background: var(--red-ink);
   color: var(--cream);
 }
 .shelf-card__fav:focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
   outline-offset: 2px;
 }
 
@@ -406,7 +359,7 @@ const lastWordHollow = computed(() => {
   border-radius: inherit;
 }
 .shelf-card__stage::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -418,7 +371,7 @@ const lastWordHollow = computed(() => {
   border-radius: inherit;
 }
 .shelf-card__stage::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   right: 0;
@@ -440,7 +393,7 @@ const lastWordHollow = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
   font-size: 19cqw;
@@ -596,7 +549,7 @@ const lastWordHollow = computed(() => {
   box-shadow: 2px 3px 0 var(--ink);
 }
 .shelf-card__tag::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 6px;
@@ -607,7 +560,7 @@ const lastWordHollow = computed(() => {
   background: inherit;
 }
 .shelf-card__tag::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 26px;
@@ -818,7 +771,7 @@ const lastWordHollow = computed(() => {
   line-height: 1;
 }
 .shelf-card__feature-num {
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-size: 18px;
   line-height: 1;
@@ -846,7 +799,7 @@ const lastWordHollow = computed(() => {
 }
 .shelf-card__feature-name {
   margin: 0 0 16px;
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
   font-size: clamp(34px, 5.2cqw, 62px);
@@ -898,7 +851,7 @@ const lastWordHollow = computed(() => {
   color: var(--yellow);
 }
 .shelf-card__feature-price-value {
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-size: 34px;
   line-height: 1;
@@ -1080,7 +1033,7 @@ const lastWordHollow = computed(() => {
   background: var(--yellow);
   color: var(--ink);
   border-radius: 50%;
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-size: 14px;
   line-height: 1;

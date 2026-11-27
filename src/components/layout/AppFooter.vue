@@ -1,5 +1,5 @@
 <script setup>
-import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
+import { Mail, MapPin, Clock, ArrowUpRight } from 'lucide-vue-next'
 </script>
 <template>
   <footer class="site-footer">
@@ -7,10 +7,7 @@ import { Mail, MapPin, Clock, ArrowUpRight } from "lucide-vue-next";
       <div class="footer-brand">
         <div class="footer-logo">DOP <i>mart</i></div>
         <p>Mini mart - Big happy</p>
-        <span
-          >Snack station dành riêng cho văn phòng, phục vụ nhanh tại tầng 14 và tầng
-          20.</span
-        >
+        <span>Snack station dành riêng cho văn phòng, phục vụ nhanh tại tầng 14 và tầng 20.</span>
       </div>
       <div class="footer-col">
         <h4>Khám phá</h4>

@@ -1,21 +1,14 @@
 <script setup>
-import { ref } from "vue";
-import {
-  MessageCircle,
-  Send,
-  CheckCircle2,
-  Lightbulb,
-  PackagePlus,
-  Smile,
-} from "lucide-vue-next";
-const type = ref("product"),
-  message = ref(""),
-  sent = ref(false);
+import { ref } from 'vue'
+import { MessageCircle, Send, CheckCircle2, Lightbulb, PackagePlus, Smile } from 'lucide-vue-next'
+const type = ref('product'),
+  message = ref(''),
+  sent = ref(false)
 function submit() {
-  if (!message.value.trim()) return;
-  sent.value = true;
-  message.value = "";
-  setTimeout(() => (sent.value = false), 3500);
+  if (!message.value.trim()) return
+  sent.value = true
+  message.value = ''
+  setTimeout(() => (sent.value = false), 3500)
 }
 </script>
 <template>
@@ -24,8 +17,8 @@ function submit() {
       <span class="kicker">BUILD DOP MART TOGETHER</span>
       <h2>Bạn muốn DOP Mart<br />có thêm điều gì?</h2>
       <p>
-        Gợi ý một món mới, chia sẻ trải nghiệm đặt hàng hoặc góp ý để DOP Mart phục vụ
-        tầng 14 và 20 tốt hơn.
+        Gợi ý một món mới, chia sẻ trải nghiệm đặt hàng hoặc góp ý để DOP Mart phục vụ tầng 14 và 20
+        tốt hơn.
       </p>
       <div class="feedback-types">
         <button :class="{ active: type === 'product' }" @click="type = 'product'">
@@ -50,8 +43,7 @@ function submit() {
           "
           required
         ></textarea></label
-      ><label class="feedback-name"
-        >Tên hoặc team <input placeholder="Không bắt buộc" /></label
+      ><label class="feedback-name">Tên hoặc team <input placeholder="Không bắt buộc" /></label
       ><button class="checkout" type="submit">Gửi đóng góp <Send /></button
       ><Transition name="quick"
         ><div v-if="sent" class="feedback-success">

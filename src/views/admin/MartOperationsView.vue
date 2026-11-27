@@ -1,103 +1,103 @@
 <script setup lang="ts">
-import { onMounted, reactive, shallowRef } from "vue";
-import { AlertTriangle, Check, PackagePlus, RefreshCw, Truck } from "lucide-vue-next";
+import { onMounted, reactive, shallowRef } from 'vue'
+import { AlertTriangle, Check, PackagePlus, RefreshCw, Truck } from 'lucide-vue-next'
 import {
   getMartAdminSummary,
   receiveMartStock,
   updateMartOrderStatus,
   type MartAdminSummary,
-} from "../../services/martAdminService";
+} from '../../services/martAdminService'
 
-const summary = shallowRef<MartAdminSummary | null>(null);
-const loading = shallowRef(true);
-const actionError = shallowRef("");
-const actionMessage = shallowRef("");
-const receiveQuantities = reactive<Record<number, number>>({});
-const receiveNotes = reactive<Record<number, string>>({});
-const busyProductId = shallowRef<number | null>(null);
-const busyOrderId = shallowRef<string | null>(null);
+const summary = shallowRef<MartAdminSummary | null>(null)
+const loading = shallowRef(true)
+const actionError = shallowRef('')
+const actionMessage = shallowRef('')
+const receiveQuantities = reactive<Record<number, number>>({})
+const receiveNotes = reactive<Record<number, string>>({})
+const busyProductId = shallowRef<number | null>(null)
+const busyOrderId = shallowRef<string | null>(null)
 
 const statusLabels: Record<string, string> = {
-  confirmed: "Đã thanh toán",
-  preparing: "Đang soạn",
-  ready_for_pickup: "Sẵn sàng lấy",
-  out_for_delivery: "Đang giao",
-  completed: "Hoàn tất",
-};
+  confirmed: 'Đã thanh toán',
+  preparing: 'Đang soạn',
+  ready_for_pickup: 'Sẵn sàng lấy',
+  out_for_delivery: 'Đang giao',
+  completed: 'Hoàn tất',
+}
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
     maximumFractionDigits: 0,
-  }).format(value || 0);
+  }).format(value || 0)
 }
 
 async function load() {
-  loading.value = true;
-  actionError.value = "";
+  loading.value = true
+  actionError.value = ''
   try {
-    summary.value = await getMartAdminSummary();
+    summary.value = await getMartAdminSummary()
   } catch (cause) {
-    actionError.value = cause instanceof Error ? cause.message : "Không thể tải dashboard vận hành.";
+    actionError.value = cause instanceof Error ? cause.message : 'Không thể tải dashboard vận hành.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function receive(productId: number) {
-  const quantity = Number(receiveQuantities[productId] ?? 0);
+  const quantity = Number(receiveQuantities[productId] ?? 0)
   if (!Number.isInteger(quantity) || quantity <= 0) {
-    actionError.value = "Số lượng nhập phải là số nguyên dương.";
-    return;
+    actionError.value = 'Số lượng nhập phải là số nguyên dương.'
+    return
   }
 
-  busyProductId.value = productId;
-  actionError.value = "";
-  actionMessage.value = "";
+  busyProductId.value = productId
+  actionError.value = ''
+  actionMessage.value = ''
 
   try {
-    await receiveMartStock(productId, quantity, receiveNotes[productId] || "Nhập hàng vận hành");
-    receiveQuantities[productId] = 0;
-    receiveNotes[productId] = "";
-    actionMessage.value = "Đã cập nhật tồn kho.";
-    await load();
+    await receiveMartStock(productId, quantity, receiveNotes[productId] || 'Nhập hàng vận hành')
+    receiveQuantities[productId] = 0
+    receiveNotes[productId] = ''
+    actionMessage.value = 'Đã cập nhật tồn kho.'
+    await load()
   } catch (cause) {
-    actionError.value = cause instanceof Error ? cause.message : "Không thể nhập kho.";
+    actionError.value = cause instanceof Error ? cause.message : 'Không thể nhập kho.'
   } finally {
-    busyProductId.value = null;
+    busyProductId.value = null
   }
 }
 
 function nextStatus(status: string, fulfillmentMethod: string) {
-  if (status === "confirmed") return "preparing";
-  if (status === "preparing") {
-    return fulfillmentMethod === "pickup" ? "ready_for_pickup" : "out_for_delivery";
+  if (status === 'confirmed') return 'preparing'
+  if (status === 'preparing') {
+    return fulfillmentMethod === 'pickup' ? 'ready_for_pickup' : 'out_for_delivery'
   }
-  if (status === "ready_for_pickup" || status === "out_for_delivery") return "completed";
-  return null;
+  if (status === 'ready_for_pickup' || status === 'out_for_delivery') return 'completed'
+  return null
 }
 
 async function advanceOrder(orderId: string, status: string, fulfillmentMethod: string) {
-  const target = nextStatus(status, fulfillmentMethod);
-  if (!target) return;
+  const target = nextStatus(status, fulfillmentMethod)
+  if (!target) return
 
-  busyOrderId.value = orderId;
-  actionError.value = "";
-  actionMessage.value = "";
+  busyOrderId.value = orderId
+  actionError.value = ''
+  actionMessage.value = ''
 
   try {
-    await updateMartOrderStatus(orderId, target, `Operator chuyển sang ${target}`);
-    actionMessage.value = "Đã cập nhật trạng thái đơn.";
-    await load();
+    await updateMartOrderStatus(orderId, target, `Operator chuyển sang ${target}`)
+    actionMessage.value = 'Đã cập nhật trạng thái đơn.'
+    await load()
   } catch (cause) {
-    actionError.value = cause instanceof Error ? cause.message : "Không thể cập nhật đơn.";
+    actionError.value = cause instanceof Error ? cause.message : 'Không thể cập nhật đơn.'
   } finally {
-    busyOrderId.value = null;
+    busyOrderId.value = null
   }
 }
 
-onMounted(load);
+onMounted(load)
 </script>
 
 <template>
@@ -178,7 +178,7 @@ onMounted(load);
                     @click="receive(item.productId)"
                     class="ad-btn-stock"
                   >
-                    {{ busyProductId === item.productId ? "…" : "Nhập" }}
+                    {{ busyProductId === item.productId ? '…' : 'Nhập' }}
                   </button>
                 </div>
                 <input
@@ -205,10 +205,14 @@ onMounted(load);
               <div v-for="order in summary.recentOrders" :key="order.id" class="order-row">
                 <div>
                   <strong>{{ order.orderNumber }}</strong>
-                  <small>{{ formatCurrency(order.grandTotal) }} · {{ order.fulfillmentMethod }}</small>
+                  <small
+                    >{{ formatCurrency(order.grandTotal) }} · {{ order.fulfillmentMethod }}</small
+                  >
                 </div>
                 <div class="order-action">
-                  <span class="ad-status-pill">{{ statusLabels[order.status] ?? order.status }}</span>
+                  <span class="ad-status-pill">{{
+                    statusLabels[order.status] ?? order.status
+                  }}</span>
                   <button
                     v-if="nextStatus(order.status, order.fulfillmentMethod)"
                     type="button"
@@ -216,7 +220,7 @@ onMounted(load);
                     @click="advanceOrder(order.id, order.status, order.fulfillmentMethod)"
                     class="ad-btn-advance"
                   >
-                    {{ busyOrderId === order.id ? "…" : "Tiếp theo" }}
+                    {{ busyOrderId === order.id ? '…' : 'Tiếp theo' }}
                   </button>
                 </div>
               </div>

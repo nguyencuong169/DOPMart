@@ -26,13 +26,13 @@ function writeMockOrders(orders: MartOrder[]) {
 
 function createMockOrder(command: CreateMartOrderCommand, products: any[]): CreateMartOrderResult {
   const existing = readMockOrders().find(
-    (order) => order.payment?.merchantReference === command.idempotencyKey,
+    order => order.payment?.merchantReference === command.idempotencyKey
   )
 
   if (existing) return { order: existing, isMock: true }
 
-  const items = command.items.map((item) => {
-    const product = products.find((candidate) => Number(candidate.id) === item.productId)
+  const items = command.items.map(item => {
+    const product = products.find(candidate => Number(candidate.id) === item.productId)
 
     if (!product) {
       throw new MartOrderError('PRODUCT_NOT_FOUND', 'Không tìm thấy sản phẩm trong giỏ hàng.')
@@ -103,7 +103,7 @@ function mapRpcError(error: { message?: string; code?: string; details?: unknown
 
 export async function createMartOrder(
   command: CreateMartOrderCommand,
-  products: any[],
+  products: any[]
 ): Promise<CreateMartOrderResult> {
   if (!command.items.length) {
     throw new MartOrderError('ITEMS_REQUIRED', 'Giỏ hàng đang trống.')
@@ -115,7 +115,7 @@ export async function createMartOrder(
 
   const rpcRequest = {
     ...command,
-    items: command.items.map((item) => ({
+    items: command.items.map(item => ({
       product_id: item.productId,
       quantity: item.quantity,
     })),
@@ -135,7 +135,7 @@ export async function createMartOrder(
 
 export async function getMartOrder(orderId: string): Promise<MartOrder> {
   if (!supabase) {
-    const order = readMockOrders().find((candidate) => candidate.id === orderId)
+    const order = readMockOrders().find(candidate => candidate.id === orderId)
     if (!order) throw new MartOrderError('ORDER_NOT_FOUND', 'Không tìm thấy đơn hàng.')
     return order
   }
@@ -171,7 +171,10 @@ export async function createMomoPayment(orderId: string): Promise<{
 
   if (error) throw new MartOrderError('MOMO_CREATE_FAILED', error.message)
   if (data?.error) {
-    throw new MartOrderError(data.error.code ?? 'MOMO_CREATE_FAILED', data.error.message ?? 'Không thể tạo phiên MoMo.')
+    throw new MartOrderError(
+      data.error.code ?? 'MOMO_CREATE_FAILED',
+      data.error.message ?? 'Không thể tạo phiên MoMo.'
+    )
   }
 
   return {
@@ -187,7 +190,10 @@ export async function createPayosPayment(orderId: string): Promise<{
   requestId?: string
 }> {
   if (!supabase) {
-    throw new MartOrderError('PAYOS_NOT_CONFIGURED', 'PayOS chỉ hoạt động khi đã cấu hình Supabase.')
+    throw new MartOrderError(
+      'PAYOS_NOT_CONFIGURED',
+      'PayOS chỉ hoạt động khi đã cấu hình Supabase.'
+    )
   }
 
   const { data, error } = await supabase.functions.invoke('create-payos-payment', {
@@ -198,7 +204,7 @@ export async function createPayosPayment(orderId: string): Promise<{
   if (data?.error) {
     throw new MartOrderError(
       data.error.code ?? 'PAYOS_CREATE_FAILED',
-      data.error.message ?? 'Không thể tạo link VietQR PayOS.',
+      data.error.message ?? 'Không thể tạo link VietQR PayOS.'
     )
   }
 
@@ -212,7 +218,7 @@ export async function createPayosPayment(orderId: string): Promise<{
 export async function cancelMartOrder(orderId: string): Promise<MartOrder> {
   if (!supabase) {
     const orders = readMockOrders()
-    const index = orders.findIndex((candidate) => candidate.id === orderId)
+    const index = orders.findIndex(candidate => candidate.id === orderId)
     const order = orders[index]
 
     if (!order) throw new MartOrderError('ORDER_NOT_FOUND', 'Không tìm thấy đơn hàng.')
@@ -236,7 +242,7 @@ export async function cancelMartOrder(orderId: string): Promise<MartOrder> {
 
 export function simulateMockPayment(orderId: string): MartOrder {
   const orders = readMockOrders()
-  const index = orders.findIndex((candidate) => candidate.id === orderId)
+  const index = orders.findIndex(candidate => candidate.id === orderId)
   const order = orders[index]
 
   if (!order) throw new MartOrderError('ORDER_NOT_FOUND', 'Không tìm thấy đơn hàng.')

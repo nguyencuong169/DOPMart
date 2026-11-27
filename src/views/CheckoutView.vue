@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
-import { ArrowLeft, Check, Clock3, MapPin, PackageCheck, QrCode, WalletCards } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  Check,
+  Clock3,
+  MapPin,
+  PackageCheck,
+  QrCode,
+  WalletCards,
+} from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useFloorStore } from '../stores/floorStore'
@@ -88,11 +96,7 @@ async function cancelOrder() {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    cart.init(),
-    floor.init(),
-    products.init(),
-  ])
+  await Promise.all([cart.init(), floor.init(), products.init()])
 
   const returnedOrderId = typeof route.query.order === 'string' ? route.query.order : undefined
   if (returnedOrderId) await loadReturnedOrder(returnedOrderId)
@@ -111,9 +115,7 @@ onUnmounted(stopPaymentPolling)
       <div class="checkout-hero__copy">
         <span class="kicker">DOP MART · CHECKOUT</span>
         <h1>Đặt món trong vài chạm.</h1>
-        <p class="checkout-lead">
-          Chọn cách nhận hàng, thanh toán và để DOP Mart lo phần còn lại.
-        </p>
+        <p class="checkout-lead">Chọn cách nhận hàng, thanh toán và để DOP Mart lo phần còn lại.</p>
       </div>
     </header>
 
@@ -155,7 +157,12 @@ onUnmounted(stopPaymentPolling)
               <strong>Giao tại chỗ</strong>
               <small>Giao trong văn phòng</small>
             </span>
-            <Check v-if="method === 'office_delivery'" class="choice-check" :size="18" aria-hidden="true" />
+            <Check
+              v-if="method === 'office_delivery'"
+              class="choice-check"
+              :size="18"
+              aria-hidden="true"
+            />
           </button>
         </div>
 
@@ -171,12 +178,7 @@ onUnmounted(stopPaymentPolling)
 
         <label class="field">
           <span>Ghi chú cho vận hành <em>không bắt buộc</em></span>
-          <textarea
-            v-model="note"
-            maxlength="500"
-            rows="3"
-            placeholder="Ví dụ: Giao trước 15:00"
-          />
+          <textarea v-model="note" maxlength="500" rows="3" placeholder="Ví dụ: Giao trước 15:00" />
         </label>
 
         <div class="section-heading payment-heading">
@@ -275,12 +277,7 @@ onUnmounted(stopPaymentPolling)
           </div>
         </div>
 
-        <button
-          type="button"
-          class="submit-button"
-          :disabled="!canSubmit"
-          @click="submit"
-        >
+        <button type="button" class="submit-button" :disabled="!canSubmit" @click="submit">
           <span v-if="submitting" class="button-spinner" aria-hidden="true" />
           <span v-else>Đặt hàng · {{ formattedTotal }}</span>
           <span v-if="submitting">Đang kiểm tra tồn kho…</span>
@@ -294,8 +291,12 @@ onUnmounted(stopPaymentPolling)
         <Check v-if="payment?.status === 'succeeded'" :size="32" aria-hidden="true" />
         <Clock3 v-else :size="32" aria-hidden="true" />
       </div>
-      <span class="kicker state-kicker">{{ payment?.status === 'succeeded' ? 'PAYMENT RECEIVED' : 'ORDER CREATED' }}</span>
-      <h1>{{ payment?.status === 'succeeded' ? 'Thanh toán thành công.' : 'Đơn đã được giữ hàng.' }}</h1>
+      <span class="kicker state-kicker">{{
+        payment?.status === 'succeeded' ? 'PAYMENT RECEIVED' : 'ORDER CREATED'
+      }}</span>
+      <h1>
+        {{ payment?.status === 'succeeded' ? 'Thanh toán thành công.' : 'Đơn đã được giữ hàng.' }}
+      </h1>
       <p class="payment-lead">
         Mã đơn <strong>{{ order.orderNumber }}</strong> · {{ formatVnd(order.grandTotal) }}
       </p>
@@ -303,7 +304,11 @@ onUnmounted(stopPaymentPolling)
       <div v-if="payment?.status !== 'succeeded'" class="payment-instructions">
         <div class="qr-placeholder">
           <QrCode :size="52" aria-hidden="true" />
-          <span>{{ payment?.checkoutUrl ? 'PayOS đã tạo link VietQR cho đơn này.' : 'QR thanh toán sẽ hiển thị ở đây khi kết nối provider.' }}</span>
+          <span>{{
+            payment?.checkoutUrl
+              ? 'PayOS đã tạo link VietQR cho đơn này.'
+              : 'QR thanh toán sẽ hiển thị ở đây khi kết nối provider.'
+          }}</span>
         </div>
         <a
           v-if="payment?.checkoutUrl"
@@ -323,14 +328,26 @@ onUnmounted(stopPaymentPolling)
       </div>
 
       <div v-else class="success-summary">
-        <div><span>Hình thức nhận</span><strong>{{ order.fulfillmentMethod === 'pickup' ? 'Tự đến lấy' : 'Giao tại chỗ' }}</strong></div>
-        <div v-if="order.deliveryLocation"><span>Vị trí</span><strong>{{ order.deliveryLocation }}</strong></div>
+        <div>
+          <span>Hình thức nhận</span
+          ><strong>{{
+            order.fulfillmentMethod === 'pickup' ? 'Tự đến lấy' : 'Giao tại chỗ'
+          }}</strong>
+        </div>
+        <div v-if="order.deliveryLocation">
+          <span>Vị trí</span><strong>{{ order.deliveryLocation }}</strong>
+        </div>
         <div><span>Trạng thái</span><strong>Đang chuẩn bị hàng</strong></div>
       </div>
 
       <div class="payment-actions">
         <RouterLink class="secondary-button" to="/products">Mua thêm</RouterLink>
-        <button v-if="payment?.status !== 'succeeded'" type="button" class="text-button" @click="cancelOrder">
+        <button
+          v-if="payment?.status !== 'succeeded'"
+          type="button"
+          class="text-button"
+          @click="cancelOrder"
+        >
           Tạo lại đơn
         </button>
       </div>
@@ -374,7 +391,9 @@ onUnmounted(stopPaymentPolling)
   box-shadow: 3px 3px 0 var(--ink);
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .checkout-back:hover {
   transform: translate(-1px, -1px);
@@ -442,11 +461,11 @@ onUnmounted(stopPaymentPolling)
   overflow: hidden;
 }
 .checkout-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 -40px -40px 0;
   background: var(--yellow);
-  opacity: 0.10;
+  opacity: 0.1;
   z-index: 0;
   transform: rotate(-2deg);
   transform-origin: top left;
@@ -491,12 +510,14 @@ onUnmounted(stopPaymentPolling)
 .payment-heading {
   margin-top: 32px;
 }
-.choice-grid, .payment-list {
+.choice-grid,
+.payment-list {
   display: grid;
   gap: 12px;
   margin-top: 20px;
 }
-.choice-card, .payment-option {
+.choice-card,
+.payment-option {
   position: relative;
   display: flex;
   align-items: center;
@@ -508,7 +529,10 @@ onUnmounted(stopPaymentPolling)
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .choice-card {
   min-height: 88px;
@@ -518,17 +542,21 @@ onUnmounted(stopPaymentPolling)
   min-height: 68px;
   padding: 14px 16px;
 }
-.choice-card:hover, .payment-option:hover,
-.choice-card.active, .payment-option.active {
+.choice-card:hover,
+.payment-option:hover,
+.choice-card.active,
+.payment-option.active {
   border-color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
   transform: translate(-1px, -1px);
 }
-.choice-card > span, .payment-option > span:not(.radio-dot) {
+.choice-card > span,
+.payment-option > span:not(.radio-dot) {
   display: grid;
   gap: 4px;
 }
-.choice-card small, .payment-option small {
+.choice-card small,
+.payment-option small {
   color: #73685f;
   font-size: 12px;
 }
@@ -549,7 +577,8 @@ onUnmounted(stopPaymentPolling)
   font-style: normal;
   font-weight: var(--ds-weight-semibold);
 }
-.field input, .field textarea {
+.field input,
+.field textarea {
   width: 100%;
   border: 1.5px solid #c8beb2;
   border-radius: 12px;
@@ -563,7 +592,8 @@ onUnmounted(stopPaymentPolling)
 .field textarea {
   resize: vertical;
 }
-.field input:focus, .field textarea:focus {
+.field input:focus,
+.field textarea:focus {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgb(255 211 56 / 45%);
 }
@@ -644,7 +674,8 @@ onUnmounted(stopPaymentPolling)
   font-size: 13px;
   color: var(--ink);
 }
-.summary-item-copy span, .summary-item b {
+.summary-item-copy span,
+.summary-item b {
   font-size: 12px;
 }
 .summary-item-copy span {
@@ -683,7 +714,8 @@ onUnmounted(stopPaymentPolling)
   font-family: var(--font-display);
   font-size: 26px;
 }
-.submit-button, .secondary-button {
+.submit-button,
+.secondary-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -697,7 +729,10 @@ onUnmounted(stopPaymentPolling)
   text-decoration: none;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
 .submit-button {
   width: 100%;
@@ -715,7 +750,8 @@ onUnmounted(stopPaymentPolling)
   padding: 0 18px;
   font-size: var(--fs-md);
 }
-.submit-button:hover:not(:disabled), .secondary-button:hover {
+.submit-button:hover:not(:disabled),
+.secondary-button:hover {
   transform: translate(-1px, -1px);
   box-shadow: 5px 5px 0 var(--ink);
 }
@@ -749,7 +785,9 @@ onUnmounted(stopPaymentPolling)
   font-weight: 800;
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------- payment state ---------- */
@@ -859,7 +897,9 @@ onUnmounted(stopPaymentPolling)
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
   text-align: center;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .text-button:hover {
   transform: translate(-1px, -1px);

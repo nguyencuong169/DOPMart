@@ -1,8 +1,8 @@
 <script setup>
-import { Minus, Plus, X } from "lucide-vue-next";
-import { useCartStore } from "../../stores/cartStore";
-defineProps({ item: Object });
-const cart = useCartStore();
+import { Minus, Plus, X } from 'lucide-vue-next'
+import { useCartStore } from '../../stores/cartStore'
+defineProps({ item: Object })
+const cart = useCartStore()
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const cart = useCartStore();
       <h3 class="item-name">{{ item.name }}</h3>
       <p class="item-sku">SKU: {{ item.slug }}</p>
       <div class="item-price">
-        <span class="item-price-amount">{{ item.price.toLocaleString("vi-VN") }} ₫</span>
+        <span class="item-price-amount">{{ item.price.toLocaleString('vi-VN') }} ₫</span>
         <span class="item-price-qty">× {{ item.qty }}</span>
       </div>
     </div>
@@ -69,7 +69,7 @@ const cart = useCartStore();
   padding-top: 0.25rem;
 }
 .item-name {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--ink-well);
@@ -80,7 +80,7 @@ const cart = useCartStore();
   font-size: 0.75rem;
   color: rgba(26, 26, 26, 0.5);
   margin-bottom: 0.5rem;
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   letter-spacing: 0.05em;
 }
 .item-price {
@@ -90,7 +90,7 @@ const cart = useCartStore();
   margin-top: 0.25rem;
 }
 .item-price-amount {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--mango-glow);
@@ -98,7 +98,7 @@ const cart = useCartStore();
 .item-price-qty {
   font-size: 0.75rem;
   color: rgba(26, 26, 26, 0.5);
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
 }
 
 .item-actions {
@@ -115,7 +115,7 @@ const cart = useCartStore();
 .quantity-value {
   min-width: 24px;
   text-align: center;
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 0.875rem;
   color: var(--ink-well);
 }
@@ -129,7 +129,7 @@ const cart = useCartStore();
   border-radius: 0;
   border: 1px solid rgba(26, 26, 26, 0.2);
   background: transparent;
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
 }
 .remove-btn:hover {
   border-color: var(--mango-glow);

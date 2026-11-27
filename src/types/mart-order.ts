@@ -14,13 +14,7 @@ export type MartOrderStatus =
   | 'manual_review'
 
 export type MartPaymentStatus =
-  | 'created'
-  | 'pending'
-  | 'succeeded'
-  | 'failed'
-  | 'expired'
-  | 'refunded'
-  | 'manual_review'
+  'created' | 'pending' | 'succeeded' | 'failed' | 'expired' | 'refunded' | 'manual_review'
 
 export interface CreateMartOrderItem {
   productId: number

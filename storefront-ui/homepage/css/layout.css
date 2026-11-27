@@ -1,0 +1,229 @@
+.announcement {
+  background: var(--brand);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 78px;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+  white-space: nowrap;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.search {
+  flex: 1;
+  min-width: 100px;
+  /* viền mảnh, độ tương phản thấp, nền trắng bề mặt nổi nhẹ */
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 28px;
+  padding: 12px 16px;
+  background: var(--surface);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 20%, transparent);
+  transition:
+    border-color 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    transform 0.15s ease-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search:hover {
+  border-color: color-mix(in srgb, var(--ink) 55%, transparent);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.search:focus {
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, #FF5B57 40%, transparent);
+  transform: translate(-1px, -1px);
+  outline: none;
+}
+
+.search:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-nav,
+.menu {
+  display: none;
+}
+
+.cart-count {
+  font-size: 12px;
+  background: var(--brand);
+  color: white;
+  border-radius: 50%;
+  /* vùng chạm >= 40px (accessibility) */
+  min-width: 32px;
+  min-height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  vertical-align: top;
+  transition:
+    transform 0.15s ease-out,
+    opacity 0.15s ease-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cart-count:active {
+  transform: scale(0.97);
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 12px;
+  z-index: 30;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .nav {
+    display: none;
+  }
+
+  .menu {
+    display: block;
+  }
+
+  .header-inner {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .wrap {
+    width: calc(100% - 32px);
+  }
+
+  .announcement {
+    font-size: 11px;
+  }
+
+  .header-inner {
+    min-height: 64px;
+    gap: 4px;
+  }
+
+  .logo {
+    --logo-width: 116px;
+  }
+
+  .search {
+    display: none;
+  }
+
+  .actions {
+    margin-left: auto;
+  }
+
+  .actions .account {
+    display: none;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    z-index: 20;
+    padding: 10px 0;
+  }
+
+  .mobile-nav button {
+    background: none;
+    font-size: 12px;
+    display: grid;
+    gap: 4px;
+    text-align: center;
+    min-height: 44px;
+    padding: 6px 0;
+  }
+
+  .mobile-nav span {
+    font-size: 22px;
+  }
+
+  .toast {
+    bottom: 78px;
+    right: 16px;
+  }
+
+  body {
+    padding-bottom: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search,
+  .cart-count {
+    transition: none !important;
+  }
+  .search:focus,
+  .cart-count:active {
+    transform: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .header .actions #cart {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .header .actions #cart sup.cart-count {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    min-width: 18px;
+    min-height: 18px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 4px;
+    border-radius: 20px;
+    font-size: 11px;
+    pointer-events: none;
+  }
+  .header .actions #cart .cart-count.is-empty { display: none; }
+}

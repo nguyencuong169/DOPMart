@@ -1,0 +1,35 @@
+:root {
+  --brand: #FF5B57;
+  --accent: #FFC531;
+  --ink: #17140D;
+  --background: #F7F5F0;
+  --surface: #FFFFFF;
+  --border: #e6dcce;
+  --muted: #6b6159;
+  --radius: 16px;
+  /* shadow pha sắc ấm theo tông --ink (#17140D), không đen thuần */
+  --shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 1px 2px -1px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 2px 4px 0 color-mix(in srgb, var(--ink) 6%, transparent);
+  --shadow-hover: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 4px 8px -1px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 8px 24px 0 color-mix(in srgb, var(--ink) 8%, transparent);
+  --container: 1380px;
+  --font: 'Be Vietnam Pro', Arial, sans-serif;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../assets/fonts/BeVietnamPro-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../assets/fonts/BeVietnamPro-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

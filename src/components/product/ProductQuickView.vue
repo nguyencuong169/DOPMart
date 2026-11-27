@@ -1,49 +1,38 @@
 <script setup>
-import { computed } from "vue";
-import { X, MapPin, ArrowUpRight } from "lucide-vue-next";
-import { useProductStore } from "../../stores/productStore";
-import { useFloorStore } from "../../stores/floorStore";
-import QuickAdd from "./QuickAdd.vue";
-import { headWords } from "../../data/products";
+import { computed } from 'vue'
+import { X, MapPin, ArrowUpRight } from 'lucide-vue-next'
+import { useProductStore } from '../../stores/productStore'
+import { useFloorStore } from '../../stores/floorStore'
+import QuickAdd from './QuickAdd.vue'
+import { headWords } from '../../data/products'
 const products = useProductStore(),
-  floor = useFloorStore();
+  floor = useFloorStore()
 /* the poster lines behind the pack read as a shelf slogan, never the name */
 const lines = computed(() => {
-  const p = products.quickProduct;
-  return headWords[p?.category] ?? [(p?.categoryName ?? "").toUpperCase(), ""];
-});
+  const p = products.quickProduct
+  return headWords[p?.category] ?? [(p?.categoryName ?? '').toUpperCase(), '']
+})
 /* same luminance rule as the shelf cards: the tag keeps AA on any colour */
-const onColor = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const l =
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#191919" : "#ffffff";
-};
+const onColor = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#191919' : '#ffffff'
+}
 </script>
 <template>
   <Teleport to="body"
     ><Transition name="quick"
-      ><div
-        v-if="products.quickProduct"
-        class="quick-backdrop"
-        @click.self="products.closeQuick()"
-      >
-        <article
-          class="quick-dialog"
-          :style="{ '--product-color': products.quickProduct.color }"
-        >
-          <button class="quick-close" aria-label="Đóng xem nhanh" @click="products.closeQuick()"><X /></button>
+      ><div v-if="products.quickProduct" class="quick-backdrop" @click.self="products.closeQuick()">
+        <article class="quick-dialog" :style="{ '--product-color': products.quickProduct.color }">
+          <button class="quick-close" aria-label="Đóng xem nhanh" @click="products.closeQuick()">
+            <X />
+          </button>
           <section class="quick-visual">
             <div class="quick-head" aria-hidden="true">
               <span class="quick-head__line">{{ lines[0] }}</span>
-              <span class="quick-head__line quick-head__line--hollow">{{
-                lines[1]
-              }}</span>
+              <span class="quick-head__line quick-head__line--hollow">{{ lines[1] }}</span>
             </div>
-            <img
-              :src="products.quickProduct.image"
-              :alt="products.quickProduct.name"
-            />
+            <img :src="products.quickProduct.image" :alt="products.quickProduct.name" />
             <span
               class="quick-tag"
               aria-hidden="true"
@@ -51,16 +40,9 @@ const onColor = (hex) => {
                 background: products.quickProduct.color,
                 color: onColor(products.quickProduct.color),
               }"
-              ><b
-                >{{
-                  products.quickProduct.price.toLocaleString("vi-VN")
-                }}
-                ₫</b
-              ></span
+              ><b>{{ products.quickProduct.price.toLocaleString('vi-VN') }} ₫</b></span
             >
-            <span class="quick-index"
-              >DOP SELECT · {{ products.quickProduct.categoryName }}</span
-            >
+            <span class="quick-index">DOP SELECT · {{ products.quickProduct.categoryName }}</span>
           </section>
           <section class="quick-info">
             <span class="kicker">{{ products.quickProduct.categoryName }}</span>
@@ -68,22 +50,19 @@ const onColor = (hex) => {
             <div class="quick-rating">
               ★★★★★
               <span
-                >{{ products.quickProduct.rating }} · Đã bán
-                {{ products.quickProduct.sold }}</span
+                >{{ products.quickProduct.rating }} · Đã bán {{ products.quickProduct.sold }}</span
               >
             </div>
             <p>{{ products.quickProduct.description }}</p>
             <div class="quick-stock">
               <span
-                ><MapPin /> Tầng 14
-                <b>{{ products.quickProduct.stock[14] }} sản phẩm</b></span
+                ><MapPin /> Tầng 14 <b>{{ products.quickProduct.stock[14] }} sản phẩm</b></span
               ><span
-                ><MapPin /> Tầng 20
-                <b>{{ products.quickProduct.stock[20] }} sản phẩm</b></span
+                ><MapPin /> Tầng 20 <b>{{ products.quickProduct.stock[20] }} sản phẩm</b></span
               >
             </div>
             <div class="quick-price">
-              {{ products.quickProduct.price.toLocaleString("vi-VN") }} ₫
+              {{ products.quickProduct.price.toLocaleString('vi-VN') }} ₫
             </div>
             <div class="quick-buy">
               <QuickAdd

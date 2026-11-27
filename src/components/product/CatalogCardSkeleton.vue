@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
-  variant: { type: String, default: "grid" },
-});
+  variant: { type: String, default: 'grid' },
+})
 </script>
 
 <template>

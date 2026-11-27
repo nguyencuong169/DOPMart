@@ -1,101 +1,89 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  MapPin,
-  Pause,
-  Play,
-  Star,
-} from "lucide-vue-next";
-import { useSwipe } from "@vueuse/core";
-import QuickAdd from "./QuickAdd.vue";
-import { useProductStore } from "../../stores/productStore";
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ChevronLeft, ChevronRight, Clock, MapPin, Pause, Play, Star } from 'lucide-vue-next'
+import { useSwipe } from '@vueuse/core'
+import QuickAdd from './QuickAdd.vue'
+import { useProductStore } from '../../stores/productStore'
 
-const store = useProductStore();
-const slides = computed(() => store.products.slice(0, 4));
-const current = ref(0);
-const active = computed(() => slides.value[current.value]);
+const store = useProductStore()
+const slides = computed(() => store.products.slice(0, 4))
+const current = ref(0)
+const active = computed(() => slides.value[current.value])
 
 const emphasizedEndings = [
-  "phô mai",
-  "bùng vị",
-  "nhiệt đới",
-  "ăn liền",
-  "trái cây",
-  "mini",
-  "mộc",
-  "cay",
-];
+  'phô mai',
+  'bùng vị',
+  'nhiệt đới',
+  'ăn liền',
+  'trái cây',
+  'mini',
+  'mộc',
+  'cay',
+]
 const nameParts = computed(() => {
-  const name = slides.value[current.value]?.name || "";
-  const words = name.split(/\s+/).filter(Boolean);
-  const normalized = name.toLocaleLowerCase("vi-VN");
+  const name = slides.value[current.value]?.name || ''
+  const words = name.split(/\s+/).filter(Boolean)
+  const normalized = name.toLocaleLowerCase('vi-VN')
   const ending =
-    emphasizedEndings.find((phrase) => normalized.endsWith(phrase)) ||
-    words[words.length - 1] ||
-    "";
+    emphasizedEndings.find(phrase => normalized.endsWith(phrase)) || words[words.length - 1] || ''
   return {
     head: ending ? name.slice(0, -ending.length).trim() : name,
-    accent: ending ? name.slice(-ending.length) : "",
-  };
-});
+    accent: ending ? name.slice(-ending.length) : '',
+  }
+})
 
-const stage = ref(null);
+const stage = ref(null)
 useSwipe(stage, {
   threshold: 40,
   onSwipeEnd(_, direction) {
-    if (direction === "left") go(current.value + 1);
-    if (direction === "right") go(current.value - 1);
+    if (direction === 'left') go(current.value + 1)
+    if (direction === 'right') go(current.value - 1)
   },
-});
+})
 
-const prefersReduced = window.matchMedia(
-  "(prefers-reduced-motion: reduce)",
-).matches;
-const playing = ref(!prefersReduced);
-const hovering = ref(false);
-const focusing = ref(false);
-const held = computed(() => hovering.value || focusing.value);
-const autoplay = computed(() => playing.value && slides.value.length > 1);
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const playing = ref(!prefersReduced)
+const hovering = ref(false)
+const focusing = ref(false)
+const held = computed(() => hovering.value || focusing.value)
+const autoplay = computed(() => playing.value && slides.value.length > 1)
 
-const vnd = (n) => `${Number(n).toLocaleString("vi-VN")} ₫`;
+const vnd = n => `${Number(n).toLocaleString('vi-VN')} ₫`
 
 /* Giờ mở cửa */
-const clock = ref(new Date());
+const clock = ref(new Date())
 const isOpen = computed(() => {
-  const h = clock.value.getHours() + clock.value.getMinutes() / 60;
-  return h >= 8.5 && h < 17.5;
-});
-let clockTimer = null;
+  const h = clock.value.getHours() + clock.value.getMinutes() / 60
+  return h >= 8.5 && h < 17.5
+})
+let clockTimer = null
 
 function go(i) {
-  const total = slides.value.length;
-  if (total) current.value = (i + total) % total;
+  const total = slides.value.length
+  if (total) current.value = (i + total) % total
 }
 /* Thanh tiến trình của mục đang chọn chính là đồng hồ tự chuyển slide:
    chạy hết thì sang slide kế, tạm dừng khi hover/focus mà không cần timer riêng. */
 function onProgressEnd() {
-  if (autoplay.value) go(current.value + 1);
+  if (autoplay.value) go(current.value + 1)
 }
 function toggle() {
-  playing.value = !playing.value;
+  playing.value = !playing.value
 }
 function onFocusOut(event) {
   if (!event.currentTarget.contains(event.relatedTarget)) {
-    focusing.value = false;
+    focusing.value = false
   }
 }
 
 onMounted(() => {
   clockTimer = setInterval(() => {
-    clock.value = new Date();
-  }, 60000);
-});
+    clock.value = new Date()
+  }, 60000)
+})
 onBeforeUnmount(() => {
-  if (clockTimer) clearInterval(clockTimer);
-});
+  if (clockTimer) clearInterval(clockTimer)
+})
 </script>
 
 <template>
@@ -112,16 +100,18 @@ onBeforeUnmount(() => {
     <span class="dm-hero__plane" aria-hidden="true" />
 
     <!-- Nội dung sản phẩm -->
-    <div
-      v-if="active"
-      class="dm-hero__copy"
-      :aria-live="playing ? 'off' : 'polite'"
-    >
+    <div v-if="active" class="dm-hero__copy" :aria-live="playing ? 'off' : 'polite'">
       <Transition name="copy" mode="out-in" appear>
         <div :key="active.id" class="dm-copy">
-          <p class="dm-copy__cat"><RouterLink :to="`/category/${active.category}`">{{ active.categoryName }} ↗</RouterLink></p>
+          <p class="dm-copy__cat">
+            <RouterLink :to="`/category/${active.category}`"
+              >{{ active.categoryName }} ↗</RouterLink
+            >
+          </p>
           <h2 class="dm-copy__name">
-            <RouterLink :to="`/product/${active.slug}`">{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink>
+            <RouterLink :to="`/product/${active.slug}`"
+              >{{ nameParts.head }} <span class="cutout">{{ nameParts.accent }}</span></RouterLink
+            >
           </h2>
           <p class="dm-copy__desc">{{ active.description }}</p>
           <div class="dm-copy__meta">
@@ -146,7 +136,10 @@ onBeforeUnmount(() => {
         v-for="(p, i) in slides"
         :key="p.id"
         class="dm-stage__img"
-        :class="{ 'is-active': i === current, 'is-next': i !== current && i === (current + 1) % slides.length }"
+        :class="{
+          'is-active': i === current,
+          'is-next': i !== current && i === (current + 1) % slides.length,
+        }"
         :src="p.image"
         :alt="i === current ? p.name : ''"
         :aria-hidden="i !== current"
@@ -167,7 +160,7 @@ onBeforeUnmount(() => {
         <span><MapPin :size="16" aria-hidden="true" />Tầng 14 &amp; 20</span>
         <span><Clock :size="16" aria-hidden="true" />08:30–17:30</span>
         <span class="dm-status" :class="{ 'is-closed': !isOpen }">{{
-          isOpen ? "Đang mở" : "Đã đóng"
+          isOpen ? 'Đang mở' : 'Đã đóng'
         }}</span>
       </p>
     </div>
@@ -195,11 +188,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="dm-ctl"
-            :aria-label="
-              playing
-                ? 'Tạm dừng tự động chuyển slide'
-                : 'Bật tự động chuyển slide'
-            "
+            :aria-label="playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'"
             :aria-pressed="!playing"
             @click="toggle"
           >
@@ -227,7 +216,9 @@ onBeforeUnmount(() => {
           </button>
         </li>
       </ol>
-      <b class="slide-count">{{ String(current + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}</b>
+      <b class="slide-count"
+        >{{ String(current + 1).padStart(2, '0') }}/{{ String(slides.length).padStart(2, '0') }}</b
+      >
     </aside>
   </section>
 </template>
@@ -235,12 +226,12 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Màu nền và màu chữ đổi mượt theo sản phẩm (trình duyệt cũ sẽ đổi tức thì) */
 @property --hero-accent {
-  syntax: "<color>";
+  syntax: '<color>';
   inherits: true;
   initial-value: #ffd338;
 }
 @property --hero-fg {
-  syntax: "<color>";
+  syntax: '<color>';
   inherits: true;
   initial-value: #1a1a1a;
 }
@@ -250,14 +241,7 @@ onBeforeUnmount(() => {
   --ink: var(--ds-ink, #1a1a1a);
   --ok: var(--ds-ok, #1b7f45);
   --off: var(--ds-off, #595959);
-  --font: var(
-    --ds-font-sans,
-    "Be Vietnam Pro",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif
-  );
+  --font: var(--ds-font-sans, 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif);
   --r-sm: var(--ds-radius-sm, 0.5rem);
   --r-md: var(--ds-radius-md, 0.875rem);
   --r-pill: var(--ds-radius-pill, 999px);
@@ -615,78 +599,308 @@ onBeforeUnmount(() => {
   transform: translateY(-8px);
 }
 
+.dm-hero {
+  --hero-accent: #ffbf38;
+  --hero-fg: #191919;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  align-content: center;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+  grid-template-areas: 'intro stage' 'copy stage' '. controls';
+  padding: max(84px, 8vh) var(--gutter) 2rem;
+}
+.dm-hero__intro {
+  grid-area: intro;
+  display: grid;
+  justify-content: start;
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.dm-intro__meta {
+  gap: 0.35rem 0.75rem;
+  opacity: 1;
+  font-size: 0.85rem;
+}
+.dm-intro__title {
+  font: 800 clamp(1rem, 1.4vw, 1.4rem)/1.2 var(--font-display);
+}
+.dm-hero__copy {
+  grid-area: copy;
+  align-self: start;
+}
+.dm-copy__cat {
+  display: block;
+  padding: 0;
+  background: none;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+.dm-copy__cat a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+.dm-copy__name {
+  font: 900 clamp(1.5rem, 2.7vw, 2.8rem)/1.12 var(--font-display);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+.cutout {
+  display: inline-block;
+  transform: rotate(-2deg);
+  padding: 0 0.16em;
+  border: 2px solid;
+  color: #191919;
+  background: #fff8e8;
+  box-shadow: 3px 3px #191919;
+}
+.dm-copy__meta {
+  align-items: center;
+  margin-top: 0.85rem;
+  gap: 0.55rem 1rem;
+}
+.dm-copy__price {
+  padding: 0.25em 0.5em;
+  background: #fff8e8;
+  color: #191919;
+  border: 2px solid;
+  border-radius: 0.4em;
+  box-shadow: 3px 3px #191919;
+}
+.dm-copy__actions {
+  margin-top: 1.15rem;
+}
+.dm-copy__actions :deep(.qa--row) {
+  flex-direction: row;
+}
+.dm-hero__stage {
+  grid-area: stage;
+  width: 100%;
+  height: clamp(320px, 61svh, 680px);
+  margin: 0;
+  aspect-ratio: auto;
+  touch-action: pan-y;
+}
+.dm-hero__plane {
+  position: absolute;
+  display: block;
+  inset: 0;
+  z-index: -1;
+  background: #277348;
+  clip-path: polygon(80% 0, 100% 0, 100% 100%, 50% 100%);
+}
+.dm-stage__img {
+  width: 85%;
+  transform: translateX(-80%) scale(0.65);
+}
+.dm-stage__img.is-next {
+  opacity: 0.88;
+  transform: translateX(80%) scale(0.47);
+}
+.dm-stage__shadow {
+  left: 8%;
+  right: 18%;
+}
+.dm-hero__queue {
+  grid-area: controls;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.12rem 0.45rem;
+  border: 2px solid #191919;
+  border-radius: 2rem;
+  background: #fff8e8;
+  color: #191919;
+  clip-path: none;
+}
+.dm-queue__head {
+  order: 2;
+  margin: 0;
+}
+.dm-queue__controls {
+  gap: 0;
+}
+.dm-ctl,
+.dm-item {
+  color: #191919;
+  width: 44px;
+  height: 44px;
+}
+.dm-queue__list {
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: visible;
+}
+.dm-queue__list > li {
+  flex: 0 0 auto;
+}
+.dm-item {
+  display: grid;
+  place-items: center;
+  grid-template-columns: 1fr;
+  width: 28px;
+  padding: 0;
+}
+.dm-item::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: #8c8172;
+  border-radius: 10px;
+}
+.dm-item.is-active::before {
+  width: 18px;
+  background: #191919;
+}
+.dm-item__bar {
+  opacity: 0;
+}
+.slide-count {
+  font: 800 0.8rem var(--font-ui);
+}
+@media (max-width: 900px) {
+  .dm-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'intro' 'stage' 'controls' 'copy';
+    align-content: stretch;
+    grid-template-rows: auto minmax(100px, 1fr) auto auto;
+    min-height: 100dvh;
+    gap: 0.65rem;
+    padding: 76px var(--gutter) 2rem;
+  }
+  .dm-hero__copy,
+  .dm-hero__intro {
+    width: min(100%, 38rem);
+    margin-inline: auto;
+  }
+  .dm-hero__stage {
+    height: 100%;
+    min-height: 100px;
+    width: min(100%, 42rem);
+  }
+  .dm-stage__img {
+    width: 100%;
+  }
+  .dm-stage__img.is-next {
+    transform: translateX(64%) scale(0.48);
+  }
+  .dm-hero__plane {
+    clip-path: polygon(100% 0, 100% 100%, 91% 100%, 65% 55%);
+  }
+  .dm-copy__name {
+    margin-bottom: 0.6rem;
+  }
+  .dm-queue__controls .dm-ctl:nth-child(-n + 2) {
+    display: none;
+  }
+  .dm-copy__actions :deep(.qa) {
+    width: 100%;
+  }
+  .dm-copy__actions :deep(.qa__go) {
+    flex: 1;
+  }
+}
+@media (max-width: 600px) {
+  .dm-hero {
+    align-content: stretch;
+    padding: 16px 20px calc(76px + env(safe-area-inset-bottom, 0px));
+    gap: 0.45rem;
+  }
+  .dm-intro__meta svg {
+    display: none;
+  }
+  .dm-intro__meta {
+    font-size: 0.76rem;
+  }
+  .dm-hero__stage {
+    aspect-ratio: auto;
+  }
+  .dm-hero__plane {
+    clip-path: polygon(100% 13%, 100% 75%, 68% 52%);
+  }
+}
 
-.dm-hero { --hero-accent:#ffbf38; --hero-fg:#191919; width:100%; max-width:none; box-sizing:border-box; min-height:100dvh; align-content:center; gap:1rem; grid-template-columns:minmax(0, 40fr) minmax(0,60fr); grid-template-areas:"intro stage" "copy stage" ". controls"; padding: max(84px,8vh) var(--gutter) 2rem; }
-.dm-hero__intro { grid-area:intro; display:grid; justify-content:start; gap:.45rem; padding:0; margin:0; border:0; }
-.dm-intro__meta { gap:.35rem .75rem; opacity:1; font-size:.85rem; }
-.dm-intro__title { font:800 clamp(1rem,1.4vw,1.4rem)/1.2 var(--font-display); }
-.dm-hero__copy { grid-area:copy; align-self:start; }
-.dm-copy__cat { display:block; padding:0; background:none; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.6rem; }
-.dm-copy__cat a { color:inherit; text-underline-offset:.2em; }
-.dm-copy__name { font:900 clamp(1.5rem,2.7vw,2.8rem)/1.12 var(--font-display); letter-spacing:-.04em; text-transform:uppercase; }
-.cutout { display:inline-block; transform:rotate(-2deg); padding:0 .16em; border:2px solid; color:#191919; background:#fff8e8; box-shadow:3px 3px #191919; }
-.dm-copy__meta { align-items:center; margin-top:.85rem; gap:.55rem 1rem; }
-.dm-copy__price { padding:.25em .5em; background:#fff8e8; color:#191919; border:2px solid; border-radius:.4em; box-shadow:3px 3px #191919; }
-.dm-copy__actions { margin-top:1.15rem; }
-.dm-copy__actions :deep(.qa--row) { flex-direction:row; }
-.dm-hero__stage { grid-area:stage; width:100%; height:clamp(320px,61svh,680px); margin:0; aspect-ratio:auto; touch-action:pan-y; }
-.dm-hero__plane { position:absolute; display:block; inset:0; z-index:-1; background:#277348; clip-path:polygon(80% 0,100% 0,100% 100%,50% 100%); }
-.dm-stage__img { width:85%; transform:translateX(-80%) scale(.65); }
-.dm-stage__img.is-next { opacity:.88; transform:translateX(80%) scale(.47); }
-.dm-stage__shadow { left:8%; right:18%; }
-.dm-hero__queue { grid-area:controls; justify-self:center; display:flex; align-items:center; gap:.4rem; margin:0; padding:.12rem .45rem; border:2px solid #191919; border-radius:2rem; background:#fff8e8; color:#191919; clip-path:none; }
-.dm-queue__head { order:2; margin:0; }
-.dm-queue__controls { gap:0; }
-.dm-ctl,.dm-item { color:#191919; width:44px; height:44px; }
-.dm-queue__list { margin:0; padding:0; gap:0; overflow:visible; }
-.dm-queue__list > li { flex:0 0 auto; }
-.dm-item { display:grid; place-items:center; grid-template-columns:1fr; width:28px; padding:0; }
-.dm-item::before { content:""; width:7px; height:7px; background:#8c8172; border-radius:10px; }
-.dm-item.is-active::before { width:18px; background:#191919; }
-.dm-item__bar { opacity:0; }
-.slide-count { font:800 .8rem var(--font-ui); }
-@media(max-width:900px) {
- .dm-hero { grid-template-columns:1fr; grid-template-areas:"intro" "stage" "controls" "copy"; align-content:stretch; grid-template-rows:auto minmax(100px,1fr) auto auto; min-height:100dvh; gap:.65rem; padding:76px var(--gutter) 2rem; }
- .dm-hero__copy,.dm-hero__intro { width:min(100%,38rem); margin-inline:auto; }
- .dm-hero__stage { height:100%; min-height:100px; width:min(100%,42rem); }
- .dm-stage__img { width:100%; }
- .dm-stage__img.is-next { transform:translateX(64%) scale(.48); }
- .dm-hero__plane { clip-path:polygon(100% 0,100% 100%,91% 100%,65% 55%); }
- .dm-copy__name { margin-bottom:.6rem; }
- .dm-queue__controls .dm-ctl:nth-child(-n+2) { display:none; }
- .dm-copy__actions :deep(.qa) { width:100%; }
- .dm-copy__actions :deep(.qa__go) { flex:1; }
+.dm-intro__title {
+  margin: 0;
+  font: 900 clamp(5rem, 9.2vw, 9rem)/0.96 var(--font-display);
+  letter-spacing: -0.075em;
 }
-@media(max-width:600px) {
- .dm-hero { align-content:stretch; padding:16px 20px calc(76px + env(safe-area-inset-bottom, 0px)); gap:.45rem; }
- .dm-intro__meta svg { display:none; }
- .dm-intro__meta { font-size:.76rem; }
- .dm-hero__stage { aspect-ratio:auto; }
- .dm-hero__plane { clip-path:polygon(100% 13%,100% 75%,68% 52%); }
+.dm-intro__title em {
+  color: #a23213;
+  font-style: normal;
 }
+.dm-intro__slogan {
+  margin: 0;
+  font: 800 clamp(1.2rem, 2.4vw, 2.3rem)/1.2 var(--font-display);
+  letter-spacing: -0.04em;
+}
+.dm-intro__promise {
+  margin: 0.2rem 0;
+  font-weight: 600;
+}
+.dm-copy__price {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  font-size: 1.45rem;
+}
+.dm-copy__actions :deep(.qa__go) {
+  box-shadow: none;
+  background: #fff6de;
+}
+.dm-copy__desc {
+  font-size: 0.94rem;
+}
+.dm-hero__stage {
+  justify-self: center;
+}
+@media (max-width: 900px) {
+  .dm-hero__copy {
+    padding: 0;
+  }
+  .dm-copy__actions :deep(.qa) {
+    width: auto;
+    max-width: 100%;
+  }
+  .dm-intro__title {
+    font-size: clamp(3.3rem, 8vw, 5rem);
+  }
+  .dm-intro__meta {
+    margin-top: 0.25rem;
+  }
+}
+@media (max-width: 600px) {
+  .dm-hero__intro {
+    gap: 0.28rem;
+  }
+  .dm-intro__title {
+    font-size: clamp(2.7rem, 12vw, 4.5rem);
+    max-width: calc(100% - 96px);
+  }
+  .dm-intro__slogan {
+    margin-top: 0.15rem;
+  }
 
-.dm-intro__title { margin:0; font:900 clamp(5rem,9.2vw,9rem)/.96 var(--font-display); letter-spacing:-.075em; }
-.dm-intro__title em { color:#a23213; font-style:normal; }
-.dm-intro__slogan { margin:0; font:800 clamp(1.2rem,2.4vw,2.3rem)/1.2 var(--font-display); letter-spacing:-.04em; }
-.dm-intro__promise { margin:.2rem 0; font-weight:600; }
-.dm-copy__price { border:0; box-shadow:none; background:transparent; padding:0; font-size:1.45rem; }
-.dm-copy__actions :deep(.qa__go) { box-shadow:none; background:#fff6de; }
-.dm-copy__desc { font-size:.94rem; }
-.dm-hero__stage { justify-self:center; }
-@media(max-width:900px) {
- .dm-hero__copy { padding:0; }
- .dm-copy__actions :deep(.qa) { width:auto; max-width:100%; }
- .dm-intro__title { font-size:clamp(3.3rem,8vw,5rem); }
- .dm-intro__meta { margin-top:.25rem; }
+  .dm-copy__actions {
+    margin-top: 0.65rem;
+  }
 }
-@media(max-width:600px) {
- .dm-hero__intro { gap:.28rem; }
- .dm-intro__title { font-size:clamp(2.7rem,12vw,4.5rem); max-width:calc(100% - 96px); }
- .dm-intro__slogan { margin-top:.15rem; }
-
- .dm-copy__actions { margin-top:.65rem; }
-}
-@media(prefers-reduced-motion:reduce) {
- .dm-hero,.dm-stage__img,.copy-enter-active,.copy-leave-active { transition:none; }
+@media (prefers-reduced-motion: reduce) {
+  .dm-hero,
+  .dm-stage__img,
+  .copy-enter-active,
+  .copy-leave-active {
+    transition: none;
+  }
 }
 </style>

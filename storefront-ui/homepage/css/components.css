@@ -1,0 +1,205 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  /* gradient cam-đỏ nhẹ từ #FF5B57 sang sắc cam-đỏ ấm sâu hơn */
+  background: linear-gradient(180deg, #FF5B57, #e84542);
+  color: white;
+  font-weight: 800;
+  /* shadow pha ấm theo tông brand, nổi trên nền #F7F5F0 */
+  box-shadow: 0 2px 0 color-mix(in srgb, #FF5B57 45%, var(--ink) 55%);
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out,
+    background 0.15s ease-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  /* hover đậm hơn: gradient sang cam-đỏ sáng, shadow dày hơn, nhẹ nhàng nâng lên */
+  background: linear-gradient(180deg, #ff706d, #e84542);
+  box-shadow: 0 4px 0 color-mix(in srgb, #FF5B57 55%, var(--ink) 45%);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 1px 0 color-mix(in srgb, #FF5B57 35%, var(--ink) 65%);
+}
+
+.btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid #d6c7b5;
+  transition:
+    transform 0.15s ease-out,
+    opacity 0.2s ease-out,
+    border-color 0.2s ease-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn.secondary:hover {
+  opacity: 0.88;
+  border-color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+.btn.secondary:active {
+  transform: scale(0.97);
+}
+
+.btn.secondary:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
+}
+
+.card {
+  /* viền mảnh 1px độ tương phản thấp, tách bạch khỏi nền #F7F5F0 không nặng nề */
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  /* layered box-shadow phân tầng, pha sắc ấm theo --ink */
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 6%, transparent);
+  transition:
+    box-shadow 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent),
+      0 12px 28px color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+}
+
+.icon {
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 25px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  /* bề mặt nổi nhẹ, viền mỏng */
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 25%, transparent);
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out,
+    border-color 0.2s ease-out,
+    background 0.2s ease-out,
+    color 0.2s ease-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon:hover {
+  transform: translate(-1px, -1px);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+.icon:active {
+  transform: translate(1px, 1px) scale(0.97);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+.icon:focus-visible {
+  outline: 3px solid color-mix(in srgb, #FF5B57 50%, transparent);
+  outline-offset: 2px;
+}
+
+.badge {
+  background: #ffb800;
+  color: var(--ink);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.price {
+  color: var(--brand);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.logo {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  width: var(--logo-width, clamp(142px, 13vw, 210px));
+}
+
+.logo svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.logo--compact {
+  width: var(--logo-width, clamp(114px, 9.4vw, 146px));
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 26px 0 16px;
+}
+
+.section-head h2 {
+  font-size: 30px;
+  letter-spacing: -1px;
+}
+
+.section-head a {
+  color: var(--brand);
+  font-weight: bold;
+}
+
+svg {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: middle;
+}
+
+.account {
+  display: grid;
+  place-items: center;
+}
+
+.benefit span {
+  color: #ed581b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn.secondary,
+  .card,
+  .icon,
+  .badge {
+    transition: none !important;
+    animation: none !important;
+  }
+  .card:hover,
+  .btn:hover,
+  .btn.secondary:hover,
+  .icon:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

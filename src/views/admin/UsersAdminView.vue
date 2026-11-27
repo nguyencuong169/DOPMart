@@ -1,77 +1,77 @@
 <script setup lang="ts">
-import { computed, onMounted, shallowRef } from "vue";
-import { RefreshCw, Search, ShieldCheck, ShieldOff } from "lucide-vue-next";
+import { computed, onMounted, shallowRef } from 'vue'
+import { RefreshCw, Search, ShieldCheck, ShieldOff } from 'lucide-vue-next'
 import {
   getMartAdminUsers,
   updateMartUserRole,
   type MartAdminUser,
-} from "../../services/martAdminService";
+} from '../../services/martAdminService'
 
-const users = shallowRef<MartAdminUser[]>([]);
-const loading = shallowRef(true);
-const errorMessage = shallowRef("");
-const searchQuery = shallowRef("");
-const roleFilter = shallowRef<"all" | "admin" | "customer">("all");
-const busyUserId = shallowRef<string | null>(null);
+const users = shallowRef<MartAdminUser[]>([])
+const loading = shallowRef(true)
+const errorMessage = shallowRef('')
+const searchQuery = shallowRef('')
+const roleFilter = shallowRef<'all' | 'admin' | 'customer'>('all')
+const busyUserId = shallowRef<string | null>(null)
 
 const filteredUsers = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-  return users.value.filter((user) => {
-    const matchesRole = roleFilter.value === "all" || user.role === roleFilter.value;
-    const matchesSearch = !query || user.userId.toLowerCase().includes(query);
-    return matchesRole && matchesSearch;
-  });
-});
+  const query = searchQuery.value.trim().toLowerCase()
+  return users.value.filter(user => {
+    const matchesRole = roleFilter.value === 'all' || user.role === roleFilter.value
+    const matchesSearch = !query || user.userId.toLowerCase().includes(query)
+    return matchesRole && matchesSearch
+  })
+})
 
-function roleLabel(role: MartAdminUser["role"]) {
-  return role === "admin" ? "Quản trị viên" : "Đồng nghiệp";
+function roleLabel(role: MartAdminUser['role']) {
+  return role === 'admin' ? 'Quản trị viên' : 'Đồng nghiệp'
 }
 
 function errorText(cause: unknown) {
-  const raw = cause instanceof Error ? cause.message : "";
-  const code = raw.split(":")[0];
+  const raw = cause instanceof Error ? cause.message : ''
+  const code = raw.split(':')[0]
   const messages: Record<string, string> = {
-    CANNOT_CHANGE_OWN_ROLE: "Không thể tự hạ quyền tài khoản đang đăng nhập.",
-    INVALID_USER_ROLE: "Vai trò không hợp lệ.",
-    USER_PROFILE_NOT_FOUND: "Không tìm thấy profile người dùng.",
-  };
-  return messages[code] ?? raw ?? "Không thể cập nhật người dùng.";
+    CANNOT_CHANGE_OWN_ROLE: 'Không thể tự hạ quyền tài khoản đang đăng nhập.',
+    INVALID_USER_ROLE: 'Vai trò không hợp lệ.',
+    USER_PROFILE_NOT_FOUND: 'Không tìm thấy profile người dùng.',
+  }
+  return messages[code] ?? raw ?? 'Không thể cập nhật người dùng.'
 }
 
 async function loadUsers() {
-  loading.value = true;
-  errorMessage.value = "";
+  loading.value = true
+  errorMessage.value = ''
   try {
-    users.value = await getMartAdminUsers();
+    users.value = await getMartAdminUsers()
   } catch (cause) {
-    errorMessage.value = errorText(cause);
+    errorMessage.value = errorText(cause)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
-async function changeRole(user: MartAdminUser, role: "admin" | "customer") {
-  if (user.role === role) return;
-  if (!window.confirm(`Đổi ${user.userId.slice(0, 8)} thành ${roleLabel(role)}?`)) return;
+async function changeRole(user: MartAdminUser, role: 'admin' | 'customer') {
+  if (user.role === role) return
+  if (!window.confirm(`Đổi ${user.userId.slice(0, 8)} thành ${roleLabel(role)}?`)) return
 
-  busyUserId.value = user.userId;
-  errorMessage.value = "";
+  busyUserId.value = user.userId
+  errorMessage.value = ''
   try {
-    await updateMartUserRole(user.userId, role);
-    await loadUsers();
+    await updateMartUserRole(user.userId, role)
+    await loadUsers()
   } catch (cause) {
-    errorMessage.value = errorText(cause);
+    errorMessage.value = errorText(cause)
   } finally {
-    busyUserId.value = null;
+    busyUserId.value = null
   }
 }
 
 function handleRoleChange(user: MartAdminUser, event: Event) {
-  const role = (event.target as HTMLSelectElement).value as "admin" | "customer";
-  void changeRole(user, role);
+  const role = (event.target as HTMLSelectElement).value as 'admin' | 'customer'
+  void changeRole(user, role)
 }
 
-onMounted(loadUsers);
+onMounted(loadUsers)
 </script>
 
 <template>

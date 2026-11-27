@@ -1,51 +1,46 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from "vue";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ShoppingBag,
-  CheckCircle2,
-} from "lucide-vue-next";
-import { useCartStore } from "../../stores/cartStore";
-import drinkImg from "../../assets/products/drinks.webp";
-import noodleImg from "../../assets/products/noodles.webp";
-import seaweedImg from "../../assets/products/candy.webp";
-import spicyImg from "../../assets/products/spicy.webp";
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { ChevronLeft, ChevronRight, ShoppingBag, CheckCircle2 } from 'lucide-vue-next'
+import { useCartStore } from '../../stores/cartStore'
+import drinkImg from '../../assets/products/drinks.webp'
+import noodleImg from '../../assets/products/noodles.webp'
+import seaweedImg from '../../assets/products/candy.webp'
+import spicyImg from '../../assets/products/spicy.webp'
 
-const cart = useCartStore();
-const index = ref(0);
-const addedFeedback = ref(false);
-let feedbackTimer;
-let touchStartX = 0;
+const cart = useCartStore()
+const index = ref(0)
+const addedFeedback = ref(false)
+let feedbackTimer
+let touchStartX = 0
 
-const vnd = (n) => `${n.toLocaleString("vi-VN")}₫`;
+const vnd = n => `${n.toLocaleString('vi-VN')}₫`
 
 const PRODUCTS = {
   noodle: {
-    id: "noodle",
-    name: "Mì ly vị tôm cay",
+    id: 'noodle',
+    name: 'Mì ly vị tôm cay',
     price: 28000,
     image: noodleImg,
   },
   drink: {
-    id: "drink",
-    name: "Soda trái cây 330ml",
+    id: 'drink',
+    name: 'Soda trái cây 330ml',
     price: 16000,
     image: drinkImg,
   },
   seaweed: {
-    id: "seaweed",
-    name: "Snack rong biển 40g",
+    id: 'seaweed',
+    name: 'Snack rong biển 40g',
     price: 18000,
     image: seaweedImg,
   },
   spicy: {
-    id: "spicy",
-    name: "Khoai tây chiên cay 50g",
+    id: 'spicy',
+    name: 'Khoai tây chiên cay 50g',
     price: 20000,
     image: spicyImg,
   },
-};
+}
 
 const LAYOUTS = {
   2: [
@@ -63,96 +58,91 @@ const LAYOUTS = {
     { x: 40, b: 3, w: 42, z: 4, r: -2 },
     { x: 60, b: 25, w: 40, z: 2, r: 5 },
   ],
-};
+}
 
 const COMBOS = [
   {
-    kicker: "COMBO OFFER",
-    name: "CỨU ĐÓI GIỮA CA",
-    tag: "MÌ · NƯỚC",
-    ids: ["noodle", "drink"],
+    kicker: 'COMBO OFFER',
+    name: 'CỨU ĐÓI GIỮA CA',
+    tag: 'MÌ · NƯỚC',
+    ids: ['noodle', 'drink'],
     price: 35000,
-    accent: "#E52521",
-    copy: "Tô mì tôm cay nóng hổi đi cùng lon soda trái cây mát lạnh, xong bữa chỉ trong 5 phút.",
+    accent: '#E52521',
+    copy: 'Tô mì tôm cay nóng hổi đi cùng lon soda trái cây mát lạnh, xong bữa chỉ trong 5 phút.',
   },
   {
-    kicker: "SNACK TIME",
-    name: "CHILL BUỔI CHIỀU",
-    tag: "SNACK · NƯỚC",
-    ids: ["spicy", "seaweed", "drink"],
+    kicker: 'SNACK TIME',
+    name: 'CHILL BUỔI CHIỀU',
+    tag: 'SNACK · NƯỚC',
+    ids: ['spicy', 'seaweed', 'drink'],
     price: 42000,
-    accent: "#D9381E",
-    copy: "Một gói cay giòn, một gói rong biển thanh nhẹ, thêm lon soda để cân vị.",
+    accent: '#D9381E',
+    copy: 'Một gói cay giòn, một gói rong biển thanh nhẹ, thêm lon soda để cân vị.',
   },
   {
-    kicker: "HEALTHY DEAL",
-    name: "NHẸ BỤNG ĐỦ VỊ",
-    tag: "RONG BIỂN · NƯỚC",
-    ids: ["seaweed", "drink"],
+    kicker: 'HEALTHY DEAL',
+    name: 'NHẸ BỤNG ĐỦ VỊ',
+    tag: 'RONG BIỂN · NƯỚC',
+    ids: ['seaweed', 'drink'],
     price: 29000,
-    accent: "#1F7A3A",
-    copy: "Rong biển giòn ít béo, không bột ngọt, đi cùng lon soda trái cây thật.",
+    accent: '#1F7A3A',
+    copy: 'Rong biển giòn ít béo, không bột ngọt, đi cùng lon soda trái cây thật.',
   },
   {
-    kicker: "PARTY PACK",
-    name: "HỘP CHIA TEAM",
-    tag: "4 MÓN CHIA SỂ",
-    ids: ["noodle", "drink", "seaweed", "spicy"],
+    kicker: 'PARTY PACK',
+    name: 'HỘP CHIA TEAM',
+    tag: '4 MÓN CHIA SỂ',
+    ids: ['noodle', 'drink', 'seaweed', 'spicy'],
     price: 69000,
-    accent: "#C81D25",
-    copy: "Gom đủ 4 món best-seller để cả nhóm cùng nhâm nhi.",
+    accent: '#C81D25',
+    copy: 'Gom đủ 4 món best-seller để cả nhóm cùng nhâm nhi.',
   },
-].map((c) => {
-  const items = c.ids.map((id) => PRODUCTS[id]);
-  const old = items.reduce((s, p) => s + p.price, 0);
-  return { ...c, items, old, save: old - c.price };
-});
+].map(c => {
+  const items = c.ids.map(id => PRODUCTS[id])
+  const old = items.reduce((s, p) => s + p.price, 0)
+  return { ...c, items, old, save: old - c.price }
+})
 
-const maxSavePct = Math.max(
-  ...COMBOS.map((c) => Math.round((c.save / c.old) * 100)),
-);
-const tickerText =
-  `DOP COMBO OFFER · GOM VUI GIÁ NHẸ · TIẾT KIỆM TỚI ${maxSavePct}% · `.repeat(
-    4,
-  );
+const maxSavePct = Math.max(...COMBOS.map(c => Math.round((c.save / c.old) * 100)))
+const tickerText = `DOP COMBO OFFER · GOM VUI GIÁ NHẸ · TIẾT KIỆM TỚI ${maxSavePct}% · `.repeat(4)
 
-const current = computed(() => COMBOS[index.value]);
-const kickerLines = computed(() => current.value.kicker.split(" "));
+const current = computed(() => COMBOS[index.value])
+const kickerLines = computed(() => current.value.kicker.split(' '))
 
 function move(d) {
-  index.value = (index.value + d + COMBOS.length) % COMBOS.length;
+  index.value = (index.value + d + COMBOS.length) % COMBOS.length
 }
 
 function itemStyle(i) {
-  const set = LAYOUTS[current.value.items.length] ?? LAYOUTS[4];
-  const l = set[i] ?? set[set.length - 1];
+  const set = LAYOUTS[current.value.items.length] ?? LAYOUTS[4]
+  const l = set[i] ?? set[set.length - 1]
   return {
     left: `${l.x}%`,
     bottom: `${l.b}%`,
     width: `${l.w}%`,
     zIndex: l.z,
-    "--r": `${l.r}deg`,
-    "--i": i,
-  };
+    '--r': `${l.r}deg`,
+    '--i': i,
+  }
 }
 
 function add() {
-  current.value.items.forEach((p) => cart.add(p, 1));
-  addedFeedback.value = true;
-  clearTimeout(feedbackTimer);
-  feedbackTimer = setTimeout(() => (addedFeedback.value = false), 1600);
+  current.value.items.forEach(p => cart.add(p, 1))
+  addedFeedback.value = true
+  clearTimeout(feedbackTimer)
+  feedbackTimer = setTimeout(() => (addedFeedback.value = false), 1600)
 }
 
 function onTouchStart(e) {
-  touchStartX = e.touches[0].clientX;
+  touchStartX = e.touches[0].clientX
 }
 
 function onTouchEnd(e) {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(dx) > 40) move(dx > 0 ? -1 : 1);
+  const dx = e.changedTouches[0].clientX - touchStartX
+  if (Math.abs(dx) > 40) move(dx > 0 ? -1 : 1)
 }
 
-onBeforeUnmount(() => clearTimeout(feedbackTimer));
+onBeforeUnmount(() => clearTimeout(feedbackTimer))
 </script>
 
 <template>
@@ -190,17 +180,12 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
       </div>
 
       <div class="fp-combo__nav" role="group" aria-label="Chuyển combo">
-        <button
-          type="button"
-          class="fp-combo__nav-btn"
-          aria-label="Combo trước"
-          @click="move(-1)"
-        >
+        <button type="button" class="fp-combo__nav-btn" aria-label="Combo trước" @click="move(-1)">
           <ChevronLeft />
         </button>
         <span class="fp-combo__nav-count" aria-live="polite">
-          {{ String(index + 1).padStart(2, "0") }} /
-          {{ String(COMBOS.length).padStart(2, "0") }}
+          {{ String(index + 1).padStart(2, '0') }} /
+          {{ String(COMBOS.length).padStart(2, '0') }}
         </span>
         <button
           type="button"
@@ -216,12 +201,9 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
         <div :key="index" class="fp-combo__slide">
           <h2 class="fp-combo__title">
             <span class="fp-combo__kicker">
-              <span
-                v-for="(word, w) in kickerLines"
-                :key="w"
-                class="fp-combo__kicker-line"
-                >{{ word }}</span
-              >
+              <span v-for="(word, w) in kickerLines" :key="w" class="fp-combo__kicker-line">{{
+                word
+              }}</span>
             </span>
             <span class="fp-combo__name">{{ current.name }}</span>
           </h2>
@@ -229,9 +211,7 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
           <!-- Thẻ đỏ: giá hero "CHỈ / GIÁ / THÔI" + thanh trắng -->
           <div class="fp-combo__red-card">
             <span class="fp-combo__price-line">CHỈ</span>
-            <strong class="fp-combo__price-line">{{
-              vnd(current.price)
-            }}</strong>
+            <strong class="fp-combo__price-line">{{ vnd(current.price) }}</strong>
             <span class="fp-combo__price-line">THÔI</span>
             <span class="fp-combo__white-bar" aria-hidden="true"></span>
           </div>
@@ -273,9 +253,7 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
         <div class="fp-combo__bar-buy">
           <p class="fp-combo__meta">
             Mua lẻ {{ vnd(current.old) }} període
-            <span class="fp-combo__save"
-              >Tiết kiệm {{ vnd(current.save) }}</span
-            >
+            <span class="fp-combo__save">Tiết kiệm {{ vnd(current.save) }}</span>
           </p>
           <button
             type="button"
@@ -284,12 +262,8 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
             aria-live="polite"
             @click="add"
           >
-            <template v-if="addedFeedback"
-              ><CheckCircle2 :size="18" /> Đã thêm vào giỏ</template
-            >
-            <template v-else
-              ><ShoppingBag :size="18" /> Thêm combo vào giỏ</template
-            >
+            <template v-if="addedFeedback"><CheckCircle2 :size="18" /> Đã thêm vào giỏ</template>
+            <template v-else><ShoppingBag :size="18" /> Thêm combo vào giỏ</template>
           </button>
         </div>
       </div>
@@ -310,12 +284,12 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
   --fp-cream-light: #fffdf7;
   --fp-ink: var(--ink, #18181b);
   --fp-yellow: var(--yellow, #ffd233);
-  --fp-display: var(--font-display, "Bricolage Grotesque", sans-serif);
+  --fp-display: var(--font-display, 'Bricolage Grotesque', sans-serif);
   max-width: 100%;
   margin: 0;
   padding: clamp(12px, 3vw, 32px) var(--edge, 20px);
   color: var(--fp-ink);
-  font-family: var(--font-ui, "Be Vietnam Pro", sans-serif);
+  font-family: var(--font-ui, 'Be Vietnam Pro', sans-serif);
   outline: none;
 }
 .fp-combo:focus-visible .fp-combo__stage {
@@ -500,11 +474,7 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
   left: 38cqw;
   width: 60cqw;
   height: 50cqw;
-  background: radial-gradient(
-    closest-side,
-    rgb(255 255 255 / 0.35),
-    transparent 72%
-  );
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.35), transparent 72%);
 }
 .fp-combo__cluster {
   position: absolute;

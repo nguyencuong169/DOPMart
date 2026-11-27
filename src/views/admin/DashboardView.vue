@@ -1,7 +1,7 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { fetchOrders, fetchPromotions } from "@/lib/supabase";
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { fetchOrders, fetchPromotions } from '@/lib/supabase'
 import {
   CreditCard,
   Package,
@@ -12,102 +12,102 @@ import {
   ShoppingBag,
   Tag,
   Users,
-} from "lucide-vue-next";
+} from 'lucide-vue-next'
 
-const router = useRouter();
+const router = useRouter()
 
-const orders = ref([]);
-const promotions = ref([]);
-const loading = ref(false);
+const orders = ref([])
+const promotions = ref([])
+const loading = ref(false)
 
-const totalRevenue = ref(0);
-const todayOrders = ref(0);
-const activeProducts = ref(0);
-const newCustomers = ref(0);
-const recentOrders = ref([]);
+const totalRevenue = ref(0)
+const todayOrders = ref(0)
+const activeProducts = ref(0)
+const newCustomers = ref(0)
+const recentOrders = ref([])
 
 const loadData = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    const [ordersData, promotionsData] = await Promise.all([
-      fetchOrders(),
-      fetchPromotions(),
-    ]);
-    orders.value = ordersData;
-    promotions.value = promotionsData;
+    const [ordersData, promotionsData] = await Promise.all([fetchOrders(), fetchPromotions()])
+    orders.value = ordersData
+    promotions.value = promotionsData
 
-    const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const now = new Date()
+    const todayStr = now.toISOString().slice(0, 10)
 
-    totalRevenue.value = ordersData.reduce((sum, o) => sum + (o.total || 0), 0);
-    todayOrders.value = ordersData.filter((o) => o.created_at?.slice(0, 10) === todayStr).length;
-    activeProducts.value = 8;
-    newCustomers.value = 5;
+    totalRevenue.value = ordersData.reduce((sum, o) => sum + (o.total || 0), 0)
+    todayOrders.value = ordersData.filter(o => o.created_at?.slice(0, 10) === todayStr).length
+    activeProducts.value = 8
+    newCustomers.value = 5
 
     recentOrders.value = ordersData
       .slice()
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, 5)
-      .map((o) => ({
+      .map(o => ({
         ...o,
-        userName: o.profiles?.floor ? `Khách #${o.user_id.slice(0, 6)}` : `Khách #${o.user_id.slice(0, 6)}`,
+        userName: o.profiles?.floor
+          ? `Khách #${o.user_id.slice(0, 6)}`
+          : `Khách #${o.user_id.slice(0, 6)}`,
         createdAt: o.created_at,
-      }));
+      }))
   } catch (e) {
-    console.error(e);
+    console.error(e)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 onMounted(() => {
-  loadData();
-});
+  loadData()
+})
 
-const formatCurrency = (v) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
+const formatCurrency = v =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v || 0)
 
 const statCards = [
   {
-    label: "Tổng doanh thu",
+    label: 'Tổng doanh thu',
     value: () => formatCurrency(totalRevenue.value),
-    trend: "+12% so với tháng trước",
-    trendType: "positive",
+    trend: '+12% so với tháng trước',
+    trendType: 'positive',
     icon: CreditCard,
-    iconBg: "var(--flame)",
+    iconBg: 'var(--flame)',
   },
   {
-    label: "Đơn hàng hôm nay",
+    label: 'Đơn hàng hôm nay',
     value: () => todayOrders.value,
-    trend: "8 đơn chờ xử lý",
-    trendType: "neutral",
+    trend: '8 đơn chờ xử lý',
+    trendType: 'neutral',
     icon: Package,
-    iconBg: "var(--green-ink)",
+    iconBg: 'var(--green-ink)',
   },
   {
-    label: "Sản phẩm đang bán",
+    label: 'Sản phẩm đang bán',
     value: () => activeProducts.value,
-    trend: "Cập nhật kho hàng",
-    trendType: "neutral",
+    trend: 'Cập nhật kho hàng',
+    trendType: 'neutral',
     icon: User,
-    iconBg: "var(--purple)",
+    iconBg: 'var(--purple)',
   },
   {
-    label: "Khách hàng mới",
+    label: 'Khách hàng mới',
     value: () => newCustomers.value,
-    trend: "+5 khách hàng tuần này",
-    trendType: "positive",
+    trend: '+5 khách hàng tuần này',
+    trendType: 'positive',
     icon: Clock,
-    iconBg: "var(--yellow)",
-    iconColor: "#1a1a1a",
+    iconBg: 'var(--yellow)',
+    iconColor: '#1a1a1a',
   },
-];
+]
 
 const quickActions = [
-  { label: "Thêm sản phẩm", icon: Package, to: "admin-products" },
-  { label: "Xem đơn hàng", icon: ShoppingBag, to: "admin-orders" },
-  { label: "Tạo khuyến mãi", icon: Tag, to: "admin-promotions" },
-  { label: "Quản lý người dùng", icon: Users, to: "admin-users" },
-];
+  { label: 'Thêm sản phẩm', icon: Package, to: 'admin-products' },
+  { label: 'Xem đơn hàng', icon: ShoppingBag, to: 'admin-orders' },
+  { label: 'Tạo khuyến mãi', icon: Tag, to: 'admin-promotions' },
+  { label: 'Quản lý người dùng', icon: Users, to: 'admin-users' },
+]
 </script>
 
 <template>
@@ -119,11 +119,7 @@ const quickActions = [
 
     <!-- Stat cards -->
     <div class="stat-grid">
-      <div
-        v-for="card in statCards"
-        :key="card.label"
-        class="stat-card"
-      >
+      <div v-for="card in statCards" :key="card.label" class="stat-card">
         <div class="stat-icon" :style="{ background: card.iconBg }">
           <component :is="card.icon" :size="20" :style="{ color: card.iconColor || '#fff' }" />
         </div>
@@ -159,7 +155,9 @@ const quickActions = [
     <div class="dashboard-section">
       <div class="section-row">
         <h2 class="section-title">Đơn hàng gần đây</h2>
-        <RouterLink :to="{ name: 'admin-orders' }" class="section-link">Xem tất cả <ArrowRight size="14" /></RouterLink>
+        <RouterLink :to="{ name: 'admin-orders' }" class="section-link"
+          >Xem tất cả <ArrowRight size="14"
+        /></RouterLink>
       </div>
       <div class="table-wrap">
         <table class="admin-table">
@@ -175,7 +173,7 @@ const quickActions = [
           <tbody>
             <tr v-for="order in recentOrders" :key="order.id">
               <td class="mono">{{ order.id.slice(0, 8) }}...</td>
-              <td>{{ order.userName || "Khách" }}</td>
+              <td>{{ order.userName || 'Khách' }}</td>
               <td class="mono">{{ formatCurrency(order.total) }}</td>
               <td>
                 <span class="badge badge--status">{{ order.status }}</span>
@@ -244,7 +242,9 @@ const quickActions = [
   border: var(--bw-bold) solid var(--ad-ink);
   border-radius: var(--ad-radius);
   box-shadow: var(--ad-shadow);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
 .stat-card:hover {

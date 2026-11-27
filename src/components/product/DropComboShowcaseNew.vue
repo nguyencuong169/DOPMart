@@ -1,90 +1,76 @@
 <script setup>
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
-} from "lucide-vue-next";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-vue-next'
 // Font tiêu đề: npm i @fontsource/barlow-condensed
-import "@fontsource/barlow-condensed/latin-800.css";
-import "@fontsource/barlow-condensed/vietnamese-800.css";
-import "@fontsource/barlow-condensed/latin-800-italic.css";
-import "@fontsource/barlow-condensed/vietnamese-800-italic.css";
-import { useCartStore } from "../../stores/cartStore";
-import drinkImg from "../../assets/products/drinks.webp";
-import noodleImg from "../../assets/products/noodles.webp";
-import seaweedImg from "../../assets/products/healthy.webp";
-import spicyImg from "../../assets/products/spicy.webp";
+import '@fontsource/barlow-condensed/latin-800.css'
+import '@fontsource/barlow-condensed/vietnamese-800.css'
+import '@fontsource/barlow-condensed/latin-800-italic.css'
+import '@fontsource/barlow-condensed/vietnamese-800-italic.css'
+import { useCartStore } from '../../stores/cartStore'
+import drinkImg from '../../assets/products/drinks.webp'
+import noodleImg from '../../assets/products/noodles.webp'
+import seaweedImg from '../../assets/products/healthy.webp'
+import spicyImg from '../../assets/products/spicy.webp'
 
 // Bấm "Xem giỏ hàng →" sau khi thêm: gắn vào route giỏ hàng của bạn ở nơi dùng component
-const emit = defineEmits(["view-cart"]);
+const emit = defineEmits(['view-cart'])
 
 // Dữ liệu thật: truyền prop `combos` (mảng). Mỗi phần tử:
 //   { id, kicker, name, price, accent, copy, items: [{ id, name, price, image }] }
 // "Mua lẻ" luôn = tổng giá các món, nên chỉ đúng khi price của món lấy từ store thật.
 // Không truyền prop thì dùng DEFAULT_COMBOS (dummy) bên dưới.
-const props = defineProps({ combos: { type: Array, default: null } });
+const props = defineProps({ combos: { type: Array, default: null } })
 
-const AUTO_MS = 9000;
-const cart = useCartStore();
-const root = ref(null);
-const ctaWrap = ref(null);
-const index = ref(0);
+const AUTO_MS = 9000
+const cart = useCartStore()
+const root = ref(null)
+const ctaWrap = ref(null)
+const index = ref(0)
 // Thiết bị cảm ứng / bật "giảm chuyển động": không tự chuyển combo
 const calm =
-  typeof window !== "undefined" &&
-  window.matchMedia("(hover: none), (prefers-reduced-motion: reduce)").matches;
-const auto = ref(!calm);
-const paused = ref(false); // nút "Tạm dừng chuyển động" (dừng tự chuyển + mọi hiệu ứng nền)
-const inView = ref(false);
-const anyView = ref(false);
-const ctaVisible = ref(true);
-const addedFeedback = ref(false);
-const addedIds = ref({});
-const confetti = ref([]);
-let feedbackTimer;
-let rootObserver;
-let ctaObserver;
+  typeof window !== 'undefined' &&
+  window.matchMedia('(hover: none), (prefers-reduced-motion: reduce)').matches
+const auto = ref(!calm)
+const paused = ref(false) // nút "Tạm dừng chuyển động" (dừng tự chuyển + mọi hiệu ứng nền)
+const inView = ref(false)
+const anyView = ref(false)
+const ctaVisible = ref(true)
+const addedFeedback = ref(false)
+const addedIds = ref({})
+const confetti = ref([])
+let feedbackTimer
+let rootObserver
+let ctaObserver
 
-const vnd = (n) => `${n.toLocaleString("vi-VN")}₫`;
+const vnd = n => `${n.toLocaleString('vi-VN')}₫`
 
 // DUMMY DATA: thay bằng productStore.products khi có dữ liệu thật
 const PRODUCTS = {
   noodle: {
-    id: "noodle",
-    name: "Mì ly vị tôm cay",
+    id: 'noodle',
+    name: 'Mì ly vị tôm cay',
     price: 28000,
     image: noodleImg,
   },
   drink: {
-    id: "drink",
-    name: "Soda trái cây 330ml",
+    id: 'drink',
+    name: 'Soda trái cây 330ml',
     price: 16000,
     image: drinkImg,
   },
   seaweed: {
-    id: "seaweed",
-    name: "Snack rong biển 40g",
+    id: 'seaweed',
+    name: 'Snack rong biển 40g',
     price: 18000,
     image: seaweedImg,
   },
   spicy: {
-    id: "spicy",
-    name: "Khoai tây chiên cay 50g",
+    id: 'spicy',
+    name: 'Khoai tây chiên cay 50g',
     price: 20000,
     image: spicyImg,
   },
-};
+}
 
 // Vị trí từng món trong khung sân khấu (% của khung). Món đầu tiên của combo là món chính.
 // x: lệch trái · b: cách đáy (món nâng cao = món phía sau) · w: bề rộng · z: lớp · r: độ nghiêng
@@ -105,132 +91,132 @@ const LAYOUTS = {
     { x: 38, b: 5, w: 45, z: 4, r: -2 },
     { x: 58, b: 29, w: 42, z: 2, r: 6 },
   ],
-};
+}
 
 // Dòng 1 của tiêu đề luôn là "COMBO"; kicker là dòng 2. accent = màu nền section.
 const DEFAULT_COMBOS = [
   {
-    id: "cuu-doi-giua-ca",
-    kicker: "OFFER",
-    name: "CỨU ĐÓI GIỮA CA",
+    id: 'cuu-doi-giua-ca',
+    kicker: 'OFFER',
+    name: 'CỨU ĐÓI GIỮA CA',
     items: [PRODUCTS.noodle, PRODUCTS.drink],
     price: 35000,
-    accent: "#D31E1A",
-    copy: "Mì tôm cay nóng hổi + soda mát lạnh. Xong bữa trong 5 phút.",
+    accent: '#D31E1A',
+    copy: 'Mì tôm cay nóng hổi + soda mát lạnh. Xong bữa trong 5 phút.',
   },
   {
-    id: "chill-buoi-chieu",
-    kicker: "SNACK",
-    name: "CHILL BUỔI CHIỀU",
+    id: 'chill-buoi-chieu',
+    kicker: 'SNACK',
+    name: 'CHILL BUỔI CHIỀU',
     items: [PRODUCTS.spicy, PRODUCTS.seaweed, PRODUCTS.drink],
     price: 42000,
-    accent: "#7A2BBF",
-    copy: "Cay giòn, thanh nhẹ, thêm soda để cân vị.",
+    accent: '#7A2BBF',
+    copy: 'Cay giòn, thanh nhẹ, thêm soda để cân vị.',
   },
   {
-    id: "nhe-bung-du-vi",
-    kicker: "HEALTHY",
-    name: "NHẸ BỤNG ĐỦ VỊ",
+    id: 'nhe-bung-du-vi',
+    kicker: 'HEALTHY',
+    name: 'NHẸ BỤNG ĐỦ VỊ',
     items: [PRODUCTS.seaweed, PRODUCTS.drink],
     price: 29000,
-    accent: "#1F7A3A",
-    copy: "Rong biển giòn ít béo, không bột ngọt, kèm soda trái cây.",
+    accent: '#1F7A3A',
+    copy: 'Rong biển giòn ít béo, không bột ngọt, kèm soda trái cây.',
   },
   {
-    id: "hop-chia-team",
-    kicker: "PARTY",
-    name: "HỘP CHIA TEAM",
+    id: 'hop-chia-team',
+    kicker: 'PARTY',
+    name: 'HỘP CHIA TEAM',
     items: [PRODUCTS.noodle, PRODUCTS.drink, PRODUCTS.seaweed, PRODUCTS.spicy],
     price: 69000,
-    accent: "#C8440A",
-    copy: "Đủ 4 món best-seller cho cả nhóm.",
+    accent: '#C8440A',
+    copy: 'Đủ 4 món best-seller cho cả nhóm.',
   },
-];
+]
 
 const COMBOS = computed(() =>
-  (props.combos?.length ? props.combos : DEFAULT_COMBOS).map((c) => {
-    const old = c.items.reduce((sum, p) => sum + p.price, 0);
-    const save = Math.max(0, old - c.price);
-    return { ...c, old, save, pct: old ? Math.round((save / old) * 100) : 0 };
-  }),
-);
+  (props.combos?.length ? props.combos : DEFAULT_COMBOS).map(c => {
+    const old = c.items.reduce((sum, p) => sum + p.price, 0)
+    const save = Math.max(0, old - c.price)
+    return { ...c, old, save, pct: old ? Math.round((save / old) * 100) : 0 }
+  })
+)
 
-const maxSavePct = computed(() => Math.max(...COMBOS.value.map((c) => c.pct)));
+const maxSavePct = computed(() => Math.max(...COMBOS.value.map(c => c.pct)))
 const tapeText = computed(() =>
   `COMBO GIÁ NHẸ ★ MUA CẢ BỮA, RẺ HƠN MUA LẺ ★ BẤM MỘT LẦN, ĐỦ CẢ BỮA ★ TIẾT KIỆM TỚI ${maxSavePct.value}% ★ `.repeat(
-    3,
-  ),
-);
+    3
+  )
+)
 
 // Ngôi sao 16 cánh cho huy hiệu giảm giá
 const STAR = Array.from({ length: 32 }, (_, k) => {
-  const a = (k / 32) * Math.PI * 2 - Math.PI / 2;
-  const r = k % 2 ? 41 : 48;
-  return `${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`;
-}).join(" ");
+  const a = (k / 32) * Math.PI * 2 - Math.PI / 2
+  const r = k % 2 ? 41 : 48
+  return `${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`
+}).join(' ')
 
 const SPARKS = [
-  { l: "46%", t: "5%", s: "calc(2.2 * var(--u))", d: "0s" },
-  { l: "94%", t: "36%", s: "calc(1.6 * var(--u))", d: "1.1s" },
-  { l: "4%", t: "58%", s: "calc(1.8 * var(--u))", d: "2s" },
-];
+  { l: '46%', t: '5%', s: 'calc(2.2 * var(--u))', d: '0s' },
+  { l: '94%', t: '36%', s: 'calc(1.6 * var(--u))', d: '1.1s' },
+  { l: '4%', t: '58%', s: 'calc(1.8 * var(--u))', d: '2s' },
+]
 
-const CONFETTI_COLORS = ["#FFD62E", "#FFFFFF", "#171717", "#FF8A3D"];
+const CONFETTI_COLORS = ['#FFD62E', '#FFFFFF', '#171717', '#FF8A3D']
 
-const current = computed(() => COMBOS.value[index.value] ?? COMBOS.value[0]);
-const kickerLines = computed(() => ["COMBO", current.value.kicker]);
-const hasAdded = computed(() => !!addedIds.value[current.value.id]);
-const showSticky = computed(() => anyView.value && !ctaVisible.value);
+const current = computed(() => COMBOS.value[index.value] ?? COMBOS.value[0])
+const kickerLines = computed(() => ['COMBO', current.value.kicker])
+const hasAdded = computed(() => !!addedIds.value[current.value.id])
+const showSticky = computed(() => anyView.value && !ctaVisible.value)
 
 function move(d, manual = true) {
-  if (manual) auto.value = false;
-  index.value = (index.value + d + COMBOS.value.length) % COMBOS.value.length;
+  if (manual) auto.value = false
+  index.value = (index.value + d + COMBOS.value.length) % COMBOS.value.length
 }
 function select(i) {
-  auto.value = false;
-  index.value = i;
+  auto.value = false
+  index.value = i
 }
 // Thanh tiến độ chạy xong thì tự sang combo kế tiếp
 function advance() {
-  if (auto.value) move(1, false);
+  if (auto.value) move(1, false)
 }
 function toggleMotion() {
-  paused.value = !paused.value;
-  auto.value = paused.value ? false : !calm;
+  paused.value = !paused.value
+  auto.value = paused.value ? false : !calm
 }
 
 function itemStyle(i) {
-  const set = LAYOUTS[current.value.items.length] ?? LAYOUTS[4];
-  const l = set[i] ?? set[set.length - 1];
+  const set = LAYOUTS[current.value.items.length] ?? LAYOUTS[4]
+  const l = set[i] ?? set[set.length - 1]
   return {
     left: `${l.x}%`,
     bottom: `${l.b}%`,
     width: `${l.w}%`,
     zIndex: l.z,
-    "--r": `${l.r}deg`,
-    "--i": i,
-  };
+    '--r': `${l.r}deg`,
+    '--i': i,
+  }
 }
 
 function burst() {
   confetti.value = Array.from({ length: 18 }, (_, k) => {
-    const a = (k / 18) * Math.PI * 2 + Math.random() * 0.4;
-    const dist = 90 + Math.random() * 100;
+    const a = (k / 18) * Math.PI * 2 + Math.random() * 0.4
+    const dist = 90 + Math.random() * 100
     return {
       id: `${Date.now()}-${k}`,
       style: {
-        "--dx": `${Math.cos(a) * dist}px`,
-        "--dy": `${Math.sin(a) * dist - 24}px`,
-        "--rot": `${Math.round(Math.random() * 720 - 360)}deg`,
+        '--dx': `${Math.cos(a) * dist}px`,
+        '--dy': `${Math.sin(a) * dist - 24}px`,
+        '--rot': `${Math.round(Math.random() * 720 - 360)}deg`,
         background: CONFETTI_COLORS[k % CONFETTI_COLORS.length],
       },
-    };
-  });
+    }
+  })
 }
 
 function add() {
-  const c = current.value;
-  auto.value = false;
+  const c = current.value
+  auto.value = false
   // Một dòng "combo" trong giỏ, đúng giá combo (không cộng lẻ từng món)
   cart.add(
     {
@@ -242,48 +228,47 @@ function add() {
       isCombo: true,
       items: c.items.map(({ id, name, price }) => ({ id, name, price })),
     },
-    1,
-  );
-  addedIds.value = { ...addedIds.value, [c.id]: true };
-  addedFeedback.value = true;
-  burst();
-  clearTimeout(feedbackTimer);
+    1
+  )
+  addedIds.value = { ...addedIds.value, [c.id]: true }
+  addedFeedback.value = true
+  burst()
+  clearTimeout(feedbackTimer)
   feedbackTimer = setTimeout(() => {
-    addedFeedback.value = false;
-    confetti.value = [];
-  }, 1700);
+    addedFeedback.value = false
+    confetti.value = []
+  }, 1700)
 }
 
 onMounted(() => {
   // Tự chuyển combo chỉ chạy khi section thật sự nằm trong màn hình
   rootObserver = new IntersectionObserver(
     ([e]) => {
-      anyView.value = e.isIntersecting;
-      inView.value = e.intersectionRatio >= 0.35;
+      anyView.value = e.isIntersecting
+      inView.value = e.intersectionRatio >= 0.35
     },
-    { threshold: [0, 0.35] },
-  );
-  rootObserver.observe(root.value);
+    { threshold: [0, 0.35] }
+  )
+  rootObserver.observe(root.value)
   // Thanh mua cố định (mobile) chỉ hiện khi nút CTA chính đã cuộn khỏi màn hình
-  ctaObserver = new IntersectionObserver(
-    ([e]) => (ctaVisible.value = e.isIntersecting),
-    { threshold: 0.6 },
-  );
+  ctaObserver = new IntersectionObserver(([e]) => (ctaVisible.value = e.isIntersecting), {
+    threshold: 0.6,
+  })
   watch(
     ctaWrap,
     async (el, old) => {
-      await nextTick();
-      if (old) ctaObserver.unobserve(old);
-      if (el) ctaObserver.observe(el);
+      await nextTick()
+      if (old) ctaObserver.unobserve(old)
+      if (el) ctaObserver.observe(el)
     },
-    { immediate: true },
-  );
-});
+    { immediate: true }
+  )
+})
 onBeforeUnmount(() => {
-  clearTimeout(feedbackTimer);
-  rootObserver?.disconnect();
-  ctaObserver?.disconnect();
-});
+  clearTimeout(feedbackTimer)
+  rootObserver?.disconnect()
+  ctaObserver?.disconnect()
+})
 </script>
 
 <template>
@@ -336,12 +321,9 @@ onBeforeUnmount(() => {
             <div class="fp-combo__head">
               <h2 class="fp-combo__title">
                 <span class="fp-combo__kicker">
-                  <span
-                    v-for="(word, w) in kickerLines"
-                    :key="w"
-                    class="fp-combo__kicker-line"
-                    >{{ word }}</span
-                  >
+                  <span v-for="(word, w) in kickerLines" :key="w" class="fp-combo__kicker-line">{{
+                    word
+                  }}</span>
                 </span>
                 <span class="fp-combo__name">{{ current.name }}</span>
               </h2>
@@ -374,7 +356,14 @@ onBeforeUnmount(() => {
                   class="fp-combo__product"
                   :style="itemStyle(idx)"
                 >
-                  <img :src="item.image" :alt="item.name" decoding="async" width="600" height="450" loading="lazy" />
+                  <img
+                    :src="item.image"
+                    :alt="item.name"
+                    decoding="async"
+                    width="600"
+                    height="450"
+                    loading="lazy"
+                  />
                 </div>
               </div>
 
@@ -394,17 +383,14 @@ onBeforeUnmount(() => {
                 <li v-for="item in current.items" :key="item.id">
                   <img :src="item.image" alt="" width="48" height="48" loading="lazy" />
                   <span
-                    ><strong>{{ item.name }}</strong>
-                    {{ vnd(item.price) }}</span
+                    ><strong>{{ item.name }}</strong> {{ vnd(item.price) }}</span
                   >
                 </li>
               </ul>
 
               <div class="fp-combo__price">
                 <span class="fp-combo__price-small">CHỈ</span>
-                <strong class="fp-combo__price-big">{{
-                  vnd(current.price)
-                }}</strong>
+                <strong class="fp-combo__price-big">{{ vnd(current.price) }}</strong>
                 <span class="fp-combo__price-small">THÔI</span>
               </div>
 
@@ -424,9 +410,7 @@ onBeforeUnmount(() => {
                     <template v-if="addedFeedback"
                       ><CheckCircle2 :size="22" /> Đã thêm vào giỏ</template
                     >
-                    <template v-else
-                      >Thêm combo vào giỏ <ArrowRight :size="22"
-                    /></template>
+                    <template v-else>Thêm combo vào giỏ <ArrowRight :size="22" /></template>
                   </button>
                   <i
                     v-for="c in confetti"
@@ -448,9 +432,7 @@ onBeforeUnmount(() => {
                   <span
                     >Mua lẻ <s>{{ vnd(current.old) }}</s></span
                   >
-                  <span class="fp-combo__save"
-                    >Tiết kiệm {{ vnd(current.save) }}</span
-                  >
+                  <span class="fp-combo__save">Tiết kiệm {{ vnd(current.save) }}</span>
                 </p>
               </div>
             </div>
@@ -460,12 +442,7 @@ onBeforeUnmount(() => {
 
       <!-- Chọn combo: thấy cả 4 combo cùng lúc, thanh tiến độ tự chuyển -->
       <div class="fp-combo__picker">
-        <button
-          type="button"
-          class="fp-combo__arrow"
-          aria-label="Combo trước"
-          @click="move(-1)"
-        >
+        <button type="button" class="fp-combo__arrow" aria-label="Combo trước" @click="move(-1)">
           <ChevronLeft :size="24" />
         </button>
 
@@ -506,12 +483,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <button
-          type="button"
-          class="fp-combo__arrow"
-          aria-label="Combo tiếp theo"
-          @click="move(1)"
-        >
+        <button type="button" class="fp-combo__arrow" aria-label="Combo tiếp theo" @click="move(1)">
           <ChevronRight :size="24" />
         </button>
 
@@ -531,11 +503,7 @@ onBeforeUnmount(() => {
 
     <!-- Thanh mua cố định (chỉ mobile): giá + CTA luôn trong tầm tay khi CTA chính đã cuộn đi -->
     <div class="fp-combo__sticky-wrap">
-      <div
-        class="fp-combo__sticky"
-        :class="{ 'is-on': showSticky }"
-        :inert="!showSticky"
-      >
+      <div class="fp-combo__sticky" :class="{ 'is-on': showSticky }" :inert="!showSticky">
         <div class="fp-combo__sticky-price">
           <strong>{{ vnd(current.price) }}</strong>
           <s>{{ vnd(current.old) }}</s>
@@ -546,9 +514,7 @@ onBeforeUnmount(() => {
           :class="{ 'is-added': addedFeedback }"
           @click="add"
         >
-          <template v-if="addedFeedback"
-            ><CheckCircle2 :size="20" /> Đã thêm</template
-          >
+          <template v-if="addedFeedback"><CheckCircle2 :size="20" /> Đã thêm</template>
           <template v-else>Thêm vào giỏ <ArrowRight :size="20" /></template>
         </button>
       </div>
@@ -562,7 +528,7 @@ onBeforeUnmount(() => {
   --dop-ink: #171717;
   --fp-accent: #d31e1a;
   /* Font tiêu đề condensed. Muốn dùng font có sẵn của site: đặt --fp-display ở nơi gọi component */
-  --fp-display: "Barlow Condensed", "Oswald", "Arial Narrow", sans-serif;
+  --fp-display: 'Barlow Condensed', 'Oswald', 'Arial Narrow', sans-serif;
 
   position: relative;
   isolation: isolate;
@@ -571,7 +537,7 @@ onBeforeUnmount(() => {
   padding: clamp(80px, 6.4vw, 94px) 0 clamp(88px, 8vw, 112px);
   background-color: var(--paper);
   color: var(--on-cream);
-  font-family: var(--font-ui, system-ui, -apple-system, "Segoe UI", sans-serif);
+  font-family: var(--font-ui, system-ui, -apple-system, 'Segoe UI', sans-serif);
   outline: none;
 }
 .fp-combo:focus-visible {
@@ -597,11 +563,7 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(
-      70% 80% at 68% 45%,
-      rgb(255 255 255 / 0.26),
-      transparent 62%
-    ),
+    radial-gradient(70% 80% at 68% 45%, rgb(255 255 255 / 0.26), transparent 62%),
     radial-gradient(120% 100% at 50% 125%, rgb(0 0 0 / 0.4), transparent 62%),
     radial-gradient(90% 60% at 0% 0%, rgb(0 0 0 / 0.24), transparent 60%);
 }
@@ -614,8 +576,7 @@ onBeforeUnmount(() => {
 .fp-combo__dots {
   position: absolute;
   inset: 0;
-  background: radial-gradient(rgb(255 255 255 / 0.16) 1.6px, transparent 1.7px)
-    0 0 / 15px 15px;
+  background: radial-gradient(rgb(255 255 255 / 0.16) 1.6px, transparent 1.7px) 0 0 / 15px 15px;
   -webkit-mask-image: radial-gradient(55% 55% at 100% 100%, #000, transparent);
   mask-image: radial-gradient(55% 55% at 100% 100%, #000, transparent);
 }
@@ -678,8 +639,8 @@ onBeforeUnmount(() => {
   /* Cột sản phẩm tối đa 960px: ở màn siêu rộng chữ vẫn nằm sát lề container, ảnh không phình vô hạn */
   grid-template-columns: minmax(0, 1fr) minmax(0, min(58.3%, 960px));
   grid-template-areas:
-    "head visual"
-    "buy visual";
+    'head visual'
+    'buy visual';
   grid-template-rows: auto 1fr;
   align-content: start;
   column-gap: calc(3 * var(--u));
@@ -725,7 +686,9 @@ onBeforeUnmount(() => {
   letter-spacing: -0.02em;
   paint-order: stroke fill;
   text-wrap: balance;
-  text-shadow: calc(0.45 * var(--u)) calc(0.55 * var(--u)) 0 var(--dop-yellow), calc(0.9 * var(--u)) calc(1.1 * var(--u)) 0 rgb(0 0 0 / 0.35);
+  text-shadow:
+    calc(0.45 * var(--u)) calc(0.55 * var(--u)) 0 var(--dop-yellow),
+    calc(0.9 * var(--u)) calc(1.1 * var(--u)) 0 rgb(0 0 0 / 0.35);
 }
 .fp-combo__name {
   display: inline-block;
@@ -757,10 +720,7 @@ onBeforeUnmount(() => {
   width: 125%;
   aspect-ratio: 1;
   translate: -50% -50%;
-  background: repeating-conic-gradient(
-    rgb(255 255 255 / 0.15) 0 7.5deg,
-    transparent 7.5deg 15deg
-  );
+  background: repeating-conic-gradient(rgb(255 255 255 / 0.15) 0 7.5deg, transparent 7.5deg 15deg);
   -webkit-mask-image: radial-gradient(closest-side, #000 22%, transparent 70%);
   mask-image: radial-gradient(closest-side, #000 22%, transparent 70%);
   animation: fp-spin 120s linear infinite;
@@ -810,16 +770,7 @@ onBeforeUnmount(() => {
   position: absolute;
   z-index: 4;
   background: #fff;
-  clip-path: polygon(
-    50% 0,
-    62% 38%,
-    100% 50%,
-    62% 62%,
-    50% 100%,
-    38% 62%,
-    0 50%,
-    38% 38%
-  );
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   animation: fp-twinkle 3.2s ease-in-out infinite;
 }
 @keyframes fp-twinkle {
@@ -852,9 +803,7 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(
-    0 calc(1.4 * var(--u)) calc(1.8 * var(--u)) rgb(0 0 0 / 0.38)
-  );
+  filter: drop-shadow(0 calc(1.4 * var(--u)) calc(1.8 * var(--u)) rgb(0 0 0 / 0.38));
 }
 @keyframes fp-pop {
   from {
@@ -879,9 +828,7 @@ onBeforeUnmount(() => {
   width: 19%;
   aspect-ratio: 1;
   rotate: -10deg;
-  filter: drop-shadow(
-    calc(0.3 * var(--u)) calc(0.4 * var(--u)) 0 var(--dop-ink)
-  );
+  filter: drop-shadow(calc(0.3 * var(--u)) calc(0.4 * var(--u)) 0 var(--dop-ink));
 }
 .fp-combo__sticker svg {
   position: absolute;
@@ -967,7 +914,9 @@ onBeforeUnmount(() => {
   line-height: 1.05;
   color: var(--red);
   paint-order: stroke fill;
-  text-shadow: calc(0.3 * var(--u)) calc(0.4 * var(--u)) 0 #fff7df, calc(0.6 * var(--u)) calc(0.8 * var(--u)) 0 rgb(0 0 0 / 0.35);
+  text-shadow:
+    calc(0.3 * var(--u)) calc(0.4 * var(--u)) 0 #fff7df,
+    calc(0.6 * var(--u)) calc(0.8 * var(--u)) 0 rgb(0 0 0 / 0.35);
   font-variant-numeric: tabular-nums;
 }
 /* Mua lẻ + Tiết kiệm nằm cạnh nút CTA (desktop) để bớt một hàng dọc */
@@ -1014,7 +963,7 @@ onBeforeUnmount(() => {
   display: inline-block;
 }
 .fp-combo__cta-wrap::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -1051,7 +1000,7 @@ onBeforeUnmount(() => {
     color 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .fp-combo__cta::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -1352,9 +1301,9 @@ onBeforeUnmount(() => {
   .fp-combo__grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "head"
-      "visual"
-      "buy";
+      'head'
+      'visual'
+      'buy';
     grid-template-rows: auto auto auto;
     row-gap: calc(4 * var(--u));
   }
@@ -1454,8 +1403,7 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px var(--edge, 16px)
-      calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 10px var(--edge, 16px) calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--dop-ink);
     box-shadow: 0 -6px 20px rgb(0 0 0 / 0.35);
     transform: translateY(110%);
@@ -1468,11 +1416,11 @@ onBeforeUnmount(() => {
     display: grid;
     line-height: 1.1;
   }
-.fp-combo__sticky-price strong {
-  color: var(--dop-yellow);
-  font-size: 1.35rem;
-  font-variant-numeric: tabular-nums;
-}
+  .fp-combo__sticky-price strong {
+    color: var(--dop-yellow);
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+  }
   .fp-combo__sticky-price s {
     color: #fff;
     font-size: 0.875rem;

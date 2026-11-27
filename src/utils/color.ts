@@ -1,44 +1,45 @@
 /* Shared colour maths: one implementation for "which text colour can sit on this
    surface", used by the hero accents and the deal cards. */
 export function relativeLuminance(hex: string): number {
-  const clean = String(hex || "").replace("#", "");
+  const clean = String(hex || '').replace('#', '')
   const lin = (pair: string) => {
-    const c = parseInt(pair || "0", 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  const [r, g, b] = [
-    clean.slice(0, 2),
-    clean.slice(2, 4),
-    clean.slice(4, 6),
-  ].map(lin);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const c = parseInt(pair || '0', 16) / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }
+  const [r, g, b] = [clean.slice(0, 2), clean.slice(2, 4), clean.slice(4, 6)].map(lin)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
 /* `is-dark` = the surface needs cream text. The class is chosen by comparing the two
    candidate contrast ratios instead of guessing a luminance threshold, so a borderline
    colour can never end up with the worse of the two. */
-const INK = "#101010";
-const CREAM = "#fff7e3"; /* --cream in style.css: one cream for text and paper */
+const INK = '#101010'
+const CREAM = '#fff7e3' /* --cream in style.css: one cream for text and paper */
 export function contrastRatio(a: string, b: string): number {
-  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m);
-  return (hi + 0.05) / (lo + 0.05);
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((m, n) => n - m)
+  return (hi + 0.05) / (lo + 0.05)
 }
-export function surfaceTone(hex: string): "is-dark" | "is-light" {
-  const withCream = contrastRatio(hex, CREAM);
-  const withInk = contrastRatio(hex, INK);
-  return withCream > withInk ? "is-dark" : "is-light";
+export function surfaceTone(hex: string): 'is-dark' | 'is-light' {
+  const withCream = contrastRatio(hex, CREAM)
+  const withInk = contrastRatio(hex, INK)
+  return withCream > withInk ? 'is-dark' : 'is-light'
 }
 
 /* t = share of `to` (0 → `from`, 1 → `to`). Kept as a hex round-trip so the result can
    be dropped straight into a CSS custom property. */
 export function mixHex(from: string, to: string, t: number): string {
   const channel = (hex: string, i: number) =>
-    parseInt(String(hex || "").replace("#", "").slice(i, i + 2) || "0", 16);
-  const share = Math.min(1, Math.max(0, t));
-  const mixed = [0, 2, 4].map((i) =>
-    Math.round(channel(from, i) * (1 - share) + channel(to, i) * share),
-  );
-  return `#${mixed.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+    parseInt(
+      String(hex || '')
+        .replace('#', '')
+        .slice(i, i + 2) || '0',
+      16
+    )
+  const share = Math.min(1, Math.max(0, t))
+  const mixed = [0, 2, 4].map(i =>
+    Math.round(channel(from, i) * (1 - share) + channel(to, i) * share)
+  )
+  return `#${mixed.map(v => v.toString(16).padStart(2, '0')).join('')}`
 }
 
 /* The most coloured tint of `accent` that still clears `min` against `surface`.
@@ -47,10 +48,10 @@ export function mixHex(from: string, to: string, t: number): string {
    the first pass is kept. A sun panel gets a warm brown secondary, a purple panel a
    light lilac — measured per slide instead of hand-picked per brand colour. */
 export function tintOn(surface: string, accent: string, min = 4.5): string {
-  const toward = surfaceTone(surface) === "is-dark" ? CREAM : INK;
+  const toward = surfaceTone(surface) === 'is-dark' ? CREAM : INK
   for (let step = 0; step <= 20; step++) {
-    const tint = mixHex(accent, toward, step / 20);
-    if (contrastRatio(tint, surface) >= min) return tint;
+    const tint = mixHex(accent, toward, step / 20)
+    if (contrastRatio(tint, surface) >= min) return tint
   }
-  return toward;
+  return toward
 }

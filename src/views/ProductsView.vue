@@ -1,50 +1,49 @@
 <script setup>
-import { computed, ref, watch, onMounted, nextTick } from "vue";
-import { SlidersHorizontal } from "lucide-vue-next";
-import { useProductStore } from "../stores/productStore";
-import { useFloorStore } from "../stores/floorStore";
-import { applyCatalogFilters, paginate } from "../data/catalog";
-import ProductGrid from "../components/product/ProductGrid.vue";
-import ProductShowcase from "../components/product/ProductShowcase.vue";
-import Pagination from "../components/common/Pagination.vue";
+import { computed, ref, watch, onMounted, nextTick } from 'vue'
+import { SlidersHorizontal } from 'lucide-vue-next'
+import { useProductStore } from '../stores/productStore'
+import { useFloorStore } from '../stores/floorStore'
+import { applyCatalogFilters, paginate } from '../data/catalog'
+import ProductGrid from '../components/product/ProductGrid.vue'
+import ProductShowcase from '../components/product/ProductShowcase.vue'
+import Pagination from '../components/common/Pagination.vue'
 
+const props = defineProps({ mode: { type: String, default: 'all' } })
 
-const props = defineProps({ mode: { type: String, default: "all" } });
-
-const s = useProductStore();
-const floor = useFloorStore();
-const page = ref(1);
-const category = ref("all");
-const filtersOpen = ref(false);
-const stockOnly = ref(false);
-const pageSize = 8;
+const s = useProductStore()
+const floor = useFloorStore()
+const page = ref(1)
+const category = ref('all')
+const filtersOpen = ref(false)
+const stockOnly = ref(false)
+const pageSize = 8
 
 const views = {
   all: {
-    kicker: "KỆ HÀNG DOP MART",
-    title: "Tủ snack hôm nay",
-    lead: (n) => `${n} món đang chờ bạn tại tầng ${floor.floor}.`,
-    sort: "default",
+    kicker: 'KỆ HÀNG DOP MART',
+    title: 'Tủ snack hôm nay',
+    lead: n => `${n} món đang chờ bạn tại tầng ${floor.floor}.`,
+    sort: 'default',
   },
   new: {
-    kicker: "FRESH DROP · MỚI LÊN KỆ",
-    title: "Món mới tuần này",
-    lead: (n) => `${n} món vừa cập bến kệ DOP Mart, thử trước đồng nghiệp.`,
-    sort: "default",
+    kicker: 'FRESH DROP · MỚI LÊN KỆ',
+    title: 'Món mới tuần này',
+    lead: n => `${n} món vừa cập bến kệ DOP Mart, thử trước đồng nghiệp.`,
+    sort: 'default',
   },
   best: {
-    kicker: "BEST SELLERS · OFFICE FAVORITES",
-    title: "Bán nổi nhất",
-    lead: (n) => `${n} món được săn nhiều nhất tại tầng ${floor.floor}.`,
-    sort: "best",
+    kicker: 'BEST SELLERS · OFFICE FAVORITES',
+    title: 'Bán nổi nhất',
+    lead: n => `${n} món được săn nhiều nhất tại tầng ${floor.floor}.`,
+    sort: 'best',
   },
-};
+}
 
-const view = computed(() => views[props.mode] || views.all);
-const sort = ref(view.value.sort);
+const view = computed(() => views[props.mode] || views.all)
+const sort = ref(view.value.sort)
 const base = computed(() =>
-  props.mode === "new" ? s.newProducts : props.mode === "best" ? s.bestSellers : s.products
-);
+  props.mode === 'new' ? s.newProducts : props.mode === 'best' ? s.bestSellers : s.products
+)
 const filtered = computed(() =>
   applyCatalogFilters(base.value, {
     category: category.value,
@@ -52,44 +51,44 @@ const filtered = computed(() =>
     floor: floor.floor,
     sort: sort.value,
   })
-);
-const pagination = computed(() => paginate(filtered.value, page.value, pageSize));
-const pages = computed(() => pagination.value.pages);
-const list = computed(() => pagination.value.items);
+)
+const pagination = computed(() => paginate(filtered.value, page.value, pageSize))
+const pages = computed(() => pagination.value.pages)
+const list = computed(() => pagination.value.items)
 
-watch([category, sort, stockOnly], () => (page.value = 1));
+watch([category, sort, stockOnly], () => (page.value = 1))
 watch(
   () => props.mode,
   () => {
-    sort.value = view.value.sort;
-    category.value = "all";
-    page.value = 1;
+    sort.value = view.value.sort
+    category.value = 'all'
+    page.value = 1
   }
-);
-watch(pages, (v) => {
-  if (page.value > v) page.value = v;
-});
+)
+watch(pages, v => {
+  if (page.value > v) page.value = v
+})
 
-const entrance = ref();
-const fullBleed = ref(false);
+const entrance = ref()
+const fullBleed = ref(false)
 
 onMounted(async () => {
-  await Promise.all([s.init(), floor.init()]);
-  await nextTick();
-  if (!entrance.value) return;
+  await Promise.all([s.init(), floor.init()])
+  await nextTick()
+  if (!entrance.value) return
   const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
+    entries => {
+      entries.forEach(e => {
         if (e.isIntersecting) {
-          fullBleed.value = true;
-          observer.disconnect();
+          fullBleed.value = true
+          observer.disconnect()
         }
-      });
+      })
     },
     { threshold: 0.25 }
-  );
-  observer.observe(entrance.value);
-});
+  )
+  observer.observe(entrance.value)
+})
 </script>
 <template>
   <main class="page catalog-page" :class="{ 'is-entering': entrance, 'full-bleed': fullBleed }">
@@ -107,8 +106,16 @@ onMounted(async () => {
       </div>
 
       <section class="catalog-toolbar" :class="{ expanded: filtersOpen }">
-        <button class="mobile-filter" :aria-expanded="filtersOpen" aria-controls="catalog-categories catalog-stock" @click="filtersOpen = !filtersOpen">
-          <SlidersHorizontal :size="16" /> Bộ lọc <span v-if="category !== 'all' || stockOnly">({{ Number(category !== 'all') + Number(stockOnly) }})</span>
+        <button
+          class="mobile-filter"
+          :aria-expanded="filtersOpen"
+          aria-controls="catalog-categories catalog-stock"
+          @click="filtersOpen = !filtersOpen"
+        >
+          <SlidersHorizontal :size="16" /> Bộ lọc
+          <span v-if="category !== 'all' || stockOnly"
+            >({{ Number(category !== 'all') + Number(stockOnly) }})</span
+          >
         </button>
         <div class="filter-group flex items-center gap-2">
           <SlidersHorizontal class="size-4 shrink-0" />
@@ -126,7 +133,7 @@ onMounted(async () => {
           </button>
         </div>
         <div class="filter-actions flex items-center gap-4">
-          <label id="catalog-stock" class="stock-checkbox flex items-center gap-2 cursor-pointer">
+          <label id="catalog-stock" class="stock-checkbox flex cursor-pointer items-center gap-2">
             <input v-model="stockOnly" type="checkbox" class="checkbox" />
             <span>Còn hàng {{ floor.floor }}F</span>
           </label>
@@ -294,17 +301,56 @@ onMounted(async () => {
   background: var(--cream);
   border-bottom-color: var(--ink);
 }
-.mobile-filter { display:none; }
-@media(max-width:767px) {
-  .catalog-title { margin-bottom:12px; gap:8px; }
-  .catalog-title .catalog-stat { display:none; }
-  .catalog-toolbar { display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; margin-bottom:16px; padding:10px 0; }
-  .catalog-toolbar .filter-group { display:none; }
-  .mobile-filter { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 12px; background:var(--cream); border:2px solid var(--ink); border-radius:14px; font-weight:750; }
-  .filter-actions { display:contents; }
-  .catalog-toolbar .sort-select { grid-area:1 / 2; width:100%; min-width:0; padding-right:28px; }
-  .catalog-toolbar .category-chips, .catalog-toolbar .stock-checkbox { display:none; grid-column:1 / -1; }
-  .catalog-toolbar.expanded .category-chips, .catalog-toolbar.expanded .stock-checkbox { display:flex; }
+.mobile-filter {
+  display: none;
+}
+@media (max-width: 767px) {
+  .catalog-title {
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+  .catalog-title .catalog-stat {
+    display: none;
+  }
+  .catalog-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 10px 0;
+  }
+  .catalog-toolbar .filter-group {
+    display: none;
+  }
+  .mobile-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 12px;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    font-weight: 750;
+  }
+  .filter-actions {
+    display: contents;
+  }
+  .catalog-toolbar .sort-select {
+    grid-area: 1 / 2;
+    width: 100%;
+    min-width: 0;
+    padding-right: 28px;
+  }
+  .catalog-toolbar .category-chips,
+  .catalog-toolbar .stock-checkbox {
+    display: none;
+    grid-column: 1 / -1;
+  }
+  .catalog-toolbar.expanded .category-chips,
+  .catalog-toolbar.expanded .stock-checkbox {
+    display: flex;
+  }
 }
 </style>
-

@@ -1,10 +1,10 @@
-import { defineStore } from "pinia"
-import { isSupabaseReady, supabase, getCurrentUser, ensureCartForUser } from "../lib/supabase"
+import { defineStore } from 'pinia'
+import { isSupabaseReady, supabase, getCurrentUser, ensureCartForUser } from '../lib/supabase'
 
-const KEY = "dopmart-cart-v1"
+const KEY = 'dopmart-cart-v1'
 function load() {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]")
+    return JSON.parse(localStorage.getItem(KEY) || '[]')
   } catch {
     return []
   }
@@ -30,7 +30,7 @@ interface CartState {
   _useSupabase: boolean
 }
 
-export const useCartStore = defineStore("cart", {
+export const useCartStore = defineStore('cart', {
   state: (): CartState => ({
     items: load(),
     open: false,
@@ -40,8 +40,8 @@ export const useCartStore = defineStore("cart", {
     _useSupabase: isSupabaseReady,
   }),
   getters: {
-    count: (s) => s.items.reduce((n, i) => n + i.qty, 0),
-    total: (s) => s.items.reduce((n, i) => n + i.price * i.qty, 0),
+    count: s => s.items.reduce((n, i) => n + i.qty, 0),
+    total: s => s.items.reduce((n, i) => n + i.price * i.qty, 0),
   },
   actions: {
     persist() {
@@ -75,8 +75,9 @@ export const useCartStore = defineStore("cart", {
       this.loading = true
       this.error = null
       const { data, error } = await supabase!
-        .from("cart_items")
-        .select(`
+        .from('cart_items')
+        .select(
+          `
           id,
           qty,
           created_at,
@@ -103,9 +104,10 @@ export const useCartStore = defineStore("cart", {
             created_at,
             updated_at
           )
-        `)
-        .eq("cart_id", this._cartId)
-        .order("created_at", { ascending: true })
+        `
+        )
+        .eq('cart_id', this._cartId)
+        .order('created_at', { ascending: true })
 
       if (error) {
         this.error = error.message
@@ -115,7 +117,10 @@ export const useCartStore = defineStore("cart", {
           ...(row.products as any),
           cartItemId: row.id,
           qty: row.qty,
-          stock: { 14: (row.products as any).stock_floor_14 ?? 0, 20: (row.products as any).stock_floor_20 ?? 0 },
+          stock: {
+            14: (row.products as any).stock_floor_14 ?? 0,
+            20: (row.products as any).stock_floor_20 ?? 0,
+          },
         }))
       }
       this.loading = false
@@ -123,20 +128,20 @@ export const useCartStore = defineStore("cart", {
     async add(p: CartItem, qty = 1) {
       if (!this._useSupabase || !this._cartId) {
         /* Guest cart (localStorage) hoặc chưa đăng nhập */
-        const i = this.items.find((x) => x.id === p.id)
+        const i = this.items.find(x => x.id === p.id)
         i ? (i.qty += qty) : this.items.push({ ...p, qty })
         this.persist()
         this.open = true
         return
       }
-      const existing = this.items.find((x) => x.id === p.id)
+      const existing = this.items.find(x => x.id === p.id)
       if (existing) {
         await supabase!
-          .from("cart_items")
+          .from('cart_items')
           .update({ qty: existing.qty + qty })
-          .eq("id", existing.cartItemId)
+          .eq('id', existing.cartItemId)
       } else {
-        await supabase!!.from("cart_items").insert({
+        await supabase!!.from('cart_items').insert({
           cart_id: this._cartId,
           product_id: p.id,
           qty,
@@ -147,32 +152,32 @@ export const useCartStore = defineStore("cart", {
     },
     async change(id: number | string, d: number) {
       if (!this._useSupabase || !this._cartId) {
-        const i = this.items.find((x) => x.id === id)
+        const i = this.items.find(x => x.id === id)
         if (!i) return
         i.qty += d
-        if (i.qty <= 0) this.items = this.items.filter((x) => x.id !== id)
+        if (i.qty <= 0) this.items = this.items.filter(x => x.id !== id)
         this.persist()
         return
       }
-      const item = this.items.find((x) => x.id === id)
+      const item = this.items.find(x => x.id === id)
       if (!item) return
       const newQty = item.qty + d
       if (newQty <= 0) {
         await this.remove(id)
         return
       }
-      await supabase!!.from("cart_items").update({ qty: newQty }).eq("id", item.cartItemId)
+      await supabase!!.from('cart_items').update({ qty: newQty }).eq('id', item.cartItemId)
       await this.fetchItems()
     },
     async remove(id: number | string) {
       if (!this._useSupabase || !this._cartId) {
-        this.items = this.items.filter((x) => x.id !== id)
+        this.items = this.items.filter(x => x.id !== id)
         this.persist()
         return
       }
-      const item = this.items.find((x) => x.id === id)
+      const item = this.items.find(x => x.id === id)
       if (!item) return
-      await supabase!!.from("cart_items").delete().eq("id", item.cartItemId)
+      await supabase!!.from('cart_items').delete().eq('id', item.cartItemId)
       await this.fetchItems()
     },
     async clear() {
@@ -182,7 +187,7 @@ export const useCartStore = defineStore("cart", {
         return
       }
       if (!this._cartId) return
-      await supabase!!.from("cart_items").delete().eq("cart_id", this._cartId)
+      await supabase!!.from('cart_items').delete().eq('cart_id', this._cartId)
       this.items = []
     },
     toggleDrawer() {

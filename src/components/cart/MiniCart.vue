@@ -1,62 +1,62 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { X, MapPin, ArrowRight } from "lucide-vue-next";
-import { useCartStore } from "../../stores/cartStore";
-import { useFloorStore } from "../../stores/floorStore";
-import CartItem from "./CartItem.vue";
-const cart = useCartStore();
-const floor = useFloorStore();
-const drawerEl = ref(null);
-const closeEl = ref(null);
-let lastTrigger = null;
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { X, MapPin, ArrowRight } from 'lucide-vue-next'
+import { useCartStore } from '../../stores/cartStore'
+import { useFloorStore } from '../../stores/floorStore'
+import CartItem from './CartItem.vue'
+const cart = useCartStore()
+const floor = useFloorStore()
+const drawerEl = ref(null)
+const closeEl = ref(null)
+let lastTrigger = null
 
 function close() {
-  cart.open = false;
+  cart.open = false
 }
 function focusables() {
-  if (!drawerEl.value) return [];
+  if (!drawerEl.value) return []
   return Array.from(
     drawerEl.value.querySelectorAll(
       'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
-  ).filter((node) => node.offsetParent !== null);
+  ).filter(node => node.offsetParent !== null)
 }
 function onKeydown(event) {
-  if (!cart.open) return;
-  if (event.key === "Escape") {
-    event.preventDefault();
-    close();
-    return;
+  if (!cart.open) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    close()
+    return
   }
-  if (event.key !== "Tab") return;
-  const list = focusables();
-  if (!list.length) return;
-  const first = list[0];
-  const last = list[list.length - 1];
-  const inside = drawerEl.value?.contains(document.activeElement);
+  if (event.key !== 'Tab') return
+  const list = focusables()
+  if (!list.length) return
+  const first = list[0]
+  const last = list[list.length - 1]
+  const inside = drawerEl.value?.contains(document.activeElement)
   if (event.shiftKey && (document.activeElement === first || !inside)) {
-    event.preventDefault();
-    last.focus();
+    event.preventDefault()
+    last.focus()
   } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
+    event.preventDefault()
+    first.focus()
   }
 }
 watch(
   () => cart.open,
-  async (open) => {
+  async open => {
     if (open) {
-      lastTrigger = document.activeElement;
-      await nextTick();
-      closeEl.value?.focus({ preventScroll: true });
+      lastTrigger = document.activeElement
+      await nextTick()
+      closeEl.value?.focus({ preventScroll: true })
     } else if (lastTrigger) {
-      lastTrigger.focus?.({ preventScroll: true });
-      lastTrigger = null;
+      lastTrigger.focus?.({ preventScroll: true })
+      lastTrigger = null
     }
   }
-);
-onMounted(() => document.addEventListener("keydown", onKeydown));
-onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
+)
+onMounted(() => document.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 </script>
 <template>
   <div class="minicart-overlay" v-if="cart.open" @click="close"></div>
@@ -80,16 +80,10 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
     </div>
 
     <div class="minicart__items">
-      <CartItem
-        v-for="item in cart.items"
-        :key="item.id"
-        :item="item"
-      />
+      <CartItem v-for="item in cart.items" :key="item.id" :item="item" />
       <div v-if="!cart.items.length" class="minicart__empty">
         <div class="minicart__empty__mark">🛒</div>
-        <p class="minicart__empty__text">
-          Giỏ hàng đang chờ một món thật vui 🍿
-        </p>
+        <p class="minicart__empty__text">Giỏ hàng đang chờ một món thật vui 🍿</p>
       </div>
     </div>
 
@@ -100,7 +94,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
       </div>
       <div class="minicart__total">
         <span>Tổng cộng</span>
-        <b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+        <b class="tabular-nums">{{ cart.total.toLocaleString('vi-VN') }} ₫</b>
       </div>
       <RouterLink
         to="/checkout"
@@ -247,7 +241,10 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
   text-decoration: none;
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
 .minicart__cta:hover:not(:disabled) {
   transform: translate(-1px, -1px);

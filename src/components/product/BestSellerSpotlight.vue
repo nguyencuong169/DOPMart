@@ -1,38 +1,38 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger.js";
-import { ArrowRight, Trophy } from "lucide-vue-next";
-import { cn } from "cn";
-import QuickAdd from "./QuickAdd.vue";
-import { Card } from "@/components/ui/card";
-import { CardContent } from "@/components/ui/card";
-import { CardHeader } from "@/components/ui/card";
-import { CardTitle } from "@/components/ui/card";
-import { CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useProductStore } from "../../stores/productStore";
-import { useFloorStore } from "../../stores/floorStore";
-gsap.registerPlugin(ScrollTrigger);
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger.js'
+import { ArrowRight, Trophy } from 'lucide-vue-next'
+import { cn } from 'cn'
+import QuickAdd from './QuickAdd.vue'
+import { Card } from '@/components/ui/card'
+import { CardContent } from '@/components/ui/card'
+import { CardHeader } from '@/components/ui/card'
+import { CardTitle } from '@/components/ui/card'
+import { CardFooter } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { useProductStore } from '../../stores/productStore'
+import { useFloorStore } from '../../stores/floorStore'
+gsap.registerPlugin(ScrollTrigger)
 
-const store = useProductStore();
-const floor = useFloorStore();
-const root = ref(null);
-const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
-const ranked = computed(() => store.bestSellersList);
-const top = computed(() => ranked.value[0]);
-const rest = computed(() => ranked.value.slice(1));
+const store = useProductStore()
+const floor = useFloorStore()
+const root = ref(null)
+const stockOf = p => p?.stock?.[floor.floor] ?? null
+const ranked = computed(() => store.bestSellersList)
+const top = computed(() => ranked.value[0])
+const rest = computed(() => ranked.value.slice(1))
 
-let ctx;
+let ctx
 onMounted(async () => {
-  await store.fetchBestSellers(5);
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  await store.fetchBestSellers(5)
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   ctx = gsap.context(() => {
-    const track = root.value?.querySelector(".bs-rank__track");
-    if (!track) return;
-    const cards = gsap.utils.toArray(".bs-rank__card");
+    const track = root.value?.querySelector('.bs-rank__track')
+    if (!track) return
+    const cards = gsap.utils.toArray('.bs-rank__card')
     if (cards.length) {
       gsap.from(cards, {
         y: 60,
@@ -41,34 +41,26 @@ onMounted(async () => {
         stagger: 0.1,
         scrollTrigger: {
           trigger: track,
-          start: "top 88%",
-          end: "top 55%",
+          start: 'top 88%',
+          end: 'top 55%',
           scrub: 1,
         },
-      });
+      })
     }
-  }, root.value);
-});
-onBeforeUnmount(() => ctx?.revert());
+  }, root.value)
+})
+onBeforeUnmount(() => ctx?.revert())
 </script>
 <template>
   <section ref="root" class="bs-rank">
     <header class="bs-rank__intro">
-      <span class="bs-rank__kicker"
-        ><Trophy :size="13" /> BẢNG XẾP HẠNG TUẦN NÀY</span
-      >
+      <span class="bs-rank__kicker"><Trophy :size="13" /> BẢNG XẾP HẠNG TUẦN NÀY</span>
       <h2 class="bs-rank__title">Món được<br />săn nhiều nhất.</h2>
-      <p class="bs-rank__lead">
-        #1 nổi bật chính giữa — những hạng sau xếp ngang nhau bên cạnh.
-      </p>
+      <p class="bs-rank__lead">#1 nổi bật chính giữa — những hạng sau xếp ngang nhau bên cạnh.</p>
     </header>
 
     <div class="bs-rank__track" aria-label="Top 5 bán chạy tuần này">
-      <article
-        v-if="top"
-        class="bs-rank__card bs-rank__card--champ"
-        :style="{ '--c': top.color }"
-      >
+      <article v-if="top" class="bs-rank__card bs-rank__card--champ" :style="{ '--c': top.color }">
         <div class="bs-rank__champ-badge">#1</div>
         <Card class="bs-rank__champ-card" :class="cn('relative z-10')">
           <CardHeader class="bs-rank__champ-header">
@@ -93,8 +85,7 @@ onBeforeUnmount(() => ctx?.revert());
                   <small>{{ top.rating }} · {{ top.sold }} đã bán</small>
                 </span>
                 <strong class="bs-rank__champ-price"
-                  >{{ top.price.toLocaleString("vi-VN") }}
-                  <small>₫</small></strong
+                  >{{ top.price.toLocaleString('vi-VN') }} <small>₫</small></strong
                 >
               </div>
             </div>
@@ -102,11 +93,7 @@ onBeforeUnmount(() => ctx?.revert());
           <CardFooter class="bs-rank__champ-footer">
             <div class="flex items-center justify-between gap-3">
               <QuickAdd :product="top" :stock="stockOf(top)" />
-              <Button
-                as="a"
-                :href="`/product/${top.slug}`"
-                class="bs-rank__champ-detail"
-              >
+              <Button as="a" :href="`/product/${top.slug}`" class="bs-rank__champ-detail">
                 Xem chi tiết <ArrowRight :size="14" data-icon="inline-end" />
               </Button>
             </div>
@@ -124,9 +111,7 @@ onBeforeUnmount(() => ctx?.revert());
           <CardHeader class="bs-rank__runner-header">
             <div class="flex items-center gap-2">
               <Badge class="bs-rank__runner-rank-badge">#{{ i + 2 }}</Badge>
-              <span class="bs-rank__runner-cat">{{
-                product.categoryName
-              }}</span>
+              <span class="bs-rank__runner-cat">{{ product.categoryName }}</span>
             </div>
           </CardHeader>
           <CardContent class="bs-rank__runner-content">
@@ -138,22 +123,16 @@ onBeforeUnmount(() => ctx?.revert());
                 loading="lazy"
                 decoding="async"
               />
-              <CardTitle class="bs-rank__runner-title">{{
-                product.name
-              }}</CardTitle>
+              <CardTitle class="bs-rank__runner-title">{{ product.name }}</CardTitle>
               <div class="bs-rank__runner-meta">
                 <strong class="bs-rank__runner-price"
-                  >{{ product.price.toLocaleString("vi-VN") }} ₫</strong
+                  >{{ product.price.toLocaleString('vi-VN') }} ₫</strong
                 >
               </div>
             </div>
           </CardContent>
           <CardFooter class="bs-rank__runner-footer">
-            <QuickAdd
-              :product="product"
-              :stock="stockOf(product)"
-              variant="icon"
-            />
+            <QuickAdd :product="product" :stock="stockOf(product)" variant="icon" />
           </CardFooter>
         </Card>
       </article>

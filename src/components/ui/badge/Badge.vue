@@ -7,10 +7,12 @@ import { cn } from 'cn'
 import { Primitive } from 'reka-ui'
 import { badgeVariants } from '.'
 
-const props = defineProps<PrimitiveProps & {
-  variant?: BadgeVariants['variant']
-  class?: HTMLAttributes['class']
-}>()
+const props = defineProps<
+  PrimitiveProps & {
+    variant?: BadgeVariants['variant']
+    class?: HTMLAttributes['class']
+  }
+>()
 
 const delegatedProps = reactiveOmit(props, 'class')
 </script>

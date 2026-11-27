@@ -64,9 +64,7 @@ async function loadOrders() {
   try {
     orders.value = await getMyMartOrders()
   } catch (cause) {
-    errorMessage.value = cause instanceof Error
-      ? cause.message
-      : 'Không thể tải lịch sử đơn hàng.'
+    errorMessage.value = cause instanceof Error ? cause.message : 'Không thể tải lịch sử đơn hàng.'
   } finally {
     loading.value = false
   }
@@ -81,7 +79,9 @@ onMounted(loadOrders)
       <div class="orders-hero__copy">
         <span class="kicker">LỊCH SỬ · ĐƠN HÀNG</span>
         <h1>Đơn hàng của tôi.</h1>
-        <p class="orders-lead">Theo dõi thanh toán, chuẩn bị hàng và thời điểm nhận đồ tại văn phòng.</p>
+        <p class="orders-lead">
+          Theo dõi thanh toán, chuẩn bị hàng và thời điểm nhận đồ tại văn phòng.
+        </p>
       </div>
       <button type="button" class="orders-refresh" :disabled="loading" @click="loadOrders">
         <RefreshCw :size="15" :class="{ spinning: loading }" aria-hidden="true" />
@@ -121,7 +121,9 @@ onMounted(loadOrders)
           <div class="order-facts">
             <div>
               <span>Nhận hàng</span>
-              <strong>{{ order.fulfillmentMethod === 'pickup' ? 'Tự đến quầy / kho' : 'Giao tại chỗ' }}</strong>
+              <strong>{{
+                order.fulfillmentMethod === 'pickup' ? 'Tự đến quầy / kho' : 'Giao tại chỗ'
+              }}</strong>
             </div>
             <div>
               <span>Thanh toán</span>
@@ -151,7 +153,9 @@ onMounted(loadOrders)
     </section>
 
     <section v-else class="orders-empty orders-empty--card">
-      <div class="orders-empty__mark"><ReceiptText :size="56" :stroke-width="1.5" aria-hidden="true" /></div>
+      <div class="orders-empty__mark">
+        <ReceiptText :size="56" :stroke-width="1.5" aria-hidden="true" />
+      </div>
       <h2>Chưa có đơn hàng nào.</h2>
       <p>Đặt món đầu tiên để lịch sử mua hàng xuất hiện ở đây.</p>
       <RouterLink class="profile-btn" to="/products">Xem sản phẩm</RouterLink>
@@ -224,7 +228,10 @@ onMounted(loadOrders)
   font-size: var(--fs-md);
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
 .orders-refresh:hover:not(:disabled) {
   transform: translate(-1px, -1px);
@@ -275,7 +282,9 @@ onMounted(loadOrders)
   padding: 24px 26px;
   box-shadow: 6px 6px 0 var(--ink);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
   overflow: hidden;
 }
 .order-card::before {
@@ -297,7 +306,8 @@ onMounted(loadOrders)
   transform: translate(-1px, -1px);
   box-shadow: 8px 8px 0 var(--ink);
 }
-.order-card__topline, .order-card__footer {
+.order-card__topline,
+.order-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -330,25 +340,30 @@ onMounted(loadOrders)
   white-space: nowrap;
   box-shadow: 3px 3px 0 var(--ink);
 }
-.status-pending_payment, .status-expired {
+.status-pending_payment,
+.status-expired {
   background: var(--cream);
   color: #935b00;
   border-color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
 }
-.status-confirmed, .status-preparing {
+.status-confirmed,
+.status-preparing {
   background: #e7e1ff;
   color: #5b35b7;
   border-color: #5b35b7;
   box-shadow: 3px 3px 0 #5b35b7;
 }
-.status-ready_for_pickup, .status-out_for_delivery, .status-completed {
+.status-ready_for_pickup,
+.status-out_for_delivery,
+.status-completed {
   background: #d8f5df;
   color: #176b39;
   border-color: #176b39;
   box-shadow: 3px 3px 0 #176b39;
 }
-.status-cancelled, .status-manual_review {
+.status-cancelled,
+.status-manual_review {
   background: #ffe1df;
   color: #a22b24;
   border-color: #a22b24;
@@ -370,7 +385,8 @@ onMounted(loadOrders)
   display: grid;
   gap: 5px;
 }
-.order-facts span, .order-total span {
+.order-facts span,
+.order-total span {
   color: var(--muted-foreground);
   font-size: 12px;
 }
@@ -413,7 +429,9 @@ onMounted(loadOrders)
   font-size: 12px;
   box-shadow: 3px 3px 0 var(--ink);
   white-space: nowrap;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .order-link:hover {
   transform: translate(-1px, -1px);
@@ -464,11 +482,15 @@ onMounted(loadOrders)
   animation: profileSpin 0.8s linear infinite;
 }
 @keyframes profileSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .order-card, .orders-refresh, .order-link {
+  .order-card,
+  .orders-refresh,
+  .order-link {
     transition: none;
   }
   .profile-spin {

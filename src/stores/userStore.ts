@@ -1,8 +1,8 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import { getCurrentUserWithProfile, supabase } from "../lib/supabase"
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { getCurrentUserWithProfile, supabase } from '../lib/supabase'
 
-export const useUserStore = defineStore("user", () => {
+export const useUserStore = defineStore('user', () => {
   const user = ref<any | null>(null)
   const profile = ref<any | null>(null)
   const loading = ref(false)
@@ -15,7 +15,7 @@ export const useUserStore = defineStore("user", () => {
 
   async function fetchCurrentUser() {
     if (!supabase) {
-      error.value = "Chưa cấu hình Supabase (thiếu VITE_SUPABASE_ANON_KEY)"
+      error.value = 'Chưa cấu hình Supabase (thiếu VITE_SUPABASE_ANON_KEY)'
       return
     }
     loading.value = true
@@ -33,7 +33,7 @@ export const useUserStore = defineStore("user", () => {
 
   // Đăng nhập
   async function login(email: string, password: string) {
-    if (!supabase) throw new Error("Chưa cấu hình Supabase")
+    if (!supabase) throw new Error('Chưa cấu hình Supabase')
     loading.value = true
     error.value = null
     try {
@@ -45,9 +45,9 @@ export const useUserStore = defineStore("user", () => {
       user.value = data.user
       if (data.user) {
         const { data: prof } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", data.user.id)
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
           .single()
         profile.value = prof
       }
@@ -62,7 +62,7 @@ export const useUserStore = defineStore("user", () => {
 
   // Đăng ký
   async function register(email: string, password: string) {
-    if (!supabase) throw new Error("Chưa cấu hình Supabase")
+    if (!supabase) throw new Error('Chưa cấu hình Supabase')
     loading.value = true
     error.value = null
     try {
@@ -99,14 +99,14 @@ export const useUserStore = defineStore("user", () => {
 
   // Cập nhật profile (floor, ...)
   async function updateProfile(updates: any) {
-    if (!supabase || !user.value) throw new Error("Chưa đăng nhập")
+    if (!supabase || !user.value) throw new Error('Chưa đăng nhập')
     loading.value = true
     error.value = null
     try {
       const { data, error: err } = await supabase
-        .from("profiles")
+        .from('profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("id", user.value.id)
+        .eq('id', user.value.id)
         .select()
         .single()
       if (err) throw err
@@ -126,7 +126,7 @@ export const useUserStore = defineStore("user", () => {
     loading,
     error,
     isLoggedIn: computed(() => !!user.value),
-    isAdmin: computed(() => profile.value?.role === "admin"),
+    isAdmin: computed(() => profile.value?.role === 'admin'),
     fetchCurrentUser,
     init,
     login,

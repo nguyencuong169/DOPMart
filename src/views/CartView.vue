@@ -1,9 +1,9 @@
 <script setup>
-import { onMounted } from "vue";
-import { ArrowRight } from "lucide-vue-next";
-import { useCartStore } from "../stores/cartStore";
-const cart = useCartStore();
-onMounted(() => cart.init());
+import { onMounted } from 'vue'
+import { ArrowRight } from 'lucide-vue-next'
+import { useCartStore } from '../stores/cartStore'
+const cart = useCartStore()
+onMounted(() => cart.init())
 </script>
 <template>
   <main class="cart-page">
@@ -12,18 +12,15 @@ onMounted(() => cart.init());
         <span class="kicker">GIỎ HÀNG · CỦA BẠN</span>
         <h1>Giỏ hàng của bạn.</h1>
         <p class="cart-lead">
-          Mỗi món sẽ được giữ riêng cho bạn khi bấm đặt hàng. Tùy chỉnh số lượng hoặc xóa món bất cứ lúc nào.
+          Mỗi món sẽ được giữ riêng cho bạn khi bấm đặt hàng. Tùy chỉnh số lượng hoặc xóa món bất cứ
+          lúc nào.
         </p>
       </div>
     </header>
 
     <div v-if="cart.items.length" class="cart-grid">
       <section class="cart-list" aria-label="Danh sách món trong giỏ">
-        <CartItem
-          v-for="item in cart.items"
-          :key="item.id"
-          :item="item"
-        />
+        <CartItem v-for="item in cart.items" :key="item.id" :item="item" />
       </section>
 
       <aside class="cart-summary" aria-label="Tóm tắt thanh toán">
@@ -35,7 +32,7 @@ onMounted(() => cart.init());
         <div class="cart-summary__breakdown">
           <div class="cart-summary__row">
             <span>Tạm tính</span>
-            <b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+            <b class="tabular-nums">{{ cart.total.toLocaleString('vi-VN') }} ₫</b>
           </div>
           <div class="cart-summary__row cart-summary__row--muted">
             <span>Phí giao hàng</span>
@@ -43,21 +40,15 @@ onMounted(() => cart.init());
           </div>
           <div class="cart-summary__row cart-summary__row--grand">
             <span>Tổng thanh toán</span>
-            <b class="tabular-nums">{{ cart.total.toLocaleString("vi-VN") }} ₫</b>
+            <b class="tabular-nums">{{ cart.total.toLocaleString('vi-VN') }} ₫</b>
           </div>
         </div>
 
-        <RouterLink
-          v-if="cart.items.length"
-          class="cart-cta"
-          to="/checkout"
-        >
+        <RouterLink v-if="cart.items.length" class="cart-cta" to="/checkout">
           Tiếp tục thanh toán <ArrowRight :size="15" aria-hidden="true" />
         </RouterLink>
 
-        <p class="cart-note">
-          Giá và tồn kho sẽ được xác nhận lại ở bước đặt hàng.
-        </p>
+        <p class="cart-note">Giá và tồn kho sẽ được xác nhận lại ở bước đặt hàng.</p>
       </aside>
     </div>
 
@@ -218,7 +209,9 @@ onMounted(() => cart.init());
   box-shadow: 4px 4px 0 var(--ink);
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .cart-cta:hover {
   transform: translate(-1px, -1px);
@@ -275,7 +268,9 @@ onMounted(() => cart.init());
   box-shadow: 4px 4px 0 var(--ink);
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .cart-btn:hover {
   transform: translate(-1px, -1px);

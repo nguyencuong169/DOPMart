@@ -1,35 +1,35 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { ArrowRight, Flame, ShoppingBag } from "lucide-vue-next";
-import { useProductStore } from "../../stores/productStore";
-import { useCartStore } from "../../stores/cartStore";
-import { useFloorStore } from "../../stores/floorStore";
+import { computed, onMounted, ref } from 'vue'
+import { ArrowRight, Flame, ShoppingBag } from 'lucide-vue-next'
+import { useProductStore } from '../../stores/productStore'
+import { useCartStore } from '../../stores/cartStore'
+import { useFloorStore } from '../../stores/floorStore'
 
-const store = useProductStore();
-const cart = useCartStore();
-const floor = useFloorStore();
+const store = useProductStore()
+const cart = useCartStore()
+const floor = useFloorStore()
 
-const ranked = computed(() => store.weeklyRankingList);
-const topSix = computed(() => ranked.value.slice(0, 6));
+const ranked = computed(() => store.weeklyRankingList)
+const topSix = computed(() => ranked.value.slice(0, 6))
 
-const fmt = (n) => Number(n || 0).toLocaleString("vi-VN");
+const fmt = n => Number(n || 0).toLocaleString('vi-VN')
 
-const onColor = (hex) => {
-  const n = parseInt(String(hex || "#000000").replace("#", ""), 16);
-  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#0f172a" : "#ffffff";
-};
+const onColor = hex => {
+  const n = parseInt(String(hex || '#000000').replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#0f172a' : '#ffffff'
+}
 
 function addToCart(product) {
-  cart.add(product, 1);
+  cart.add(product, 1)
 }
 
 onMounted(async () => {
-  store.init();
-  cart.init();
-  floor.init();
-  await store.fetchWeeklyRanking(6);
-});
+  store.init()
+  cart.init()
+  floor.init()
+  await store.fetchWeeklyRanking(6)
+})
 </script>
 
 <template>
@@ -46,11 +46,10 @@ onMounted(async () => {
           <div class="wr-header__line"></div>
         </div>
         <span class="wr-header__badge">Món ngon mỗi ngày</span>
-        <h2 class="wr-header__title">
-          TOP <span class="wr-header__glow">SNACK</span> BÁN CHẠY
-        </h2>
+        <h2 class="wr-header__title">TOP <span class="wr-header__glow">SNACK</span> BÁN CHẠY</h2>
         <p class="wr-header__lead">
-          Khám phá những hương vị độc bản tại DOP Mart. Mỗi sản phẩm là một hành trình cảm xúc từ nguyên liệu tự nhiên nhất.
+          Khám phá những hương vị độc bản tại DOP Mart. Mỗi sản phẩm là một hành trình cảm xúc từ
+          nguyên liệu tự nhiên nhất.
         </p>
       </div>
     </header>
@@ -61,7 +60,7 @@ onMounted(async () => {
         <article
           v-for="(product, i) in topSix"
           :key="product.id"
-          class="wr-card skew-card group stagger-in"
+          class="wr-card skew-card stagger-in group"
           :style="{
             '--card-color': product.tint || product.color,
             '--card-text': onColor(product.tint || product.color),
@@ -71,9 +70,7 @@ onMounted(async () => {
           <div class="wr-card__divider" aria-hidden="true"></div>
           <div class="wr-card__pattern" aria-hidden="true"></div>
           <div v-if="product.hot" class="wr-card__badge">
-            <span class="wr-card__badge-inner">
-              <Flame class="wr-card__flame" /> BEST SELLER
-            </span>
+            <span class="wr-card__badge-inner"> <Flame class="wr-card__flame" /> BEST SELLER </span>
           </div>
           <h3 class="wr-card__name font-display">{{ product.name }}</h3>
           <div class="wr-card__price-block">

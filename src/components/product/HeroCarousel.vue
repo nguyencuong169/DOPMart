@@ -1,73 +1,81 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-vue-next";
-import QuickAdd from "./QuickAdd.vue";
-import { useProductStore } from "../../stores/productStore";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-vue-next'
+import QuickAdd from './QuickAdd.vue'
+import { useProductStore } from '../../stores/productStore'
 
-const store = useProductStore();
-const slides = computed(() => store.products.slice(0, 4));
-const current = ref(0);
-const product = computed(() => slides.value[current.value]);
-const playing = ref(false);
-const hovered = ref(false);
-const focused = ref(false);
-const clock = ref(new Date());
+const store = useProductStore()
+const slides = computed(() => store.products.slice(0, 4))
+const current = ref(0)
+const product = computed(() => slides.value[current.value])
+const playing = ref(false)
+const hovered = ref(false)
+const focused = ref(false)
+const clock = ref(new Date())
 const isOpen = computed(() => {
-  const minutes = clock.value.getHours() * 60 + clock.value.getMinutes();
-  return minutes >= 510 && minutes < 1050;
-});
-const price = new Intl.NumberFormat("vi-VN");
+  const minutes = clock.value.getHours() * 60 + clock.value.getMinutes()
+  return minutes >= 510 && minutes < 1050
+})
+const price = new Intl.NumberFormat('vi-VN')
 
-let slideTimer;
-let clockTimer;
-let motion;
+let slideTimer
+let clockTimer
+let motion
 
 function go(index) {
-  const total = slides.value.length;
-  if (!total) return;
-  current.value = (index + total) % total;
-  scheduleSlide();
+  const total = slides.value.length
+  if (!total) return
+  current.value = (index + total) % total
+  scheduleSlide()
 }
 
 function selectSlide(index) {
-  playing.value = false;
-  go(index);
+  playing.value = false
+  go(index)
 }
 
 function scheduleSlide() {
-  clearTimeout(slideTimer);
-  if (playing.value && !hovered.value && !focused.value && !document.hidden && slides.value.length > 1) {
-    slideTimer = setTimeout(() => go(current.value + 1), 5600);
+  clearTimeout(slideTimer)
+  if (
+    playing.value &&
+    !hovered.value &&
+    !focused.value &&
+    !document.hidden &&
+    slides.value.length > 1
+  ) {
+    slideTimer = setTimeout(() => go(current.value + 1), 5600)
   }
 }
 
 function onFocusOut(event) {
-  focused.value = event.currentTarget.contains(event.relatedTarget);
+  focused.value = event.currentTarget.contains(event.relatedTarget)
 }
 
 function syncMotion() {
-  if (motion.matches) playing.value = false;
+  if (motion.matches) playing.value = false
 }
 
 watch([playing, hovered, focused, () => slides.value.length], () => {
-  if (current.value >= slides.value.length) current.value = 0;
-  scheduleSlide();
-});
+  if (current.value >= slides.value.length) current.value = 0
+  scheduleSlide()
+})
 
 onMounted(() => {
-  motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  playing.value = !motion.matches;
-  motion.addEventListener("change", syncMotion);
-  clockTimer = setInterval(() => { clock.value = new Date(); }, 60000);
-  document.addEventListener("visibilitychange", scheduleSlide);
-});
+  motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  playing.value = !motion.matches
+  motion.addEventListener('change', syncMotion)
+  clockTimer = setInterval(() => {
+    clock.value = new Date()
+  }, 60000)
+  document.addEventListener('visibilitychange', scheduleSlide)
+})
 
 onBeforeUnmount(() => {
-  clearTimeout(slideTimer);
-  clearInterval(clockTimer);
-  motion?.removeEventListener("change", syncMotion);
-  document.removeEventListener("visibilitychange", scheduleSlide);
-});
+  clearTimeout(slideTimer)
+  clearInterval(clockTimer)
+  motion?.removeEventListener('change', syncMotion)
+  document.removeEventListener('visibilitychange', scheduleSlide)
+})
 </script>
 
 <template>
@@ -85,11 +93,13 @@ onBeforeUnmount(() => {
         <p class="store-hero__hours">
           Tầng 14 &amp; 20 · 08:30–17:30
           <span class="store-hero__status" :class="{ 'is-open': isOpen }">
-            {{ isOpen ? "Đang mở" : "Đã đóng" }}
+            {{ isOpen ? 'Đang mở' : 'Đã đóng' }}
           </span>
         </p>
         <h1>Món ngon, <span>ngay trong văn phòng.</span></h1>
-        <p class="store-hero__intro">Snack và đồ uống cho giờ nghỉ. Chọn món bạn thích rồi ghé DOP Mart.</p>
+        <p class="store-hero__intro">
+          Snack và đồ uống cho giờ nghỉ. Chọn món bạn thích rồi ghé DOP Mart.
+        </p>
         <div class="store-hero__links">
           <RouterLink to="/shop" class="store-hero__primary">
             Khám phá cửa hàng <ArrowUpRight :size="18" aria-hidden="true" />
@@ -112,9 +122,16 @@ onBeforeUnmount(() => {
               decoding="async"
             />
           </Transition>
-          <span v-if="product && !product.image" class="store-hero__image-fallback">{{ product.name }}</span>
+          <span v-if="product && !product.image" class="store-hero__image-fallback">{{
+            product.name
+          }}</span>
         </div>
-        <div v-if="slides.length > 1" class="store-hero__controls" role="group" aria-label="Điều khiển carousel">
+        <div
+          v-if="slides.length > 1"
+          class="store-hero__controls"
+          role="group"
+          aria-label="Điều khiển carousel"
+        >
           <button
             type="button"
             :aria-label="playing ? 'Tạm dừng tự động chuyển slide' : 'Bật tự động chuyển slide'"
@@ -126,7 +143,11 @@ onBeforeUnmount(() => {
           <button type="button" aria-label="Xem sản phẩm trước" @click="selectSlide(current - 1)">
             <ChevronLeft aria-hidden="true" />
           </button>
-          <button type="button" aria-label="Xem sản phẩm tiếp theo" @click="selectSlide(current + 1)">
+          <button
+            type="button"
+            aria-label="Xem sản phẩm tiếp theo"
+            @click="selectSlide(current + 1)"
+          >
             <ChevronRight aria-hidden="true" />
           </button>
           <div class="store-hero__dots">
@@ -137,14 +158,22 @@ onBeforeUnmount(() => {
               :aria-label="`Xem sản phẩm: ${slide.name}`"
               :aria-current="index === current ? 'true' : undefined"
               @click="selectSlide(index)"
-            ><span></span></button>
+            >
+              <span></span>
+            </button>
           </div>
         </div>
       </div>
 
-      <div v-if="product" class="store-hero__item" :aria-live="playing && !hovered && !focused ? 'off' : 'polite'">
+      <div
+        v-if="product"
+        class="store-hero__item"
+        :aria-live="playing && !hovered && !focused ? 'off' : 'polite'"
+      >
         <div>
-          <h2><RouterLink :to="`/product/${product.slug}`">{{ product.name }}</RouterLink></h2>
+          <h2>
+            <RouterLink :to="`/product/${product.slug}`">{{ product.name }}</RouterLink>
+          </h2>
           <p>{{ product.description }}</p>
           <div class="store-hero__meta">
             <strong>{{ price.format(product.price) }} ₫</strong>
@@ -167,8 +196,8 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   grid-template-areas:
-    "copy showcase"
-    "item showcase";
+    'copy showcase'
+    'item showcase';
   grid-template-rows: auto auto;
   align-content: center;
   align-items: center;
@@ -177,8 +206,13 @@ onBeforeUnmount(() => {
   margin-inline: auto;
   padding: clamp(24px, 5vw, 80px);
 }
-.store-hero__copy { grid-area: copy; align-self: end; }
-.store-hero__showcase { grid-area: showcase; }
+.store-hero__copy {
+  grid-area: copy;
+  align-self: end;
+}
+.store-hero__showcase {
+  grid-area: showcase;
+}
 .store-hero__hours,
 .store-hero__links {
   display: flex;
@@ -197,14 +231,18 @@ onBeforeUnmount(() => {
   border: 1px solid currentColor;
   border-radius: var(--r-pill);
 }
-.store-hero__status.is-open { color: var(--green-ink); }
+.store-hero__status.is-open {
+  color: var(--green-ink);
+}
 .store-hero h1 {
   margin: 0 0 22px;
   font: 800 var(--fs-hero)/var(--lh-display) var(--font-display);
-  letter-spacing: -.065em;
+  letter-spacing: -0.065em;
   text-wrap: balance;
 }
-.store-hero h1 span { color: var(--red-ink); }
+.store-hero h1 span {
+  color: var(--red-ink);
+}
 .store-hero__intro {
   margin: 0 0 22px;
   max-width: 37ch;
@@ -246,9 +284,19 @@ onBeforeUnmount(() => {
   padding-top: 16px;
   border-top: 1px solid #1a1a1a40;
 }
-.store-hero__item > div:first-child { flex: 1 1 180px; }
-.store-hero__item h2 { margin: 0; font-size: var(--fs-lg); line-height: var(--lh-h2); }
-.store-hero__item p { margin: 4px 0; color: var(--on-cream); font-size: var(--fs-sm); }
+.store-hero__item > div:first-child {
+  flex: 1 1 180px;
+}
+.store-hero__item h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-h2);
+}
+.store-hero__item p {
+  margin: 4px 0;
+  color: var(--on-cream);
+  font-size: var(--fs-sm);
+}
 .store-hero__meta {
   display: flex;
   flex-wrap: wrap;
@@ -293,7 +341,11 @@ onBeforeUnmount(() => {
   justify-content: center;
   align-items: center;
 }
-.store-hero__controls { margin-top: 16px; gap: 4px; flex-wrap: wrap; }
+.store-hero__controls {
+  margin-top: 16px;
+  gap: 4px;
+  flex-wrap: wrap;
+}
 .store-hero__controls button {
   display: grid;
   place-items: center;
@@ -305,28 +357,40 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   cursor: pointer;
 }
-.store-hero__controls button:hover { background: #1a1a1a12; }
+.store-hero__controls button:hover {
+  background: #1a1a1a12;
+}
 .store-hero__dots span {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   border: 1px solid currentColor;
 }
-.store-hero__dots [aria-current="true"] { color: var(--red-ink); }
-.store-hero__dots [aria-current="true"] span { background: currentColor; }
+.store-hero__dots [aria-current='true'] {
+  color: var(--red-ink);
+}
+.store-hero__dots [aria-current='true'] span {
+  background: currentColor;
+}
 .store-hero :is(a, button):focus-visible {
   outline: 3px solid var(--green-ink);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .store-hero-pack-enter-active, .store-hero-pack-leave-active { transition: opacity .3s ease; }
-  .store-hero-pack-enter-from, .store-hero-pack-leave-to { opacity: 0; }
+  .store-hero-pack-enter-active,
+  .store-hero-pack-leave-active {
+    transition: opacity 0.3s ease;
+  }
+  .store-hero-pack-enter-from,
+  .store-hero-pack-leave-to {
+    opacity: 0;
+  }
 }
 @media (max-width: 760px) {
   .store-hero__inner {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
-    grid-template-areas: "copy" "showcase" "item";
+    grid-template-areas: 'copy' 'showcase' 'item';
     row-gap: 20px;
   }
   .store-hero__hours {
@@ -334,7 +398,9 @@ onBeforeUnmount(() => {
     margin-bottom: 8px;
     font-size: var(--fs-xs);
   }
-  .store-hero__status { padding: 2px 6px; }
+  .store-hero__status {
+    padding: 2px 6px;
+  }
   .store-hero h1 {
     margin-bottom: 8px;
     font-size: var(--fs-xl);
@@ -343,14 +409,21 @@ onBeforeUnmount(() => {
     margin-bottom: 8px;
     font-size: var(--fs-sm);
   }
-  .store-hero__links { gap: 0 12px; }
+  .store-hero__links {
+    gap: 0 12px;
+  }
   .store-hero__links a {
     gap: 4px;
     min-height: var(--touch);
     font-size: var(--fs-sm);
   }
-  .store-hero__primary { padding-inline: 10px; }
-  .store-hero__primary svg { width: 14px; flex: none; }
+  .store-hero__primary {
+    padding-inline: 10px;
+  }
+  .store-hero__primary svg {
+    width: 14px;
+    flex: none;
+  }
   .store-hero__showcase {
     display: flex;
     flex-direction: column;
@@ -364,8 +437,13 @@ onBeforeUnmount(() => {
     border-radius: 0;
     box-shadow: none;
   }
-  .store-hero__controls { margin-top: 4px; gap: 0; }
-  .store-hero__dots button { min-width: 32px; }
+  .store-hero__controls {
+    margin-top: 4px;
+    gap: 0;
+  }
+  .store-hero__dots button {
+    min-width: 32px;
+  }
   .store-hero__item {
     margin-top: 0;
     padding-top: 8px;
@@ -373,9 +451,16 @@ onBeforeUnmount(() => {
     align-items: stretch;
     gap: 8px;
   }
-  .store-hero__item > div:first-child { flex: none; }
-  .store-hero__item h2 { font-size: var(--fs-md); overflow-wrap: anywhere; }
-  .store-hero__item p { display: none; }
+  .store-hero__item > div:first-child {
+    flex: none;
+  }
+  .store-hero__item h2 {
+    font-size: var(--fs-md);
+    overflow-wrap: anywhere;
+  }
+  .store-hero__item p {
+    display: none;
+  }
   .store-hero__item :deep(.qa--row) {
     flex-direction: row;
     flex-wrap: wrap;
@@ -395,17 +480,25 @@ onBeforeUnmount(() => {
   }
 }
 @media (max-width: 360px) {
-  .store-hero__links { column-gap: 8px; }
-  .store-hero__links a { font-size: var(--fs-xs); }
+  .store-hero__links {
+    column-gap: 8px;
+  }
+  .store-hero__links a {
+    font-size: var(--fs-xs);
+  }
 }
 @media (max-width: 760px) and (max-height: 700px) {
   .store-hero__inner {
     row-gap: 8px;
     padding-top: 12px;
   }
-  .store-hero__stage { min-height: 112px; }
+  .store-hero__stage {
+    min-height: 112px;
+  }
 }
 @media (max-width: 380px) {
-  .store-hero__dots { flex-basis: 100%; }
+  .store-hero__dots {
+    flex-basis: 100%;
+  }
 }
 </style>

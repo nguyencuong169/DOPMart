@@ -1,16 +1,16 @@
 <script setup>
-import { ArrowRight } from "lucide-vue-next";
+import { ArrowRight } from 'lucide-vue-next'
 
 defineProps({
-  kicker: { type: String, default: "" },
+  kicker: { type: String, default: '' },
   title: { type: String, required: true },
   /* optional hard line breaks: one entry per clause, so a long headline breaks on the
      rhythm of the sentence instead of wherever the measure happens to end */
   lines: { type: Array, default: null },
-  lead: { type: String, default: "" },
-  cta: { type: String, default: "" },
-  to: { type: [String, Object], default: "" },
-});
+  lead: { type: String, default: '' },
+  cta: { type: String, default: '' },
+  to: { type: [String, Object], default: '' },
+})
 </script>
 <template>
   <div class="section-head">

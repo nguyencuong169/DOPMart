@@ -1,21 +1,21 @@
 <script setup>
-import { computed } from "vue";
-import { useProductStore } from "../../stores/productStore";
-import { FLOORS } from "../../stores/floorStore";
-import { ArrowRight } from "lucide-vue-next";
+import { computed } from 'vue'
+import { useProductStore } from '../../stores/productStore'
+import { FLOORS } from '../../stores/floorStore'
+import { ArrowRight } from 'lucide-vue-next'
 
-const catalog = useProductStore();
+const catalog = useProductStore()
 const stats = computed(() => {
-  const pad = (n) => String(n).padStart(2, "0");
+  const pad = n => String(n).padStart(2, '0')
   return [
-    { n: pad(FLOORS.length), label: "tầng phục vụ" },
-    { n: pad(catalog.categories.length), label: "kệ hàng" },
-    { n: String(catalog.products.length), label: "món sẵn kệ" },
-  ];
-});
+    { n: pad(FLOORS.length), label: 'tầng phục vụ' },
+    { n: pad(catalog.categories.length), label: 'kệ hàng' },
+    { n: String(catalog.products.length), label: 'món sẵn kệ' },
+  ]
+})
 const titleWords = computed(() =>
-  "Bận rộn không có nghĩa là phải bỏ qua món mình thích.".split(" ")
-);
+  'Bận rộn không có nghĩa là phải bỏ qua món mình thích.'.split(' ')
+)
 </script>
 
 <template>
@@ -24,16 +24,11 @@ const titleWords = computed(() =>
     <div class="about-teaser__inner">
       <div class="about-teaser__copy">
         <h1 class="about-teaser__title">
-          <span
-            v-for="(word, i) in titleWords"
-            :key="i"
-            :style="{ '--i': i }"
-          >{{ word }} </span
-          >
+          <span v-for="(word, i) in titleWords" :key="i" :style="{ '--i': i }">{{ word }} </span>
         </h1>
         <p class="about-teaser__lead">
-          Snack station nội bộ cho dân văn phòng: chọn trong 30 giây, nhận ngay
-          tại tầng 14 hoặc 20 — không shipper, không chờ đợi.
+          Snack station nội bộ cho dân văn phòng: chọn trong 30 giây, nhận ngay tại tầng 14 hoặc 20
+          — không shipper, không chờ đợi.
         </p>
         <div class="about-teaser__stats">
           <span v-for="s in stats" :key="s.label" :style="{ '--i': s.label }">
@@ -41,18 +36,10 @@ const titleWords = computed(() =>
           </span>
         </div>
         <div class="about-teaser__cta-group">
-          <a
-            href="/about"
-            class="about-teaser__cta about-teaser__cta--story"
-            @click.self
-          >
+          <a href="/about" class="about-teaser__cta about-teaser__cta--story" @click.self>
             Câu chuyện DOP Mart <ArrowRight :size="20" />
           </a>
-          <button
-            type="button"
-            class="about-teaser__cta about-teaser__cta--order"
-            @click.self
-          >
+          <button type="button" class="about-teaser__cta about-teaser__cta--order" @click.self>
             Đặt hàng ngay <ArrowRight :size="20" />
           </button>
         </div>
@@ -115,7 +102,9 @@ const titleWords = computed(() =>
   color: var(--ink);
   max-width: 65ch;
   opacity: 1;
-  transition: opacity 400ms cubic-bezier(0.23, 1, 0.32, 1), transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    opacity 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
   transition-delay: 300ms;
 
   @starting-style {
@@ -147,7 +136,9 @@ const titleWords = computed(() =>
   color: var(--ink);
   max-width: 60ch;
   opacity: 1;
-  transition: opacity 400ms cubic-bezier(0.23, 1, 0.32, 1), transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    opacity 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
   transition-delay: 360ms;
 
   @starting-style {
@@ -163,7 +154,9 @@ const titleWords = computed(() =>
   flex-wrap: wrap;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 400ms cubic-bezier(0.23, 1, 0.32, 1), transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    opacity 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
   transition-delay: 420ms;
 
   @starting-style {
@@ -202,7 +195,9 @@ const titleWords = computed(() =>
   flex-wrap: wrap;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 400ms cubic-bezier(0.23, 1, 0.32, 1), transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    opacity 400ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
   transition-delay: 420ms;
 
   @starting-style {
@@ -222,7 +217,9 @@ const titleWords = computed(() =>
   font-size: var(--fs-lg);
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .about-teaser__cta--story {
@@ -260,7 +257,9 @@ const titleWords = computed(() =>
   z-index: 2;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1), transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
   transition-delay: 480ms;
 
   @starting-style {

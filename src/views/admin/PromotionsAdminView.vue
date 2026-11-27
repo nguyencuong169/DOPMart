@@ -1,90 +1,92 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, shallowRef } from "vue";
-import { Edit, Plus, RefreshCw, Search, Trash2, X } from "lucide-vue-next";
+import { computed, onMounted, reactive, shallowRef } from 'vue'
+import { Edit, Plus, RefreshCw, Search, Trash2, X } from 'lucide-vue-next'
 import {
   deleteMartPromotion,
   getMartAdminPromotions,
   upsertMartPromotion,
   type MartAdminPromotion,
-} from "../../services/martAdminService";
+} from '../../services/martAdminService'
 
 interface PromotionForm {
-  code: string;
-  description: string;
-  discountType: "percent" | "fixed";
-  discountValue: number;
-  minOrder: number;
-  maxUses: number;
-  startsAt: string;
-  endsAt: string;
-  isActive: boolean;
+  code: string
+  description: string
+  discountType: 'percent' | 'fixed'
+  discountValue: number
+  minOrder: number
+  maxUses: number
+  startsAt: string
+  endsAt: string
+  isActive: boolean
 }
 
-const promotions = shallowRef<MartAdminPromotion[]>([]);
-const loading = shallowRef(true);
-const saving = shallowRef(false);
-const errorMessage = shallowRef("");
-const searchQuery = shallowRef("");
-const showForm = shallowRef(false);
-const editingId = shallowRef<string | null>(null);
+const promotions = shallowRef<MartAdminPromotion[]>([])
+const loading = shallowRef(true)
+const saving = shallowRef(false)
+const errorMessage = shallowRef('')
+const searchQuery = shallowRef('')
+const showForm = shallowRef(false)
+const editingId = shallowRef<string | null>(null)
 
 const form = reactive<PromotionForm>({
-  code: "",
-  description: "",
-  discountType: "percent",
+  code: '',
+  description: '',
+  discountType: 'percent',
   discountValue: 0,
   minOrder: 0,
   maxUses: 0,
-  startsAt: "",
-  endsAt: "",
+  startsAt: '',
+  endsAt: '',
   isActive: true,
-});
+})
 
 const filteredPromotions = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-  if (!query) return promotions.value;
-  return promotions.value.filter(
-    (promotion) => `${promotion.code} ${promotion.description}`.toLowerCase().includes(query),
-  );
-});
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return promotions.value
+  return promotions.value.filter(promotion =>
+    `${promotion.code} ${promotion.description}`.toLowerCase().includes(query)
+  )
+})
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(
-    value || 0,
-  );
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value || 0)
 }
 
 function formatDate(value?: string) {
-  if (!value) return "Không giới hạn";
-  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short" }).format(new Date(value));
+  if (!value) return 'Không giới hạn'
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(value))
 }
 
 function toDateTimeInput(value?: string) {
-  return value ? value.slice(0, 16) : "";
+  return value ? value.slice(0, 16) : ''
 }
 
 function resetForm() {
   Object.assign(form, {
-    code: "",
-    description: "",
-    discountType: "percent",
+    code: '',
+    description: '',
+    discountType: 'percent',
     discountValue: 0,
     minOrder: 0,
     maxUses: 0,
     startsAt: new Date().toISOString().slice(0, 16),
-    endsAt: "",
+    endsAt: '',
     isActive: true,
-  });
+  })
 }
 
 function openCreate() {
-  editingId.value = null;
-  resetForm();
-  showForm.value = true;
+  editingId.value = null
+  resetForm()
+  showForm.value = true
 }
 
 function openEdit(promotion: MartAdminPromotion) {
-  editingId.value = promotion.id;
+  editingId.value = promotion.id
   Object.assign(form, {
     code: promotion.code,
     description: promotion.description,
@@ -95,41 +97,41 @@ function openEdit(promotion: MartAdminPromotion) {
     startsAt: toDateTimeInput(promotion.starts_at),
     endsAt: toDateTimeInput(promotion.ends_at),
     isActive: promotion.is_active,
-  });
-  showForm.value = true;
+  })
+  showForm.value = true
 }
 
 function getErrorMessage(cause: unknown, fallback: string) {
-  const raw = cause instanceof Error ? cause.message : "";
-  const code = raw.split(":")[0];
+  const raw = cause instanceof Error ? cause.message : ''
+  const code = raw.split(':')[0]
   const messages: Record<string, string> = {
-    "23505": "Mã khuyến mãi đã tồn tại.",
-    INVALID_PROMOTION_PAYLOAD: "Vui lòng kiểm tra loại và giá trị giảm.",
-    PROMOTION_NOT_FOUND: "Không tìm thấy khuyến mãi.",
-  };
-  return messages[code] ?? raw ?? fallback;
+    '23505': 'Mã khuyến mãi đã tồn tại.',
+    INVALID_PROMOTION_PAYLOAD: 'Vui lòng kiểm tra loại và giá trị giảm.',
+    PROMOTION_NOT_FOUND: 'Không tìm thấy khuyến mãi.',
+  }
+  return messages[code] ?? raw ?? fallback
 }
 
 async function loadPromotions() {
-  loading.value = true;
-  errorMessage.value = "";
+  loading.value = true
+  errorMessage.value = ''
   try {
-    promotions.value = await getMartAdminPromotions();
+    promotions.value = await getMartAdminPromotions()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể tải khuyến mãi.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể tải khuyến mãi.')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function savePromotion() {
   if (!form.code.trim() || form.discountValue <= 0) {
-    errorMessage.value = "Mã và giá trị khuyến mãi là bắt buộc.";
-    return;
+    errorMessage.value = 'Mã và giá trị khuyến mãi là bắt buộc.'
+    return
   }
 
-  saving.value = true;
-  errorMessage.value = "";
+  saving.value = true
+  errorMessage.value = ''
   try {
     await upsertMartPromotion({
       id: editingId.value ?? undefined,
@@ -142,28 +144,28 @@ async function savePromotion() {
       startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : undefined,
       endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : undefined,
       isActive: form.isActive,
-    });
-    showForm.value = false;
-    await loadPromotions();
+    })
+    showForm.value = false
+    await loadPromotions()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể lưu khuyến mãi.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể lưu khuyến mãi.')
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
 async function removePromotion(promotion: MartAdminPromotion) {
-  if (!window.confirm(`Xóa mã “${promotion.code}”?`)) return;
-  errorMessage.value = "";
+  if (!window.confirm(`Xóa mã “${promotion.code}”?`)) return
+  errorMessage.value = ''
   try {
-    await deleteMartPromotion(promotion.id);
-    await loadPromotions();
+    await deleteMartPromotion(promotion.id)
+    await loadPromotions()
   } catch (cause) {
-    errorMessage.value = getErrorMessage(cause, "Không thể xóa khuyến mãi.");
+    errorMessage.value = getErrorMessage(cause, 'Không thể xóa khuyến mãi.')
   }
 }
 
-onMounted(loadPromotions);
+onMounted(loadPromotions)
 </script>
 
 <template>
@@ -172,7 +174,9 @@ onMounted(loadPromotions);
       <div>
         <span class="promotions-kicker">DOP MART · PROMOTIONS</span>
         <h1 id="promotions-heading" class="promotions-title">Khuyến mãi</h1>
-        <p class="promotions-lead">Quản lý mã giảm giá dùng trong các chiến dịch bán hàng nội bộ.</p>
+        <p class="promotions-lead">
+          Quản lý mã giảm giá dùng trong các chiến dịch bán hàng nội bộ.
+        </p>
       </div>
       <div class="header-actions">
         <button type="button" class="ad-btn-refresh" :disabled="loading" @click="loadPromotions">
@@ -193,7 +197,9 @@ onMounted(loadPromotions);
       <input v-model="searchQuery" type="search" placeholder="Tìm theo mã hoặc mô tả…" />
     </label>
 
-    <div v-if="loading && !promotions.length" class="ad-empty" role="status">Đang tải khuyến mãi…</div>
+    <div v-if="loading && !promotions.length" class="ad-empty" role="status">
+      Đang tải khuyến mãi…
+    </div>
 
     <div v-else class="table-wrap">
       <table class="ad-table">
@@ -211,24 +217,43 @@ onMounted(loadPromotions);
         </thead>
         <tbody>
           <tr v-for="promotion in filteredPromotions" :key="promotion.id">
-            <td><strong class="code">{{ promotion.code }}</strong></td>
-            <td>{{ promotion.description || "Không có mô tả" }}</td>
+            <td>
+              <strong class="code">{{ promotion.code }}</strong>
+            </td>
+            <td>{{ promotion.description || 'Không có mô tả' }}</td>
             <td class="amount">
-              {{ promotion.discount_type === "percent" ? `${promotion.discount_value}%` : formatCurrency(promotion.discount_value) }}
+              {{
+                promotion.discount_type === 'percent'
+                  ? `${promotion.discount_value}%`
+                  : formatCurrency(promotion.discount_value)
+              }}
             </td>
             <td class="amount">{{ formatCurrency(promotion.min_order) }}</td>
-            <td>{{ promotion.used_count }} / {{ promotion.max_uses || "∞" }}</td>
+            <td>{{ promotion.used_count }} / {{ promotion.max_uses || '∞' }}</td>
             <td class="date-cell">{{ formatDate(promotion.ends_at) }}</td>
             <td>
-              <span class="ad-status-pill" :class="{ active: promotion.is_active, inactive: !promotion.is_active }">
-                {{ promotion.is_active ? "Đang bật" : "Đã tắt" }}
+              <span
+                class="ad-status-pill"
+                :class="{ active: promotion.is_active, inactive: !promotion.is_active }"
+              >
+                {{ promotion.is_active ? 'Đang bật' : 'Đã tắt' }}
               </span>
             </td>
             <td class="actions">
-              <button type="button" class="ad-icon-btn" title="Sửa khuyến mãi" @click="openEdit(promotion)">
+              <button
+                type="button"
+                class="ad-icon-btn"
+                title="Sửa khuyến mãi"
+                @click="openEdit(promotion)"
+              >
                 <Edit :size="16" />
               </button>
-              <button type="button" class="ad-icon-btn ad-icon-btn--danger" title="Xóa khuyến mãi" @click="removePromotion(promotion)">
+              <button
+                type="button"
+                class="ad-icon-btn ad-icon-btn--danger"
+                title="Xóa khuyến mãi"
+                @click="removePromotion(promotion)"
+              >
                 <Trash2 :size="16" />
               </button>
             </td>
@@ -245,7 +270,7 @@ onMounted(loadPromotions);
         <div class="ad-modal-header">
           <div>
             <span class="promotions-kicker">PROMOTION EDITOR</span>
-            <h2>{{ editingId ? "Sửa khuyến mãi" : "Tạo khuyến mãi" }}</h2>
+            <h2>{{ editingId ? 'Sửa khuyến mãi' : 'Tạo khuyến mãi' }}</h2>
           </div>
           <button type="button" class="ad-icon-btn" aria-label="Đóng" @click="showForm = false">
             <X :size="19" />
@@ -294,7 +319,9 @@ onMounted(loadPromotions);
         </div>
         <footer class="ad-modal-footer">
           <button type="button" class="btn-secondary" @click="showForm = false">Hủy</button>
-          <button type="submit" class="btn-primary" :disabled="saving">{{ saving ? "Đang lưu…" : "Lưu khuyến mãi" }}</button>
+          <button type="submit" class="btn-primary" :disabled="saving">
+            {{ saving ? 'Đang lưu…' : 'Lưu khuyến mãi' }}
+          </button>
         </footer>
       </form>
     </div>
@@ -585,7 +612,7 @@ onMounted(loadPromotions);
   font-weight: 800;
 }
 
-.ad-field input:not([type="checkbox"]),
+.ad-field input:not([type='checkbox']),
 .ad-field select {
   width: 100%;
   border: var(--bw-bold) solid #c8beb2;

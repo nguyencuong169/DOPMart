@@ -1,24 +1,24 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { MapPin, ChevronDown } from "lucide-vue-next";
-import { useFloorStore } from "../../stores/floorStore";
-const store = useFloorStore();
-const now = ref(new Date());
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { MapPin, ChevronDown } from 'lucide-vue-next'
+import { useFloorStore } from '../../stores/floorStore'
+const store = useFloorStore()
+const now = ref(new Date())
 const isOpen = computed(() => {
-  const h = now.value.getHours() + now.value.getMinutes() / 60;
-  return h >= 8.5 && h < 17.5;
-});
-let clock = null;
+  const h = now.value.getHours() + now.value.getMinutes() / 60
+  return h >= 8.5 && h < 17.5
+})
+let clock = null
 onMounted(() => {
   clock = setInterval(() => {
-    now.value = new Date();
-  }, 60000);
-});
+    now.value = new Date()
+  }, 60000)
+})
 onBeforeUnmount(() => {
-  if (clock) clearInterval(clock);
-});
+  if (clock) clearInterval(clock)
+})
 function change(e) {
-  store.setFloor(e.target.value);
+  store.setFloor(e.target.value)
 }
 </script>
 <template>
@@ -31,9 +31,7 @@ function change(e) {
       ><ChevronDown class="floor-chevron" :size="15"
     /></label>
     <p class="floor-state" :class="{ closed: !isOpen }">
-      {{ isOpen ? "Đang mở · đến 17:30" : "Đã đóng · mở lại 08:30" }}
+      {{ isOpen ? 'Đang mở · đến 17:30' : 'Đã đóng · mở lại 08:30' }}
     </p>
   </div>
 </template>
-
-

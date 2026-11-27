@@ -1,8 +1,8 @@
 ﻿<script setup>
-import { computed, onMounted, ref } from "vue";
-import { Heart } from "lucide-vue-next";
-import QuickAdd from "./QuickAdd.vue";
-import { headWords } from "../../data/products";
+import { computed, onMounted, ref } from 'vue'
+import { Heart } from 'lucide-vue-next'
+import QuickAdd from './QuickAdd.vue'
+import { headWords } from '../../data/products'
 
 /* The one product card for the whole page. Style and animation are the ones the
    "CHỌN NHANH THEO DANH MỤC" shelf already had — they were lifted out of ShopByMood
@@ -13,106 +13,101 @@ const props = defineProps({
   product: { type: Object, required: true },
   index: { type: Number, default: 0 },
   /* "shelf" = the hover shelf, "grid" = same pack plus an always-readable plate */
-  variant: { type: String, default: "shelf" },
+  variant: { type: String, default: 'shelf' },
   /* grid only: the plate is complete when the parent passes floor + stock */
   favorited: { type: Boolean, default: false },
   stock: { type: Number, default: null },
-  floor: { type: [Number, String], default: "" },
+  floor: { type: [Number, String], default: '' },
   /* grid only: ẩn toàn bộ thẻ thông tin dưới ảnh sản phẩm (danh mục, tên, đánh giá, tồn kho, giá) */
   hideInfo: { type: Boolean, default: false },
-});
-const emit = defineEmits(["quick", "toggle-favorite"]);
+})
+const emit = defineEmits(['quick', 'toggle-favorite'])
 
-const isGrid = computed(() => props.variant === "grid");
-const soldOut = computed(() => props.stock !== null && props.stock <= 0);
-const lowStock = computed(
-  () => props.stock !== null && props.stock > 0 && props.stock <= 3,
-);
+const isGrid = computed(() => props.variant === 'grid')
+const soldOut = computed(() => props.stock !== null && props.stock <= 0)
+const lowStock = computed(() => props.stock !== null && props.stock > 0 && props.stock <= 3)
 /* stock is per floor and reads as a sentence, never as colour alone */
 const stockLabel = computed(() => {
-  if (props.stock === null) return "";
-  const at = props.floor === "" ? "" : `Tầng ${props.floor}`;
-  const tail = at ? ` · ${at}` : "";
-  if (soldOut.value) return `Hết hàng${tail}`;
-  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`;
-  return `Còn ${props.stock}${tail}`;
-});
+  if (props.stock === null) return ''
+  const at = props.floor === '' ? '' : `Tầng ${props.floor}`
+  const tail = at ? ` · ${at}` : ''
+  if (soldOut.value) return `Hết hàng${tail}`
+  if (lowStock.value) return `Chỉ còn ${props.stock}${tail}`
+  return `Còn ${props.stock}${tail}`
+})
 
-const fmt = (n) => n.toLocaleString("vi-VN");
+const fmt = n => n.toLocaleString('vi-VN')
 /* black or white type on the product's own colour, by perceived lightness */
-const onColor = (hex) => {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const l =
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l > 0.62 ? "#1a1a1a" : "#ffffff";
-};
+const onColor = hex => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return l > 0.62 ? '#1a1a1a' : '#ffffff'
+}
 
 /* the tag rail reads from the product itself: hot is red, new is green, the discount
    is the promo yellow, and the price tag keeps the product colour */
 const discount = computed(() =>
   props.product.oldPrice > props.product.price
     ? Math.round((1 - props.product.price / props.product.oldPrice) * 100)
-    : 0,
-);
+    : 0
+)
 
 /* The poster splits the product name in two: the tail — the last two words, the
    flavour or the qualifier — goes under the pack, the head goes above it.
    "Mì ly ăn liền" reads "Mì ly" over "ăn liền", "Soda trái cây nhiệt đới" reads
    "Soda trái cây" over "nhiệt đới". The split always lands on a word boundary,
    so no word is ever cut in half. */
-const splitName = (name) => {
-  const words = String(name ?? "")
+const splitName = name => {
+  const words = String(name ?? '')
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
-  if (words.length < 2) return [words[0] ?? "", ""];
-  if (words.length === 2) return [words[0], words[1]];
-  const cut = words.length - 2;
-  return [words.slice(0, cut).join(" "), words.slice(cut).join(" ")];
-};
+    .filter(Boolean)
+  if (words.length < 2) return [words[0] ?? '', '']
+  if (words.length === 2) return [words[0], words[1]]
+  const cut = words.length - 2
+  return [words.slice(0, cut).join(' '), words.slice(cut).join(' ')]
+}
 
 /* the shelf head is sized with a canvas measure so two lines always fill the card:
    --hs is what the type scales from, in container query units */
-let ctx = null;
-const fontTick = ref(0);
+let ctx = null
+const fontTick = ref(0)
 const head = computed(() => {
-  fontTick.value; // re-measure once the display face has landed
-  if (typeof document !== "undefined" && !ctx)
-    ctx = document.createElement("canvas").getContext("2d");
-  if (ctx)
-    ctx.font =
-      'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
+  fontTick.value // re-measure once the display face has landed
+  if (typeof document !== 'undefined' && !ctx)
+    ctx = document.createElement('canvas').getContext('2d')
+  if (ctx) ctx.font = 'italic 900 100px "Barlow Condensed", "Arial Narrow", Impact, sans-serif'
   const slogan = headWords[props.product.category] ?? [
     (props.product.categoryName ?? props.product.name).toUpperCase(),
-    "",
-  ];
+    '',
+  ]
   /* the shelf card headlines the product itself — that card carries no name
      plate, so the poster is the one place the shopper reads what this pack is.
      The grid card keeps the shelf slogan, because its plate already names it. */
-  const lines = isGrid.value ? slogan : splitName(props.product.name);
+  const lines = isGrid.value ? slogan : splitName(props.product.name)
   /* the type is drawn uppercase, so the measure has to be the uppercase string */
   const widest = Math.max(
-    ...lines.map((l) => {
-      const text = (l ?? "").toUpperCase();
+    ...lines.map(l => {
+      const text = (l ?? '').toUpperCase()
       /* fallback metrics for a face that has not loaded yet: a condensed
          uppercase line runs about 0.42em per letter */
-      return Math.max(ctx ? ctx.measureText(text).width : text.length * 42, 1);
+      return Math.max(ctx ? ctx.measureText(text).width : text.length * 42, 1)
     }),
-    1,
-  );
+    1
+  )
   /* the size that makes the widest line span 96% of the card; the cap keeps a
      short name from turning into a billboard */
-  const size = Math.min(26, Math.max(12, 9600 / widest));
-  return { lines, style: { "--hs": `${size.toFixed(2)}cqw` } };
-});
+  const size = Math.min(26, Math.max(12, 9600 / widest))
+  return { lines, style: { '--hs': `${size.toFixed(2)}cqw` } }
+})
 onMounted(async () => {
   try {
-    await document.fonts.load('italic 900 100px "Barlow Condensed"');
+    await document.fonts.load('italic 900 100px "Barlow Condensed"')
   } catch {
     /* no font loading support: the fallback metrics already work */
   }
-  fontTick.value += 1;
-});
+  fontTick.value += 1
+})
 </script>
 
 <template>
@@ -128,9 +123,7 @@ onMounted(async () => {
     <div class="cat-card__stage">
       <div class="cat-card__head" aria-hidden="true" :style="head.style">
         <span class="cat-card__line">{{ head.lines[0] }}</span>
-        <span class="cat-card__line cat-card__line--hollow">{{
-          head.lines[1]
-        }}</span>
+        <span class="cat-card__line cat-card__line--hollow">{{ head.lines[1] }}</span>
       </div>
       <i class="cat-card__ground" aria-hidden="true"></i>
       <span class="cat-card__shadow" aria-hidden="true"></span>
@@ -140,12 +133,7 @@ onMounted(async () => {
         :aria-label="`Xem nhanh ${product.name}`"
         @click="emit('quick')"
       >
-        <img
-          :src="product.image"
-          :alt="product.name"
-          loading="lazy"
-          decoding="async"
-        />
+        <img :src="product.image" :alt="product.name" loading="lazy" decoding="async" />
       </button>
 
       <button
@@ -153,9 +141,7 @@ onMounted(async () => {
         type="button"
         class="cat-card__fav"
         :class="{ liked: favorited }"
-        :aria-label="
-          favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`
-        "
+        :aria-label="favorited ? `Bỏ lưu ${product.name}` : `Lưu ${product.name}`"
         :aria-pressed="favorited"
         @click="emit('toggle-favorite')"
       >
@@ -168,9 +154,7 @@ onMounted(async () => {
     </div>
 
     <div v-if="!isGrid" class="cat-card__tags">
-      <span
-        v-if="!isGrid"
-        class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
+      <span v-if="!isGrid" class="cat-card__tag cat-card__tag--price cat-card__tag--hang-right"
         >{{ fmt(product.price) }} ₫</span
       >
     </div>
@@ -179,31 +163,15 @@ onMounted(async () => {
     <div v-if="isGrid && !hideInfo" class="cat-card__info">
       <span class="cat-card__cat">{{ product.categoryName }}</span>
       <div class="cat-card__name-row">
-        <button
-          type="button"
-          class="cat-card__name-btn"
-          @click="emit('quick')"
-        >
+        <button type="button" class="cat-card__name-btn" @click="emit('quick')">
           <h3 class="cat-card__name">
             {{ product.name }}
           </h3>
         </button>
         <div class="cat-card__name-tags">
-          <span
-            v-if="product.isNew"
-            class="cat-card__tag cat-card__tag--new"
-            >MỚI</span
-          >
-          <span
-            v-if="product.hot"
-            class="cat-card__tag cat-card__tag--hot"
-            >BÁN CHẠY</span
-          >
-          <span
-            v-if="discount"
-            class="cat-card__tag cat-card__tag--save"
-            >-{{ discount }}%</span
-          >
+          <span v-if="product.isNew" class="cat-card__tag cat-card__tag--new">MỚI</span>
+          <span v-if="product.hot" class="cat-card__tag cat-card__tag--hot">BÁN CHẠY</span>
+          <span v-if="discount" class="cat-card__tag cat-card__tag--save">-{{ discount }}%</span>
         </div>
       </div>
 
@@ -211,11 +179,7 @@ onMounted(async () => {
         <span>★ {{ product.rating }}</span
         ><span>{{ product.sold }} đã bán</span>
       </p>
-      <p
-        v-if="stockLabel"
-        class="cat-card__stock"
-        :class="{ low: lowStock, out: soldOut }"
-      >
+      <p v-if="stockLabel" class="cat-card__stock" :class="{ low: lowStock, out: soldOut }">
         {{ stockLabel }}
       </p>
       <div class="cat-card__price-row">
@@ -256,7 +220,7 @@ onMounted(async () => {
   }
 }
 .cat-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -50%;
   left: -20%;
@@ -284,7 +248,7 @@ onMounted(async () => {
   user-select: none;
   opacity: 0;
   /* the sliding shelf type: Barlow Condensed, the one condensed voice on the page */
-  font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  font-family: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
   /* both poster lines share one size, so the name and the slogan read as a pair */
@@ -350,8 +314,8 @@ onMounted(async () => {
   transition:
     transform 0.5s cubic-bezier(0.3, 1.15, 0.5, 1),
     filter 0.4s ease-out;
-    filter: drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
-      drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(2px 6px 3px rgba(0, 0, 0, 0.18))
+    drop-shadow(10px 24px 18px rgba(0, 0, 0, 0.16));
 }
 .cat-card__shadow {
   position: absolute;
@@ -415,8 +379,7 @@ onMounted(async () => {
 }
 .cat-card:hover .cat-card__shot,
 .cat-card:focus-within .cat-card__shot {
-  transform: translateX(-50%) translateY(-7px) rotate(var(--tilt, 3deg))
-    scale(1.03);
+  transform: translateX(-50%) translateY(-7px) rotate(var(--tilt, 3deg)) scale(1.03);
   filter: drop-shadow(2px 8px 4px rgba(0, 0, 0, 0.16))
     drop-shadow(14px 32px 24px rgba(0, 0, 0, 0.18));
 }
@@ -443,8 +406,13 @@ onMounted(async () => {
   gap: 6px;
   padding: 8px clamp(8px, 4cqw, 16px) 12px;
 }
-.cat-card__tags .cat-card__tag { transform: none; }
-.cat-card__tags .cat-card__tag::before, .cat-card__tags .cat-card__tag::after { content: none; }
+.cat-card__tags .cat-card__tag {
+  transform: none;
+}
+.cat-card__tags .cat-card__tag::before,
+.cat-card__tags .cat-card__tag::after {
+  content: none;
+}
 .cat-card__tag {
   position: relative;
   padding: 7px 12px;
@@ -464,7 +432,7 @@ onMounted(async () => {
 }
 /* the hole lives inside the padding, so it never widens the tag */
 .cat-card__tag::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 6px;
@@ -476,7 +444,7 @@ onMounted(async () => {
 }
 /* the string leaves the hole and climbs into the pack */
 .cat-card__tag::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 26px;

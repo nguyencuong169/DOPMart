@@ -1,9 +1,9 @@
 <script setup>
-import { useFavoriteStore } from "../../stores/favoriteStore";
-import { useFloorStore } from "../../stores/floorStore";
-import { useProductStore } from "../../stores/productStore";
-import CatalogCard from "./CatalogCard.vue";
-import CatalogCardSkeleton from "./CatalogCardSkeleton.vue";
+import { useFavoriteStore } from '../../stores/favoriteStore'
+import { useFloorStore } from '../../stores/floorStore'
+import { useProductStore } from '../../stores/productStore'
+import CatalogCard from './CatalogCard.vue'
+import CatalogCardSkeleton from './CatalogCardSkeleton.vue'
 
 /* One grid for every catalogue surface (home fresh drop, products, category, search).
    The caller can choose the shelf poster or readable grid card; loading tiles preserve
@@ -12,26 +12,22 @@ defineProps({
   products: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   skeletonCount: { type: Number, default: 8 },
-  variant: { type: String, default: "grid" },
+  variant: { type: String, default: 'grid' },
   /* khi bật: ẩn thẻ thông tin dưới ảnh trên các card lưới (dùng tại ProductsView) */
   hideCardInfo: { type: Boolean, default: false },
-});
+})
 
-const store = useProductStore();
-const favorites = useFavoriteStore();
-const floor = useFloorStore();
+const store = useProductStore()
+const favorites = useFavoriteStore()
+const floor = useFloorStore()
 
 /* stock is per floor: a product without stock data still gets a card, just no row */
-const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
+const stockOf = p => p?.stock?.[floor.floor] ?? null
 </script>
 <template>
   <div v-if="loading" class="product-grid" role="status" aria-live="polite">
     <span class="sr-only">Đang tải sản phẩm…</span>
-    <CatalogCardSkeleton
-      v-for="n in skeletonCount"
-      :key="n"
-      :variant="variant"
-    />
+    <CatalogCardSkeleton v-for="n in skeletonCount" :key="n" :variant="variant" />
   </div>
   <div v-else-if="products.length" class="product-grid">
     <CatalogCard
@@ -50,4 +46,3 @@ const stockOf = (p) => p?.stock?.[floor.floor] ?? null;
   </div>
   <p v-else class="empty">Chưa tìm thấy món phù hợp.</p>
 </template>
-

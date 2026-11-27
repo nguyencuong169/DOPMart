@@ -1,33 +1,33 @@
 <script setup>
-import { computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { ChevronLeft, MapPin } from "lucide-vue-next";
-import { useProductStore } from "../stores/productStore";
-import { useCartStore } from "../stores/cartStore";
-import { useFloorStore } from "../stores/floorStore";
-import ProductGallery from "../components/product/ProductGallery.vue";
-import QuickAdd from "../components/product/QuickAdd.vue";
+import { computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ChevronLeft, MapPin } from 'lucide-vue-next'
+import { useProductStore } from '../stores/productStore'
+import { useCartStore } from '../stores/cartStore'
+import { useFloorStore } from '../stores/floorStore'
+import ProductGallery from '../components/product/ProductGallery.vue'
+import QuickAdd from '../components/product/QuickAdd.vue'
 
-const route = useRoute();
-const router = useRouter();
-const products = useProductStore();
-const floor = useFloorStore();
-const cart = useCartStore();
-const product = computed(() => products.bySlug(route.params.slug));
+const route = useRoute()
+const router = useRouter()
+const products = useProductStore()
+const floor = useFloorStore()
+const cart = useCartStore()
+const product = computed(() => products.bySlug(route.params.slug))
 
 onMounted(() => {
-  products.init();
-  floor.init();
-  cart.init();
-});
+  products.init()
+  floor.init()
+  cart.init()
+})
 
 function goBack() {
-  const previous = window.history.state?.back;
-  if (typeof previous === "string" && previous !== route.fullPath) {
-    router.back();
-    return;
+  const previous = window.history.state?.back
+  if (typeof previous === 'string' && previous !== route.fullPath) {
+    router.back()
+    return
   }
-  router.push({ name: "products" });
+  router.push({ name: 'products' })
 }
 </script>
 
@@ -43,7 +43,9 @@ function goBack() {
       <div class="detail-rating">
         ★★★★★ <span>{{ product.rating }} · Đã bán {{ product.sold }}</span>
       </div>
-      <strong class="detail-price tabular-nums">{{ product.price.toLocaleString("vi-VN") }} ₫</strong>
+      <strong class="detail-price tabular-nums"
+        >{{ product.price.toLocaleString('vi-VN') }} ₫</strong
+      >
       <div class="buy-row">
         <QuickAdd :product="product" :stock="product.stock[floor.floor]" />
       </div>

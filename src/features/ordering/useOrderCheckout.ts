@@ -1,5 +1,9 @@
 import { computed, shallowRef } from 'vue'
-import { createMartOrder, createMomoPayment, createPayosPayment } from '../../services/martOrderService'
+import {
+  createMartOrder,
+  createMomoPayment,
+  createPayosPayment,
+} from '../../services/martOrderService'
 import type {
   CreateMartOrderCommand,
   CreateMartOrderResult,
@@ -29,7 +33,7 @@ export function useOrderCheckout(cart: any, getProducts: () => any[]) {
         method.value === 'office_delivery' ? 'DELIVERY_LOCATION_REQUIRED' : 'ITEMS_REQUIRED',
         method.value === 'office_delivery'
           ? 'Vui lòng nhập vị trí giao hàng trong văn phòng.'
-          : 'Giỏ hàng đang trống.',
+          : 'Giỏ hàng đang trống.'
       )
       return
     }
@@ -57,9 +61,9 @@ export function useOrderCheckout(cart: any, getProducts: () => any[]) {
       result.value = await createMartOrder(command, getProducts())
 
       if (
-        result.value.order.payment?.method === 'momo'
-        && result.value.order.payment.status === 'pending'
-        && !result.value.isMock
+        result.value.order.payment?.method === 'momo' &&
+        result.value.order.payment.status === 'pending' &&
+        !result.value.isMock
       ) {
         const momoSession = await createMomoPayment(result.value.order.id)
         result.value = {
@@ -75,9 +79,9 @@ export function useOrderCheckout(cart: any, getProducts: () => any[]) {
         }
       }
       if (
-        result.value.order.payment?.method === 'vietqr'
-        && result.value.order.payment.status === 'pending'
-        && !result.value.isMock
+        result.value.order.payment?.method === 'vietqr' &&
+        result.value.order.payment.status === 'pending' &&
+        !result.value.isMock
       ) {
         const payosSession = await createPayosPayment(result.value.order.id)
         result.value = {
@@ -96,9 +100,10 @@ export function useOrderCheckout(cart: any, getProducts: () => any[]) {
         await cart.clear()
       }
     } catch (cause) {
-      error.value = cause instanceof MartOrderError
-        ? cause
-        : new MartOrderError('INTERNAL_ERROR', 'Không thể tạo đơn hàng. Vui lòng thử lại.')
+      error.value =
+        cause instanceof MartOrderError
+          ? cause
+          : new MartOrderError('INTERNAL_ERROR', 'Không thể tạo đơn hàng. Vui lòng thử lại.')
     } finally {
       submitting.value = false
     }

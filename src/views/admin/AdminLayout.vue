@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Store,
   LogOut,
@@ -11,70 +11,70 @@ import {
   Bell,
   ShoppingCart,
   ChevronRight,
-} from "lucide-vue-next";
-import { isAdmin, getCurrentUserWithProfile, supabase } from "@/lib/supabase";
+} from 'lucide-vue-next'
+import { isAdmin, getCurrentUserWithProfile, supabase } from '@/lib/supabase'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-const sidebarOpen = ref(true);
-const userMenuOpen = ref(false);
-const avatarError = ref(false);
-const user = ref(null);
-const isMobile = ref(window.innerWidth < 768);
+const sidebarOpen = ref(true)
+const userMenuOpen = ref(false)
+const avatarError = ref(false)
+const user = ref(null)
+const isMobile = ref(window.innerWidth < 768)
 
 const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-};
+  sidebarOpen.value = !sidebarOpen.value
+}
 
 const toggleUserMenu = () => {
-  userMenuOpen.value = !userMenuOpen.value;
-};
+  userMenuOpen.value = !userMenuOpen.value
+}
 
 const onLogout = async () => {
-  await supabase?.auth.signOut();
-  await router.push({ name: "login" });
-};
+  await supabase?.auth.signOut()
+  await router.push({ name: 'login' })
+}
 
 const adminLinks = [
-  { name: "admin-dashboard", label: "Tổng quan", icon: Store },
-  { name: "admin-products", label: "Sản phẩm", icon: ShoppingCart },
-  { name: "admin-orders", label: "Đơn hàng", icon: ShoppingCart },
-  { name: "admin-users", label: "Người dùng", icon: Store },
-  { name: "admin-promotions", label: "Khuyến mãi", icon: Bell },
-  { name: "admin-operations", label: "Vận hành mới", icon: ShoppingCart },
-];
+  { name: 'admin-dashboard', label: 'Tổng quan', icon: Store },
+  { name: 'admin-products', label: 'Sản phẩm', icon: ShoppingCart },
+  { name: 'admin-orders', label: 'Đơn hàng', icon: ShoppingCart },
+  { name: 'admin-users', label: 'Người dùng', icon: Store },
+  { name: 'admin-promotions', label: 'Khuyến mãi', icon: Bell },
+  { name: 'admin-operations', label: 'Vận hành mới', icon: ShoppingCart },
+]
 
-const linkLabels = Object.fromEntries(adminLinks.map((l) => [l.name, l.label]));
+const linkLabels = Object.fromEntries(adminLinks.map(l => [l.name, l.label]))
 
-const isActive = (name) => route.name === name;
+const isActive = name => route.name === name
 const breadcrumb = computed(() => {
-  const crumbs = [];
+  const crumbs = []
   for (let i = 0; i < adminLinks.length; i++) {
     if (adminLinks[i].name === route.name) {
-      crumbs.push(adminLinks[i].label);
-      break;
+      crumbs.push(adminLinks[i].label)
+      break
     }
   }
-  return crumbs;
-});
+  return crumbs
+})
 
-const goBack = () => router.back();
+const goBack = () => router.back()
 
 onMounted(async () => {
-  isMobile.value = window.innerWidth < 768;
-  if (isMobile.value) sidebarOpen.value = false;
-  const { user: u, profile } = await getCurrentUserWithProfile();
-  user.value = u;
-  if (!(profile?.is_admin === true || profile?.role === "admin")) {
-    await router.push("/");
+  isMobile.value = window.innerWidth < 768
+  if (isMobile.value) sidebarOpen.value = false
+  const { user: u, profile } = await getCurrentUserWithProfile()
+  user.value = u
+  if (!(profile?.is_admin === true || profile?.role === 'admin')) {
+    await router.push('/')
   }
-});
+})
 
-window.addEventListener("resize", () => {
-  isMobile.value = window.innerWidth < 768;
-  if (!isMobile.value) sidebarOpen.value = true;
-});
+window.addEventListener('resize', () => {
+  isMobile.value = window.innerWidth < 768
+  if (!isMobile.value) sidebarOpen.value = true
+})
 </script>
 
 <template>
@@ -116,21 +116,14 @@ window.addEventListener("resize", () => {
     </header>
 
     <Transition name="fade">
-      <div
-        v-if="userMenuOpen"
-        class="user-dropdown"
-        @click.outside="userMenuOpen = false"
-      >
+      <div v-if="userMenuOpen" class="user-dropdown" @click.outside="userMenuOpen = false">
         <div class="dropdown-item" @click="userMenuOpen = false">Hồ sơ</div>
         <div class="dropdown-divider" />
         <div class="dropdown-item text-destructive" @click="onLogout">Đăng xuất</div>
       </div>
     </Transition>
 
-    <aside
-      class="admin-sidebar"
-      :class="{ open: sidebarOpen }"
-    >
+    <aside class="admin-sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <button v-if="isMobile" class="sidebar-close" @click="toggleSidebar" aria-label="Đóng menu">
           <ChevronLeft :size="20" />
@@ -159,7 +152,12 @@ window.addEventListener("resize", () => {
     <main class="admin-main">
       <!-- Breadcrumb / back navigation -->
       <nav class="admin-breadcrumb">
-        <button class="breadcrumb-back" @click="goBack" :disabled="!breadcrumb.length" aria-label="Quay lại">
+        <button
+          class="breadcrumb-back"
+          @click="goBack"
+          :disabled="!breadcrumb.length"
+          aria-label="Quay lại"
+        >
           <ChevronLeft size="14" /> Trở về
         </button>
         <span class="breadcrumb-separator">&rsaquo;</span>

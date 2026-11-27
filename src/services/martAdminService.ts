@@ -152,11 +152,7 @@ export async function updateMartUserRole(userId: string, role: 'admin' | 'custom
   return data
 }
 
-export async function receiveMartStock(
-  productId: number,
-  quantity: number,
-  note: string,
-) {
+export async function receiveMartStock(productId: number, quantity: number, note: string) {
   const { data, error } = await assertSupabase().rpc('receive_mart_stock', {
     p_items: [{ product_id: productId, quantity }],
     p_note: note,
@@ -165,11 +161,7 @@ export async function receiveMartStock(
   return data
 }
 
-export async function updateMartOrderStatus(
-  orderId: string,
-  status: string,
-  reason?: string,
-) {
+export async function updateMartOrderStatus(orderId: string, status: string, reason?: string) {
   const { data, error } = await assertSupabase().rpc('update_mart_order_status', {
     p_order_id: orderId,
     p_to_status: status,

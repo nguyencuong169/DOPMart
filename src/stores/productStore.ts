@@ -1,9 +1,9 @@
-import { defineStore } from "pinia"
+import { defineStore } from 'pinia'
 import {
   imageOfFormat,
   products as seedProducts,
   categories as seedCategories,
-} from "../data/products"
+} from '../data/products'
 
 /* Chuẩn hoá một row từ bảng products (snake_case, phẳng) về shape
    mà các component đang dùng: image, stock{14,20},
@@ -18,9 +18,9 @@ export interface Product {
   price: number
   rating: number
   sold: number
-    isNew: boolean
-    is_new?: boolean
-    hot: boolean
+  isNew: boolean
+  is_new?: boolean
+  hot: boolean
   color: string
   tint: string
   image: string | null
@@ -77,7 +77,7 @@ function mapProduct(row: any): Product {
 function mapShelf(row: any): Shelf {
   return {
     ...row,
-    tagline: row.tagline ?? "",
+    tagline: row.tagline ?? '',
     formats: row.formats ?? [],
   }
 }
@@ -92,18 +92,17 @@ function mapFormat(row: any): Format {
   }
 }
 
-export const useProductStore = defineStore("products", {
+export const useProductStore = defineStore('products', {
   state: () => ({
     products: [] as Product[],
     categories: [] as Shelf[],
     formats: [] as Format[],
-    query: "",
+    query: '',
     page: 1,
     pageSize: 8,
     quickProduct: null as Product | null,
     loading: Boolean(
-      Boolean(import.meta.env.VITE_SUPABASE_URL) &&
-        Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY),
+      Boolean(import.meta.env.VITE_SUPABASE_URL) && Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
     ),
     error: null as string | null,
     _initialized: false,
@@ -113,18 +112,15 @@ export const useProductStore = defineStore("products", {
     shopByMood: {} as Record<string, Product[]>,
   }),
   getters: {
-    filtered: (s) =>
-      s.products.filter(
-        (p) =>
-          (p.name +
-            " " +
-            (s.categories.find((c) => c.slug === p.category)?.name || ""))
-            .toLowerCase()
-            .includes(s.query.toLowerCase()),
+    filtered: s =>
+      s.products.filter(p =>
+        (p.name + ' ' + (s.categories.find(c => c.slug === p.category)?.name || ''))
+          .toLowerCase()
+          .includes(s.query.toLowerCase())
       ),
-    newProducts: (s) => s.products.filter((p) => p.is_new || p.isNew),
-    bestSellers: (s) => [...s.products].sort((a, b) => b.sold - a.sold),
-    offers: (s) =>
+    newProducts: s => s.products.filter(p => p.is_new || p.isNew),
+    bestSellers: s => [...s.products].sort((a, b) => b.sold - a.sold),
+    offers: s =>
       [
         { id: 1, discount: 20 },
         { id: 6, discount: 15 },
@@ -136,17 +132,17 @@ export const useProductStore = defineStore("products", {
         { id: 2, discount: 10 },
       ]
         .map(({ id, discount }) => {
-          const p = s.products.find((x) => x.id === id)
+          const p = s.products.find(x => x.id === id)
           if (!p) return null
           return {
             ...p,
             discount,
-            oldPrice: Math.round((p.price / (1 - discount / 100)) / 1000) * 1000,
+            oldPrice: Math.round(p.price / (1 - discount / 100) / 1000) * 1000,
           }
         })
         .filter(Boolean),
-    bySlug: (s) => (slug: string) => s.products.find((p) => p.slug === slug),
-    byCategory: (s) => (slug: string) => s.products.filter((p) => p.category === slug),
+    bySlug: s => (slug: string) => s.products.find(p => p.slug === slug),
+    byCategory: s => (slug: string) => s.products.filter(p => p.category === slug),
   },
   actions: {
     /* Nếu Supabase chưa sẵn sàng / không trả dữ liệu, dùng seed cục bộ
@@ -168,11 +164,7 @@ export const useProductStore = defineStore("products", {
       }
       this.loading = true
       this.error = null
-      await Promise.all([
-        this.fetchProducts(),
-        this.fetchCategories(),
-        this.fetchFormats(),
-      ])
+      await Promise.all([this.fetchProducts(), this.fetchCategories(), this.fetchFormats()])
       this.useSeedFallback()
       this.loading = false
     },
@@ -182,11 +174,11 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) return
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
+      const { supabase } = await import('../lib/supabase')
       const { data, error } = await supabase!
-        .from("products")
-        .select("*")
-        .order("id", { ascending: true })
+        .from('products')
+        .select('*')
+        .order('id', { ascending: true })
       if (error) {
         this.error = error.message
         if (!this.products.length) this.products = seedProducts
@@ -200,11 +192,8 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) return
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
-      const { data, error } = await supabase!
-        .from("shelves")
-        .select("*")
-        .order("name")
+      const { supabase } = await import('../lib/supabase')
+      const { data, error } = await supabase!.from('shelves').select('*').order('name')
       if (error) {
         this.error = error.message
         if (!this.categories.length) this.categories = seedCategories
@@ -218,11 +207,8 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) return
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
-      const { data, error } = await supabase!
-        .from("formats")
-        .select("*")
-        .order("name")
+      const { supabase } = await import('../lib/supabase')
+      const { data, error } = await supabase!.from('formats').select('*').order('name')
       if (error) {
         this.error = error.message
       } else {
@@ -235,26 +221,22 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_URL) &&
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) {
-        this.newProductsList = seedProducts
-          .filter((p) => p.isNew)
-          .slice(0, limit)
+        this.newProductsList = seedProducts.filter(p => p.isNew).slice(0, limit)
         return
       }
       this.loading = true
       this.error = null
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
+      const { supabase } = await import('../lib/supabase')
       const { data, error } = await supabase!
-        .from("products")
-        .select("*")
-        .eq("is_new", true)
-        .order("created_at", { ascending: false })
+        .from('products')
+        .select('*')
+        .eq('is_new', true)
+        .order('created_at', { ascending: false })
         .limit(limit)
       if (error) {
         this.error = error.message
-        this.newProductsList = seedProducts
-          .filter((p) => p.isNew)
-          .slice(0, limit)
+        this.newProductsList = seedProducts.filter(p => p.isNew).slice(0, limit)
       } else {
         this.newProductsList = (data || []).map(mapProduct)
       }
@@ -265,25 +247,21 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_URL) &&
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) {
-        this.bestSellersList = [...seedProducts]
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, limit)
+        this.bestSellersList = [...seedProducts].sort((a, b) => b.sold - a.sold).slice(0, limit)
         return
       }
       this.loading = true
       this.error = null
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
+      const { supabase } = await import('../lib/supabase')
       const { data, error } = await supabase!
-        .from("products")
-        .select("*")
-        .order("sold", { ascending: false })
+        .from('products')
+        .select('*')
+        .order('sold', { ascending: false })
         .limit(limit)
       if (error) {
         this.error = error.message
-        this.bestSellersList = [...seedProducts]
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, limit)
+        this.bestSellersList = [...seedProducts].sort((a, b) => b.sold - a.sold).slice(0, limit)
       } else {
         this.bestSellersList = (data || []).map(mapProduct)
       }
@@ -294,25 +272,21 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_URL) &&
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) {
-        this.weeklyRankingList = [...seedProducts]
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, limit)
+        this.weeklyRankingList = [...seedProducts].sort((a, b) => b.sold - a.sold).slice(0, limit)
         return
       }
       this.loading = true
       this.error = null
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
+      const { supabase } = await import('../lib/supabase')
       const { data, error } = await supabase!
-        .from("products")
-        .select("*")
-        .order("sold", { ascending: false })
+        .from('products')
+        .select('*')
+        .order('sold', { ascending: false })
         .limit(limit)
       if (error) {
         this.error = error.message
-        this.weeklyRankingList = [...seedProducts]
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, limit)
+        this.weeklyRankingList = [...seedProducts].sort((a, b) => b.sold - a.sold).slice(0, limit)
       } else {
         this.weeklyRankingList = (data || []).map(mapProduct)
       }
@@ -325,9 +299,9 @@ export const useProductStore = defineStore("products", {
         Boolean(import.meta.env.VITE_SUPABASE_URL) &&
         Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
       if (!isReady) {
-        this.categories.forEach((c) => {
+        this.categories.forEach(c => {
           result[c.slug] = [...seedProducts]
-            .filter((p) => p.category === c.slug)
+            .filter(p => p.category === c.slug)
             .sort((a, b) => b.sold - a.sold)
             .slice(0, MAX)
         })
@@ -337,25 +311,25 @@ export const useProductStore = defineStore("products", {
       this.loading = true
       this.error = null
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { supabase } = await import("../lib/supabase")
+      const { supabase } = await import('../lib/supabase')
       await Promise.all(
-        this.categories.map(async (c) => {
+        this.categories.map(async c => {
           const { data, error } = await supabase!
-            .from("products")
-            .select("*")
-            .eq("shelf_slug", c.slug)
-            .order("sold", { ascending: false })
+            .from('products')
+            .select('*')
+            .eq('shelf_slug', c.slug)
+            .order('sold', { ascending: false })
             .limit(MAX)
           if (error) {
             this.error = error.message
             result[c.slug] = [...seedProducts]
-              .filter((p) => p.category === c.slug)
+              .filter(p => p.category === c.slug)
               .sort((a, b) => b.sold - a.sold)
               .slice(0, MAX)
           } else {
             result[c.slug] = (data || []).map(mapProduct)
           }
-        }),
+        })
       )
       this.shopByMood = result
       this.loading = false

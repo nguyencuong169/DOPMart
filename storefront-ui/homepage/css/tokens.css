@@ -1,1 +1,5 @@
-:root{--brand:#ff4938;--accent:#ffc531;--ink:#17140d;--background:#faf6f0;--surface:#fffdfa;--border:#eae7e2;--muted:#71675f;--radius:16px;--shadow:0 3px 12px #38220d08;--container:1380px;--font:Arial,sans-serif}
+:root{--brand:#ff4938;--accent:#ffc531;--ink:#17140d;--background:#faf6f0;--surface:#fffdfa;--border:#eae7e2;--muted:#71675f;--radius:16px;--shadow:0 3px 12px #38220d08;--container:1380px;--font:'Be Vietnam Pro', Arial, sans-serif}
+
+@font-face { font-family:'Be Vietnam Pro'; src:url('../assets/fonts/BeVietnamPro-Regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:swap; }
+
+@font-face { font-family:'Be Vietnam Pro'; src:url('../assets/fonts/BeVietnamPro-Bold.ttf') format('truetype'); font-weight:700; font-style:normal; font-display:swap; }

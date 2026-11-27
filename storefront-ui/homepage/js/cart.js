@@ -14,7 +14,7 @@ function render() {
     const [name, price, stock] = catalog[id];
     return `<div class="line" data-id="${id}">
       <input type="checkbox" aria-label="Chọn ${name}" ${selected.has(id) ? 'checked' : ''}>
-      <div class="item-name"><img src="assets/images/${id}.webp" alt=""><div><b>${name}</b><small>${stock ? 'Còn '+stock+' sản phẩm' : ''}</small></div></div>
+      <div class="item-name"><img src="assets/images/${['office','energy','noodles'].includes(id) ? 'deals/' : ''}${id}.webp" alt=""><div><b>${name}</b><small>${stock ? 'Còn '+stock+' sản phẩm' : ''}</small></div></div>
       <b class="unit amount">${money(price)}</b><div class="stepper"><button data-action="minus" aria-label="Giảm ${name}" ${cart[id] <= 1 ? 'disabled' : ''}>−</button><b>${cart[id]}</b><button data-action="plus" aria-label="Tăng ${name}">+</button></div>
       <b class="amount">${money(price * cart[id])}</b><button class="trash" data-action="delete" aria-label="Xóa ${name}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button></div>`;
   }).join('') || '<p>Giỏ hàng của bạn đang trống.</p>';

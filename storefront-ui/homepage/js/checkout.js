@@ -30,7 +30,7 @@ function renderOrder() {
     const [name,price] = catalog[id];
     const amount = price * cart[id];
     subtotal += amount;
-    return '<div class="order-line"><img alt="" src="assets/images/'+id+'.webp"><div><b>'+name+'</b><small>× '+cart[id]+'</small></div><strong>'+money(amount)+'</strong></div>';
+    return '<div class="order-line"><img alt="" src="assets/images/'+(['office','energy','noodles'].includes(id) ? 'deals/' : '')+id+'.webp"><div><b>'+name+'</b><small>× '+cart[id]+'</small></div><strong>'+money(amount)+'</strong></div>';
   });
   document.querySelector('#lines').innerHTML = lines.join('') || '<a href="cart.html">Quay về giỏ hàng để chọn sản phẩm →</a>';
   document.querySelector('#subtotal').textContent = document.querySelector('#total').textContent = money(subtotal);

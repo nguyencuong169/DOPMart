@@ -1,4 +1,7 @@
 const catalog = {
+  office: ['Combo Giải lao văn phòng', 46000],
+  energy: ['Combo Năng lượng cả ngày', 48000],
+  noodles: ['Combo Mì ăn liền tiện lợi', 31500],
   cola: ['Coca-Cola 330ml', 15000, 50],
   lays: ['Lay’s Classic 52g', 18000, 40],
   noodle: ['Mì Hảo Hảo tôm chua cay', 8000, 35],

@@ -1,0 +1,16 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Giỏ hàng | DOP Mart</title><link rel="stylesheet" href="css/tokens.css"><link rel="stylesheet" href="css/base.css"><link rel="stylesheet" href="css/components.css"><link rel="stylesheet" href="css/layout.css"><link rel="stylesheet" href="css/pages/cart.css"></head><body><div class="announcement">Freeship cho đơn từ 199.000đ  |  Ưu đãi mỗi tuần – Khám phá ngay! →</div><header class="header"><div class="wrap header-inner"><button class="icon menu" aria-label="Danh mục">&#9776;</button><a class="logo" href="index.html"><b>DOP</b> Mart</a><nav class="nav"><a href="index.html#products">Sản phẩm</a><a href="index.html#categories">Danh mục</a><a href="index.html#combo">Ưu đãi</a><a href="index.html#hero">Về DOP Mart</a></nav><input class="search" type="search" placeholder="Tìm sản phẩm, danh mục…" aria-label="Tìm sản phẩm"><div class="actions"><button hidden class="icon mobile-search" aria-label="Tìm kiếm"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="m15 15 7 7"/></svg></button><button class="icon" id="favorites" aria-label="Yêu thích">♡</button><a class="icon account" href="/profile" aria-label="Tài khoản"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M3 21q0-8 9-8t9 8z"/></svg></a><button class="icon" id="cart" aria-label="Giỏ hàng"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 3h3l3 13h11l3-10H6"/></svg><sup class="cart-count">0</sup></button></div></div></header>
+<main class="basket-layout">
+  <section class="intro"><h1>Giỏ hàng<br><em>của bạn</em></h1><p id="caption"></p></section>
+  <section class="items card" aria-label="Giỏ hàng">
+    <div class="line headings"><input class="select-all" type="checkbox" aria-label="Chọn tất cả"><b id="row-count"></b><span>Đơn giá</span><span>Số lượng</span><span>Thành tiền</span></div>
+    <div id="rows"></div>
+    <footer><label><input class="select-all" type="checkbox"> Chọn tất cả</label><button id="remove-selected">Xóa sản phẩm đã chọn</button><a href="index.html">← Tiếp tục mua sắm</a></footer>
+  </section>
+  <aside class="summary card"><h2>Tóm tắt đơn hàng</h2>
+    <dl><dt id="subtotal-label">Tạm tính</dt><dd id="subtotal"></dd><dt>Phí giao hàng</dt><dd id="shipping"></dd><dt class="discount">Ưu đãi vận chuyển</dt><dd class="discount" id="discount"></dd></dl>
+    <div class="total"><b>Tổng cộng</b><strong id="total" aria-live="polite"></strong></div>
+    <button class="btn pay">Thanh toán →</button>
+    <details><summary>Mã giảm giá <small>Chọn / Nhập mã ›</small></summary><label>Nhập mã <input autocomplete="off"></label></details>
+    <div class="service"><span>🚚 Giao nhanh<br>   trong 2 giờ</span><span>🛡 Thanh toán<br>   an toàn</span><span>♧ Hỗ trợ<br>   24/7</span></div>
+  </aside>
+</main><div class="toast" role="status" hidden></div><script src="js/cart.js"></script></body></html>

@@ -20,8 +20,8 @@
   .catalog-heading label { gap: 4px; font-size: 12px; }
   .catalog-layout { display: block; }
   .catalog aside h2 { margin-bottom: 6px; }
-  .filters { display: flex; overflow-x: auto; padding-bottom: 6px; }
-  .filters button { width: auto; flex: none; padding-inline: 10px; }
+  .filters { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 16px) / 4.45); overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+  .filters button { padding-inline: 4px; text-align: center; scroll-snap-align: start; }
   .catalog section h2 { margin: 18px 0 12px; font-size: 20px; }
   .catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
 }
@@ -47,7 +47,9 @@ body:has(.catalog) { background: #fcfaf7; }
 .catalog-grid .product img { height: clamp(96px, 10vw, 152px); }
 @media (min-width: 1001px) {
   .header:has(+ .catalog) .header-inner { min-height: clamp(82px, 7.4vw, 112px); justify-content: space-between; }
-  .header:has(+ .catalog) .search { flex: 0 1 24%; box-shadow: none; }
+  .header:has(+ .catalog) .search { flex: 1 1 24%; max-width: 29%; box-shadow: none; }
+  .header:has(+ .catalog) .logo { --logo-width: clamp(140px, 13.5vw, 205px); }
+  .header:has(+ .catalog) .nav { gap: clamp(18px, 2.5vw, 40px); font-size: clamp(14px, 1.1vw, 18px); }
   .catalog { padding-top: 2.5vw; }
   .catalog-grid .product { padding: 1.25vw; }
   .catalog-grid .product img { margin-top: 1.3vw; }
@@ -56,3 +58,6 @@ body:has(.catalog) { background: #fcfaf7; }
   .catalog-heading select { border: 0; }
   .filters { background: #faf7f2; border-radius: 12px; padding: 8px; }
 }
+
+.catalog-grid [data-id="choco"] img { object-fit: contain; padding: 7px 9%; }
+.catalog-grid [data-id="water"] img { transform: scale(1.09); }

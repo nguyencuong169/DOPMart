@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chi tiết sản phẩm | DOP Mart</title>
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/pages/home.css" />
+    <link rel="stylesheet" href="css/pages/catalog.css" />
+    <link rel="stylesheet" href="css/pages/detail.css">
+  <link rel="stylesheet" href="css/header.css"><link rel="stylesheet" href="css/pages/shelves.css"></head>
+
+  <body>
+    <header class="store-header" data-page="product"><script src="js/header.js"></script></header>
+<main class="wrap detail">
+  <section class="gallery" aria-label="Hình ảnh sản phẩm">
+    <nav class="thumbs" aria-label="Chọn sản phẩm"></nav>
+    <div class="photo"><img id="photo" alt=""></div>
+  </section>
+  <section class="details">
+    <h1 id="name"></h1><p class="detail-price"></p><p id="stock"></p>
+    <div class="buy-row">
+      <div class="stepper"><button id="less" aria-label="Giảm số lượng">−</button><output id="quantity">1</output><button id="more" aria-label="Tăng số lượng">+</button></div>
+      <button class="btn" id="buy">Thêm vào giỏ</button>
+      <button id="save" aria-label="Yêu thích"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button>
+    </div>
+    <div class="sections"><button data-section="description">Mô tả</button><button data-section="info">Thông tin</button><button data-section="reviews">Đánh giá</button></div>
+    <p id="copy"></p>
+  </section>
+<div class="recommendations"><section class="dop-section" aria-labelledby="Related"><h2 id="Related"><small lang="en">DOP Related</small>Sản phẩm cùng danh mục</h2><div class="shelf" data-shelf="related"></div></section><section class="dop-section" aria-labelledby="Pairings"><h2 id="Pairings"><small lang="en">DOP Pairings</small>Thường mua kèm</h2><div class="shelf" data-shelf="pairs"></div></section></div></main>
+<div class="toast" role="status" hidden></div>
+<script src="js/bottom-nav.js"></script>
+<script src="js/catalog.js"></script><script src="js/cart-badge.js"></script><script src="js/detail.js"></script>
+<script src="js/order-samples.js"></script><script src="js/shelves.js"></script></body></html>

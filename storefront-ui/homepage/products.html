@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sản phẩm | DOP Mart</title>
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/pages/home.css" />
+    <link rel="stylesheet" href="css/pages/catalog.css" />
+  <link rel="stylesheet" href="css/header.css"></head>
+
+  <body>
+    <header class="store-header" data-page="products"><script src="js/header.js"></script></header>
+    <main class="wrap catalog">
+      <div class="catalog-heading">
+        <h1>Sản phẩm</h1>
+        <label>Sắp xếp <select id="sort"><option value="default">Mặc định</option><option value="asc">Giá tăng dần</option><option value="desc">Giá giảm dần</option></select></label>
+      </div>
+      <div class="catalog-layout">
+        <aside id="categories" aria-label="Danh mục sản phẩm">
+          <h2>Danh mục</h2>
+          <div class="filters"><button type="button" id="all">Tất cả</button>
+          <button type="button" class="category" data-category="0">Đồ uống</button>
+<button type="button" class="category" data-category="1">Snack</button>
+<button type="button" class="category" data-category="2">Mì &amp; Ăn liền</button>
+<button type="button" class="category" data-category="3">Bánh kẹo</button>
+<button type="button" class="category" data-category="4">Đồ khô</button></div>
+        </aside>
+        <section id="products"><h2>Danh sách sản phẩm</h2>
+          <div class="catalog-grid"><article
+              class="product card"
+              data-id="cola"
+              data-category="0"
+              data-name="Coca-Cola 330ml"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Coca-Cola 330ml"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button
+              ><a href="product.html?id=cola"><img src="assets/images/cola.webp" alt="Coca-Cola 330ml" /></a>
+              <h3><a href="product.html?id=cola">Coca-Cola 330ml</a></h3>
+              <div class="product-bottom">
+                <span class="price">15.000đ</span
+                ><button class="add" aria-label="Thêm Coca-Cola 330ml vào giỏ"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#cart"/></svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="lays"
+              data-category="1"
+              data-name="Lay’s Classic 52g"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Lay’s Classic 52g"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button
+              ><a href="product.html?id=lays"><img src="assets/images/lays.webp" alt="Lay’s Classic 52g" /></a>
+              <h3><a href="product.html?id=lays">Lay’s Classic 52g</a></h3>
+              <div class="product-bottom">
+                <span class="price">18.000đ</span
+                ><button class="add" aria-label="Thêm Lay’s Classic 52g vào giỏ"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#cart"/></svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="choco"
+              data-category="3"
+              data-name="Choco Pie 12 cái"
+            ><button class="icon heart" aria-label="Yêu thích Choco Pie 12 cái"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button
+              ><a href="product.html?id=choco"><img src="assets/images/choco.webp" alt="Choco Pie 12 cái" /></a>
+              <h3><a href="product.html?id=choco">Choco Pie 12 cái</a></h3>
+              <div class="product-bottom">
+                <span class="price">45.000đ</span
+                ><button class="add" aria-label="Thêm Choco Pie 12 cái vào giỏ"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#cart"/></svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="water"
+              data-category="0"
+              data-name="Nước suối Lavie 500ml"
+            ><button class="icon heart" aria-label="Yêu thích Nước suối Lavie 500ml"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button
+              ><a href="product.html?id=water"><img src="assets/images/water.webp" alt="Nước suối Lavie 500ml" /></a>
+              <h3><a href="product.html?id=water">Nước suối Lavie 500ml</a></h3>
+              <div class="product-bottom">
+                <span class="price">7.000đ</span
+                ><button class="add" aria-label="Thêm Nước suối Lavie 500ml vào giỏ"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#cart"/></svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="noodle"
+              data-category="2"
+              data-name="Mì Hảo Hảo tôm chua cay"
+            ><button class="icon heart" aria-label="Yêu thích Mì Hảo Hảo tôm chua cay"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg></button
+              ><a href="product.html?id=noodle"><img src="assets/images/noodle.webp" alt="Mì Hảo Hảo tôm chua cay" /></a>
+              <h3><a href="product.html?id=noodle">Mì Hảo Hảo tôm chua cay</a></h3>
+              <div class="product-bottom">
+                <span class="price">8.000đ</span
+                ><button class="add" aria-label="Thêm Mì Hảo Hảo tôm chua cay vào giỏ"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#cart"/></svg>
+                </button>
+              </div>
+            </article></div>
+          <p class="empty" hidden>Không tìm thấy sản phẩm.</p>
+        </section>
+      </div>
+    </main>
+
+    <div class="toast" role="status" hidden></div>
+    <script src="js/bottom-nav.js"></script>
+<script src="js/cart-badge.js"></script><script src="js/storefront.js"></script>
+  <script src="js/catalog-sort.js"></script>
+  </body>
+</html>

@@ -42,9 +42,6 @@ function renderOrder() {
 renderOrder();
 window.addEventListener('pageshow',renderOrder);
 window.addEventListener('storage',renderOrder);
-document.querySelector('#cart').onclick = () => location.href = 'cart.html';
-document.querySelector('.menu').onclick = () => location.href = 'index.html#categories';
-document.querySelector('#favorites').onclick = () => location.href = 'index.html#products';
 form.onsubmit = event => {
   event.preventDefault();
   if (form.elements.remember.checked) {

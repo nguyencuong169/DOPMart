@@ -1,0 +1,31 @@
+body { background: #fcfaf7; }
+.detail { display: grid; grid-template-columns: 47% minmax(0,1fr); gap: 4%; padding-block: clamp(24px,3vw,52px); }
+.gallery { display: grid; grid-template-columns: 15% 1fr; gap: 4%; align-items: start; }
+.thumbs { display: grid; gap: 10px; }
+.thumbs a, .photo, .stepper, #save { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.thumbs a { padding: 8%; }
+.thumbs a[aria-current] { border-color: var(--brand); }
+.thumbs img { width: 100%; height: clamp(45px,5vw,80px); object-fit: contain; }
+.photo { position: relative; overflow: hidden; width: 100%; aspect-ratio: 1.08; }
+.photo img { position: absolute; inset: 5.5% 9%; width: 82%; height: 89%; object-fit: contain; }
+.details h1 { font-size: clamp(24px,2.55vw,42px); line-height: 1.2; }
+.detail-price { margin-block: 2vw; color: var(--price); font-size: clamp(24px,2.65vw,42px); font-weight: 700; }
+#stock { color: #347046; }
+.buy-row, .stepper, .sections { display: flex; align-items: center; }
+.buy-row { gap: 12px; margin-block: clamp(20px,3vw,48px); }
+.stepper button, #save, .sections button { background: transparent; color: var(--ink); min-height: 44px; }
+.stepper button, #save { min-width: 44px; font-size: 22px; }
+.stepper output { min-width: 2ch; text-align: center; }
+.stepper button:disabled { opacity: .45; }
+#save[aria-pressed="true"] { color: var(--brand); }
+.sections { gap: 12px; border-bottom: 1px solid var(--border); }
+.sections button { padding: 8px; border-bottom: 3px solid transparent; }
+.sections button[aria-pressed="true"] { font-weight: bold; border-color: var(--ink); }
+#copy { padding: 14px 8px; line-height: 1.55; }
+@media(max-width:700px) {
+  .detail { display: block; }
+  .gallery { grid-template-columns: 48px 1fr; margin-bottom: 22px; }
+  .photo { max-height: 300px; }
+  .buy-row { gap: 8px; }
+  .buy-row .btn { flex: 1; }
+}

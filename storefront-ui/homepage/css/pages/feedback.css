@@ -1,0 +1,13 @@
+.voice-layout { display:grid; grid-template-columns: .9fr 1fr; gap:clamp(24px,5vw,80px); max-width:1100px; margin:48px auto; }
+.voice-intro,.voice-form { border-radius:var(--radius); padding:clamp(22px,3.5vw,48px); }
+.voice-intro { background:#fff0d6; overflow:hidden; }
+.voice-intro small { color:var(--price); font-weight:700; }
+.voice-intro h1 { font-size:clamp(36px,4vw,62px); line-height:1.05; letter-spacing:-.055em; margin:12px 0; }
+.voice-intro p { line-height:1.6; }
+.voice-intro img { max-height:235px; margin:22px auto 0; object-fit:contain; mix-blend-mode:multiply; }
+.voice-form { align-self:start; display:grid; gap:18px; background:var(--surface); box-shadow:var(--shadow); }
+.voice-form label { display:grid; gap:7px; font-weight:700; font-size:14px; }
+.voice-form :is(select,input,textarea) { width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); color:var(--ink); background:white; font-size:16px; font-weight:400; }
+.voice-form textarea { resize:vertical; }
+.voice-form [role=status]:empty { display:none; }
+@media(max-width:700px){.voice-layout{display:block;margin:20px auto}.voice-intro{position:relative;padding-right:33%}.voice-intro img{position:absolute;bottom:0;right:-3%;width:33%}.voice-intro h1{font-size:32px}.voice-form{margin-top:16px}}

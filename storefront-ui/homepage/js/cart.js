@@ -56,6 +56,4 @@ document.querySelector('.pay').onclick = () => {
   sessionStorage.setItem('dop-checkout-selection', JSON.stringify([...selected]));
   location.href = 'checkout.html';
 };
-document.querySelector('.menu').onclick = () => location.href = 'index.html#categories';
-get('favorites').onclick = () => location.href = 'index.html#products';
 render();

@@ -101,7 +101,7 @@ input[type='checkbox'] {
 
 .amount,
 .total strong {
-  color: var(--brand);
+  color: var(--price);
   font-variant-numeric: tabular-nums;
 }
 

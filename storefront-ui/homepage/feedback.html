@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Góp ý | DOP Mart</title>
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/header.css"><link rel="stylesheet" href="css/pages/feedback.css"></head>
+  <body>
+    <header class="store-header" data-page="feedback"><script src="js/header.js"></script></header>
+<main class="wrap voice-layout">
+  <section class="voice-intro"><small>DOP Voice</small><h1>Góp ý cùng<br>DOP Mart</h1>
+    <p>Bạn muốn có thêm món gì trên kệ? Chia sẻ với DOP Mart món bạn thích hoặc điều cửa hàng có thể làm tốt hơn.</p>
+    <img src="assets/images/mobile-basket.webp" alt="Giỏ sản phẩm DOP Mart">
+  </section>
+  <form class="voice-form">
+    <h2>Ý kiến của bạn</h2>
+    <label>Chủ đề<select name="topic"><option value="product">Gợi ý sản phẩm lên kệ</option><option value="improvement">Đề xuất cải thiện</option><option value="experience">Trải nghiệm mua sắm</option></select></label>
+    <label>Nội dung<textarea name="message" rows="5" required maxlength="2000" placeholder="Ví dụ: Mình muốn có thêm sữa chua uống vị dâu…"></textarea></label>
+    <label>Tên hoặc nhóm (tùy chọn)<input name="name" maxlength="80" autocomplete="name"></label>
+    <button class="btn" type="submit">Gửi góp ý →</button>
+    <p role="status" aria-live="polite"></p>
+  </form>
+</main>
+<script src="js/bottom-nav.js"></script><script src="js/cart-badge.js"></script><script src="js/feedback.js"></script>
+</body></html>

@@ -1,0 +1,17 @@
+.shelves { padding-bottom: 42px; }
+.dop-section, .feedback-invite { margin-top: clamp(28px,4vw,64px); }
+.dop-section h2, .dop-heading, .feedback-invite h2 { font-size: clamp(22px,2.2vw,34px); letter-spacing: -.04em; line-height: 1.2; }
+.dop-section h2 small, .dop-heading small, .feedback-invite b { display:block; margin-bottom:5px; color:var(--price); font-size:14px; font-weight:700; letter-spacing:.025em; }
+.shelf { display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:16px; margin-top:16px; }
+.shelf-card { display:grid; align-content:start; gap:7px; padding:16px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); }
+.shelf-card img { width:100%; height:clamp(96px,10vw,160px); object-fit:contain; }
+.shelf-card span { color:var(--price); font-weight:700; }
+.shelf-card:only-child { max-width:300px; }
+.dop-section > p { color:var(--muted); margin-top:12px; }
+.feedback-invite { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:clamp(20px,3vw,42px); background:#fff1ce; border-radius:var(--radius); }
+.recommendations { grid-column:1/-1; min-width:0; }
+@media(max-width:700px){
+  .shelf { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .shelf-card { padding:12px; font-size:14px; }
+  .feedback-invite { align-items:flex-start; flex-direction:column; }
+}

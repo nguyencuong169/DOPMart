@@ -8,3 +8,6 @@ const catalog = {
   water: ['Nước suối Lavie 500ml', 7000],
   choco: ['Choco Pie 12 cái', 45000]
 };
+
+// Reference prices for the storefront preview. Checkout uses the catalog price.
+const saleReferencePrices = { cola: 18750, lays: 22500, noodle: 10000, choco: 50000 };

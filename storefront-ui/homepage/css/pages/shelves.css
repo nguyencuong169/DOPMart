@@ -15,3 +15,57 @@
   .shelf-card { padding:12px; font-size:14px; }
   .feedback-invite { align-items:flex-start; flex-direction:column; }
 }
+
+/* The image takes the largest area on each shelf; warm color frames the pack. */
+.shelves .dop-section:has(.shelf) {
+  padding: clamp(16px,2vw,32px);
+  border-radius: calc(var(--radius) * 1.4);
+}
+.shelves .dop-section:has([data-shelf="sales"]) {
+  background: linear-gradient(112deg,#ffe1ce,#fff1cc);
+}
+.shelves .dop-section:has([data-shelf="best"]) {
+  background: linear-gradient(115deg,#ffdf79,#fff0c4);
+}
+.shelves .dop-section:has([data-shelf="combos"]) { padding-inline: 0; }
+.shelves .shelf-card {
+  position: relative;
+  grid-template-rows: auto 1fr auto;
+  border-color: #f2dbc2;
+  box-shadow: 0 3px 8px #8043130d;
+}
+.shelves .shelf-card img {
+  height: clamp(124px,12vw,182px);
+  padding: 8px;
+}
+.shelves .sale-label {
+  position: absolute; top: 10px; left: 10px;
+  background: #bd3227; color: white; padding: 4px 9px;
+  border-radius: 20px; font-size: 13px; line-height: 1.2;
+}
+.sale-prices { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; font-variant-numeric: tabular-nums; }
+.sale-prices strong { color: var(--price); font-size: clamp(18px,1.55vw,24px); }
+.sale-prices del { color: var(--muted); font-size: 14px; }
+.shelves .combo-offer {
+  overflow: hidden; position: relative; isolation: isolate;
+  border-radius: var(--radius); min-height: clamp(156px,15vw,225px);
+  display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: 4px;
+  padding: clamp(14px,1.6vw,24px);
+  background: radial-gradient(ellipse at 108% 105%,#ffc531 0 34%,transparent 34.5%),
+    linear-gradient(120deg,#be3025,#ef4e38 68%,#ff7955);
+  color: white;
+}
+.combo-offer b { display: block; font-size: clamp(19px,1.65vw,27px); line-height: 1.18; letter-spacing: -.025em; }
+.combo-offer span { display: inline-block; margin-top: 14px; padding: 5px 10px; border-radius: 10px; background:#fff4d9; color:#99281e; font-weight:700; }
+.combo-offer img { width: 100%; transform: rotate(-4deg); filter: drop-shadow(0 6px 4px #7b261d36); }
+@media(max-width:900px) {
+  [data-shelf="combos"] { grid-template-columns: 1fr; }
+  .shelves .combo-offer { grid-template-columns: 1fr minmax(100px,36%); min-height: 136px; }
+  .combo-offer img { height: 112px; object-fit: contain; }
+}
+@media(max-width:600px) {
+  .shelves .dop-section:has(.shelf) { padding: 14px 10px; }
+  .shelves .dop-section:has([data-shelf="combos"]) { padding-inline: 0; }
+  .shelves .shelf-card { padding: 10px; }
+  .sale-prices del { font-size: 12px; }
+}

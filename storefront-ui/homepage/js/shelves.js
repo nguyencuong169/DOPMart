@@ -15,11 +15,26 @@
     let cards;
     switch (shelf.dataset.shelf) {
       case 'sales':
-        cards = [['cola', 'Đồ uống',20],['lays','Snack',30],['noodle','Mì ly',25],['choco','Bánh kẹo',20]]
-          .map(([key,title,percent]) => card('product.html?id='+key,key,catalog[key][0],moneyLabel(catalog[key][1])+' · '+title+' ưu đãi đến '+percent+'%'));
+        cards = Object.entries(saleReferencePrices).map(([id, original]) => {
+          const [name, price] = catalog[id];
+          const discount = Math.round(100 * (original - price) / original);
+          return `<a class="shelf-card sale-card" href="product.html?id=${id}">
+            <span class="sale-label">−${discount}%</span>
+            <img loading="lazy" src="assets/images/${id}.webp" alt="">
+            <b>${name}</b>
+            <div class="sale-prices"><strong aria-label="Giá sau giảm ${moneyLabel(price)}">${moneyLabel(price)}</strong>
+              <del aria-label="Giá trước giảm ${moneyLabel(original)}">${moneyLabel(original)}</del></div>
+          </a>`;
+        });
         break;
       case 'combos':
-        cards = ['office','energy','noodles'].map(id => card('deals.html#combos','deals/'+id,catalog[id][0],moneyLabel(catalog[id][1])));
+        cards = ['office','energy','noodles'].map(id => {
+          const [name, price] = catalog[id];
+          return `<a class="combo-offer" href="deals.html#combos">
+            <div><b>${name}</b><span>${moneyLabel(price)}</span></div>
+            <img loading="lazy" src="assets/images/deals/${id}.webp" alt="">
+          </a>`;
+        });
         break;
       case 'best':
         cards = ranked(ids, delivered).slice(0,4).map(product);

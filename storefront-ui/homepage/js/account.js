@@ -4,10 +4,6 @@ function refreshBadge() {
 }
 refreshBadge();
 window.addEventListener('pageshow', refreshBadge);
-document.querySelector('#cart').onclick = () => location.href = 'cart.html';
-document.querySelector('#favorites').onclick = () => location.hash = 'saved';
-document.querySelector('.menu').onclick = () => location.href = 'index.html#categories';
-document.querySelector('.mobile-search').onclick = () => location.href = 'index.html#products';
 document.querySelectorAll('[name=pay]').forEach(option => {
   if (option.value === localStorage.getItem('dop-account-pay')) option.checked = true;
   option.onchange = () => localStorage.setItem('dop-account-pay', option.value);

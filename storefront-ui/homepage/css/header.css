@@ -1,0 +1,30 @@
+.store-header { position: sticky; top: 0; z-index: 20; background: #fffcf8; border-bottom: 1px solid var(--border); }
+.store-bar { width: min(90%, var(--container)); margin: auto; min-height: 76px; display: flex; gap: clamp(12px,2vw,32px); align-items: center; }
+.store-logo { width: clamp(126px,13vw,194px); flex: none; }
+.store-logo svg { width: 100%; height: auto; display: block; }
+.store-logo .mobile-wordmark { display: none; }
+.store-bar nav, .store-actions { display: flex; align-items: center; }
+.store-bar nav { gap: clamp(12px,1.65vw,26px); font-weight: bold; font-size: 14px; white-space: nowrap; }
+.store-bar svg:not(.store-logo svg) { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.store-search { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 100px; border: 1px solid var(--border); border-radius: 24px; padding: 8px 14px; }
+.store-search input { width: 100%; min-width: 0; border: none; background: transparent; color: var(--ink); }
+.store-actions a, .store-actions button, .store-menu { position: relative; display: grid; place-items: center; width: 44px; height: 44px; background: transparent; color: var(--ink); }
+.store-bar [aria-current="page"] { background: #ffe6df; border-radius: 16px; }
+.store-bar nav [aria-current="page"] { outline: 5px solid #ffe6df; }
+.store-header #cart .cart-count { position: absolute; top: 0; right: 0; min-width: 18px; min-height: 18px; padding: 0 4px; line-height: 18px; }
+.store-header #cart .is-empty, .store-menu, .store-actions .store-search-toggle { display: none; }
+@media(max-width:1000px) {
+  .store-bar nav { display: none; }
+  .store-menu { display: grid; }
+  .store-bar { width: calc(100% - 32px); gap: 10px; min-height: 64px; }
+}
+@media(max-width:700px) {
+  .store-bar { width: calc(100% - 16px); gap: 4px; min-height: 60px; }
+  .store-logo { width: 112px; }
+  .store-logo .desktop-wordmark { display: none; }
+  .store-logo .mobile-wordmark { display: block; }
+  .store-actions { margin-left: auto; }
+  .store-actions .store-search-toggle { display: grid; }
+  .store-actions #favorites, .store-actions .store-account, .store-search { display: none; }
+  .search-open .store-search { display: flex; position: absolute; top: 100%; left: 8px; right: 8px; background: var(--surface); box-shadow: var(--shadow); }
+}

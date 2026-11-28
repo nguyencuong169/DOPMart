@@ -26,5 +26,3 @@ document.querySelectorAll('[data-add]').forEach(button => button.onclick = () =>
   status.textContent = 'Đã thêm combo vào giỏ hàng';
   setTimeout(() => status.hidden = true,1800);
 });
-document.querySelector('#cart').onclick = () => location.href = 'cart.html';
-document.querySelector('.menu').onclick = () => location.hash = 'categories';

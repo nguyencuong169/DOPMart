@@ -12,7 +12,7 @@ document.querySelector('#sort').addEventListener('change', event => {
 });
 const query = new URLSearchParams(location.search).get('q');
 if (query) {
-  const search = document.querySelector('.search');
+  const search = document.querySelector('.store-search input');
   search.value = query;
   search.dispatchEvent(new Event('input'));
 }

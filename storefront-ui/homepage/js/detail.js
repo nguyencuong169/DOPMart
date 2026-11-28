@@ -73,12 +73,6 @@ for (const button of document.querySelectorAll('[data-section]')) {
   };
 }
 get('[data-section]').click();
-get('#cart').onclick = () => location.href = 'cart.html';
-get('#favorites').onclick = () => location.href = 'products.html#favorites';
-get('.menu').onclick = () => location.href = 'products.html#categories';
-get('.mobile-search').onclick = () => { get('.search').classList.toggle('open'); get('.search').focus(); };
-get('.search').onkeydown = event => {
-  if (event.key === 'Enter') location.href = 'products.html?q=' + encodeURIComponent(event.target.value);
-};
+
 refresh();
 window.addEventListener('pageshow', refresh);

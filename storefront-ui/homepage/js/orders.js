@@ -106,9 +106,6 @@ list.onclick=e=>{
  dialog.querySelector('div').innerHTML='<p>'+displayDate(order.date)+' · '+states[order.state]+'</p>'+order.items.map(key=>'<p>'+catalog[key][0]+'</p>').join('')+'<p><b>Tổng tiền: '+money(order.total)+'</b></p>';
  dialog.showModal();
 };
-document.querySelector('#cart').onclick=()=>location.href='cart.html';
-document.querySelector('.menu').onclick=()=>location.href='index.html#categories';
-document.querySelector('.search').oninput=e=>{form.elements.query.value=e.target.value;page=1;render()};
 cartCount();render();
 
 const mobileFilters = form.querySelector('.mobile-filter-toggle');

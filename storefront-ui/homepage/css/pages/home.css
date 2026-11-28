@@ -369,7 +369,7 @@
 .hero {
   position: relative;
   height: 24.87vw;
-  background: #fcf4eb url('../../assets/images/hero-top.webp') top / 100% auto no-repeat;
+  background: url('../../assets/images/hero-art-top.webp') top right / 51.823% auto no-repeat, radial-gradient(ellipse at -8% 67%, #ffdf80 0 10%, transparent 10.2%), #fcf4eb;
 }
 
 .hero::after {
@@ -393,17 +393,29 @@
   z-index: 1;
 }
 
-.brand-title,
-.slogan {
-  position: absolute;
-  clip-path: inset(50%);
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
+@media (min-width:601px) {
+  .hero-copy { top: 9%; }
+  .hero .brand-title, .hero .slogan {
+    display: table;
+    width: fit-content;
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -.055em;
+    transform: rotate(-5deg);
+  }
+  .hero .brand-title {
+    font-size: 5.35vw;
+    padding: .06em .43em .12em;
+    border-radius: .35em;
+    background: #ed3935;
+  }
+  .hero .slogan {
+    font-size: 2.65vw;
+    padding: .12em .46em;
+    margin: .15em 0 .67em;
+    background: #ffda72;
+  }
 }
-
 .hero-copy p {
   font-size: clamp(14px, 1.26vw, 20px);
 }

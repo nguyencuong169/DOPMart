@@ -24,8 +24,6 @@
 .deal-combo .deal-art{height:clamp(105px,9vw,145px)}
 .deal-categories img{border-radius:0}
 @media(max-width:600px){.offer-hero .deal-art{max-height:none}}
-
-.offer-copy h1 img{width:clamp(180px,28vw,435px);height:auto}
 .offer-copy strong{font-weight:700}
 .offer-stamp span{position:relative;isolation:isolate;background:transparent;padding:.55em 1em}
 .offer-stamp span::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--brand);mask:url("../../assets/images/deals/seal.svg") center/100% 100% no-repeat}
@@ -35,12 +33,11 @@
  .header-inner{min-height:4.63vw}
  .offer-hero{height:21.35vw}
  .offer-copy p{margin:.7em 0}
- .offer-copy h1{line-height:0}
- .offer-copy h1 img{display:block}
+ .offer-copy h1{line-height:1.04}
  .offer-copy .btn{min-height:36px;padding:8px 18px}
  .offer-hero::after{content:"";position:absolute;bottom:1.6vw;left:33%;width:46px;height:14px;border-radius:10px;background:radial-gradient(circle at 17% 50%,var(--brand) 0 3px,transparent 4px),radial-gradient(circle at 50% 50%,#d6ac86 0 3px,transparent 4px),radial-gradient(circle at 83% 50%,#d6ac86 0 3px,transparent 4px),#fff7e7}
 }
-@media(max-width:600px){.offer-copy h1 img{width:100%;max-width:260px}}
+@media(max-width:600px){}
 
 .deal-combo button {display:grid;place-items:center;width:clamp(36px,3vw,48px);height:clamp(36px,3vw,48px);padding:0;color:white}
 .deal-combo button svg {width:52%;height:52%}
@@ -51,3 +48,6 @@
 .offer-copy h1::after {content:"";position:absolute;right:-1.5vw;top:35%;width:2vw;height:2.2vw;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 32' fill='none' stroke='%23fa8041' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M4 10l10-6M6 18h15M4 25l9 4'/%3E%3C/svg%3E") center/contain no-repeat}
 .offer-copy>b::after {content:"";position:absolute;width:25%;height:.35em;right:6%;bottom:-.5em;border-top:.14em solid #ffc531;border-radius:70%;transform:rotate(2deg)}
 @media(min-width:1001px){.offer-stamp{gap:.9vw}.offer-stamp span{font-size:2.25vw;padding:.65em .95em}.offer-stamp strong{width:18.5vw;justify-content:center;padding:.45em .3em}}
+@media (max-width:600px) {
+  .offer-copy h1 { white-space: nowrap; font-size: clamp(32px,10vw,54px); }
+}

@@ -216,3 +216,14 @@ svg {
   vertical-align: middle;
 }
 .heart[aria-pressed="true"] .ui-icon, #save[aria-pressed="true"] .ui-icon { fill: currentColor; }
+
+.store-bottom { display: none; }
+@media(max-width:700px) {
+  :root { --bottom-space: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  body:has(.store-bottom) { padding-bottom: var(--bottom-space); }
+  html:has(.store-bottom) { scroll-padding-bottom: var(--bottom-space); }
+  .store-bottom { display: grid; grid-template-columns: repeat(5,1fr); position: fixed; inset: auto 0 0; z-index: 22; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .store-bottom a { min-height: 61px; display: grid; justify-items: center; align-content: center; gap: 4px; color: var(--ink); font-size: 11px; }
+  .store-bottom a[aria-current] { color: #c83b28; font-weight: 700; }
+  body:has(.store-bottom) .toast { bottom: calc(var(--bottom-space) + 8px); }
+}

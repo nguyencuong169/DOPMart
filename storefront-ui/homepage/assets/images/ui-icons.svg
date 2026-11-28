@@ -6,4 +6,5 @@
   <symbol id="cart" viewBox="0 0 24 24"><path d="M2 3h3l3 13h11l3-10H6M10 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0M20 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0"/></symbol>
   <symbol id="home" viewBox="0 0 24 24"><path d="M2 11l10-8 10 8M5 9v12h5v-7h4v7h5V9"/></symbol>
   <symbol id="grid" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></symbol>
+  <symbol id="orders" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v11l-9 4-9-4zM3 7l9 5 9-5m-9 5v10M7 5l10 5"/></symbol>
 </svg>

@@ -7,6 +7,7 @@
 .store-bar nav { gap: clamp(12px,1.65vw,26px); font-weight: bold; font-size: 14px; white-space: nowrap; }
 .store-bar svg:not(.store-logo svg) { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .store-search { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 100px; border: 1px solid var(--border); border-radius: 24px; padding: 8px 14px; }
+.store-search > svg { flex: none; }
 .store-search input { width: 100%; min-width: 0; border: none; background: transparent; color: var(--ink); }
 .store-actions a, .store-actions button, .store-menu { position: relative; display: grid; place-items: center; width: 44px; height: 44px; background: transparent; color: var(--ink); }
 .store-bar [aria-current="page"] { background: #ffe6df; border-radius: 16px; }

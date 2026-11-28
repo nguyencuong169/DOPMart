@@ -4,14 +4,7 @@
   const page = header.dataset.page;
   const compact = ['cart', 'checkout', 'product', 'products'].includes(page);
   const logo = compact ? 'compact' : 'accented';
-  const paths = {
-    menu: 'M3 6h18M3 12h18M3 18h18',
-    search: 'M17 17l5 5M19 10a8 8 0 1 1-16 0 8 8 0 1 1 16 0',
-    heart: 'M12 21l-8-8C-2 6 6 0 12 7c6-7 14-1 8 6z',
-    account: 'M16 7a4 4 0 1 1-8 0 4 4 0 1 1 8 0M3 21q0-8 9-8t9 8z',
-    cart: 'M2 3h3l3 13h11l3-10H6M10 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0M20 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0'
-  };
-  const icon = name => '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="' + paths[name] + '"/></svg>';
+  const icon = name => `<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#${name}"/></svg>`;
   header.innerHTML = `<div class="store-bar">
     <a class="store-menu" href="products.html#categories" aria-label="Danh mục">${icon('menu')}</a>
     <a class="store-logo" href="index.html" aria-label="DOP Mart – Trang chủ">

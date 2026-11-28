@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><path d="M17 17l5 5M19 10a8 8 0 1 1-16 0 8 8 0 1 1 16 0"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 21l-8-8C-2 6 6 0 12 7c6-7 14-1 8 6z"/></symbol>
+  <symbol id="account" viewBox="0 0 24 24"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 1 1 8 0M3 21q0-8 9-8t9 8z"/></symbol>
+  <symbol id="cart" viewBox="0 0 24 24"><path d="M2 3h3l3 13h11l3-10H6M10 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0M20 21a1 1 0 1 1-2 0 1 1 0 1 1 2 0"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M2 11l10-8 10 8M5 9v12h5v-7h4v7h5V9"/></symbol>
+  <symbol id="grid" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></symbol>
+</svg>

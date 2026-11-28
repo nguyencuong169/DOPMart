@@ -9,7 +9,7 @@ body { background: #fcfaf7; }
 .photo { position: relative; overflow: hidden; width: 100%; aspect-ratio: 1.08; }
 .photo img { position: absolute; inset: 5.5% 9%; width: 82%; height: 89%; object-fit: contain; }
 .details h1 { font-size: clamp(24px,2.55vw,42px); line-height: 1.2; }
-.detail-price { margin-block: 2vw; color: #c83b28; font-size: clamp(24px,2.65vw,42px); font-weight: 700; }
+.detail-price { margin-block: 2vw; color: var(--price); font-size: clamp(24px,2.65vw,42px); font-weight: 700; }
 #stock { color: #347046; }
 .buy-row, .stepper, .sections { display: flex; align-items: center; }
 .buy-row { gap: 12px; margin-block: clamp(20px,3vw,48px); }

@@ -32,7 +32,6 @@ function refresh() {
   get('#more').disabled = quantity >= available;
   get('#buy').disabled = quantity === 0;
   const saved = read('dop-fav', '[]').includes(id);
-  get('#save').textContent = saved ? '♥' : '♡';
   get('#save').setAttribute('aria-pressed', String(saved));
 }
 get('#more').onclick = () => { quantity++; refresh(); };

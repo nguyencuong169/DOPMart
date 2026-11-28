@@ -160,7 +160,7 @@ function renderFavorites() {
     if (card.querySelector('.saved-heart')) continue;
     const heart = document.createElement('button');
     heart.className = 'saved-heart';
-    heart.textContent = '♡';
+    heart.innerHTML = '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/images/ui-icons.svg#heart"/></svg>';
     heart.setAttribute('aria-label', 'Bỏ yêu thích ' + card.querySelector('b').textContent);
     heart.onclick = () => {
       const current = new Set(JSON.parse(localStorage.getItem(favoriteKey) || '[]'));

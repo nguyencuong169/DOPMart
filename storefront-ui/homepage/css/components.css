@@ -131,7 +131,7 @@
 }
 
 .price {
-  color: var(--brand);
+  color: var(--price);
   font-size: 20px;
   font-weight: 800;
 }
@@ -203,3 +203,16 @@ svg {
     box-shadow: none;
   }
 }
+
+.ui-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+.heart[aria-pressed="true"] .ui-icon, #save[aria-pressed="true"] .ui-icon { fill: currentColor; }

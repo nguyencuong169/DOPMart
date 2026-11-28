@@ -29,27 +29,27 @@
 
 /* Keep the catalog frame aligned with the storefront reference. */
 body:has(.catalog) { background: #fcfaf7; }
-.header:has(+ .catalog), .catalog-grid .product { background: var(--surface); }
-.header:has(+ .catalog) .icon, .catalog-grid .heart {
+.header:has(+ :is(.catalog, .detail)), .catalog-grid .product { background: var(--surface); }
+.header:has(+ :is(.catalog, .detail)) .icon, .catalog-grid .heart {
   border: 0;
   box-shadow: none;
   background: transparent;
 }
-.header:has(+ .catalog) #cart { position: relative; display: grid; place-items: center; }
-.header:has(+ .catalog) .cart-count {
+.header:has(+ :is(.catalog, .detail)) #cart { position: relative; display: grid; place-items: center; }
+.header:has(+ :is(.catalog, .detail)) .cart-count {
   position: absolute; top: 0; right: 0; min-width: 18px; min-height: 18px;
   height: 18px; padding: 0 4px; line-height: 18px;
 }
-.header:has(+ .catalog) .is-empty { display: none; }
+.header:has(+ :is(.catalog, .detail)) .is-empty { display: none; }
 .catalog-grid .product { box-shadow: 0 2px 8px #3525140b; border: 1px solid #f0eae2; }
 .catalog-grid .heart { color: var(--ink); }
 .catalog-grid .heart.active { color: var(--brand); }
 .catalog-grid .product img { height: clamp(96px, 10vw, 152px); }
 @media (min-width: 1001px) {
-  .header:has(+ .catalog) .header-inner { min-height: clamp(82px, 7.4vw, 112px); justify-content: space-between; }
-  .header:has(+ .catalog) .search { flex: 1 1 24%; max-width: 29%; box-shadow: none; }
-  .header:has(+ .catalog) .logo { --logo-width: clamp(140px, 13.5vw, 205px); }
-  .header:has(+ .catalog) .nav { gap: clamp(18px, 2.5vw, 40px); font-size: clamp(14px, 1.1vw, 18px); }
+  .header:has(+ :is(.catalog, .detail)) .header-inner { min-height: clamp(82px, 7.4vw, 112px); justify-content: space-between; }
+  .header:has(+ :is(.catalog, .detail)) .search { flex: 1 1 24%; max-width: 29%; box-shadow: none; }
+  .header:has(+ :is(.catalog, .detail)) .logo { --logo-width: clamp(140px, 13.5vw, 205px); }
+  .header:has(+ :is(.catalog, .detail)) .nav { gap: clamp(18px, 2.5vw, 40px); font-size: clamp(14px, 1.1vw, 18px); }
   .catalog { padding-top: 2.5vw; }
   .catalog-grid .product { padding: 1.25vw; }
   .catalog-grid .product img { margin-top: 1.3vw; }

@@ -10,3 +10,9 @@ document.querySelector('#sort').addEventListener('change', event => {
   }
   grid.append(...sorted);
 });
+const query = new URLSearchParams(location.search).get('q');
+if (query) {
+  const search = document.querySelector('.search');
+  search.value = query;
+  search.dispatchEvent(new Event('input'));
+}

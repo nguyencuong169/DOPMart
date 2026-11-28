@@ -48,3 +48,25 @@
   .sidebar .membership small { padding-right: 12px; }
 }
 .membership img { mask-image: radial-gradient(ellipse, black 54%, transparent 77%); }
+
+.address-action { display: grid; place-items: center; padding: 5px; background: transparent; }
+.address-action:first-of-type { margin-left: auto; }
+#addresses .entry { gap: 8px; }
+#addresses .default { width: fit-content; background: #fff1bd; padding: 1px 5px; border-radius: 4px; }
+@media (min-width: 701px) {
+  .welcome { isolation: isolate; }
+  .welcome .mascot { position: absolute; z-index: -1; inset: 0 0 0 auto; margin: 0; height: 100%; width: 36%; object-fit: fill; border-radius: 0; mask-image: linear-gradient(to right, transparent, black 16%); }
+  .welcome > div { max-width: 54%; }
+}
+@media (min-width: 701px) and (max-width: 1050px) {
+  .welcome .mascot { width: 25%; }
+  #addresses .entry { flex-wrap: wrap; }
+  #addresses .entry > div { flex: 1 1 65%; }
+}
+
+.saved-grid article { position: relative; }
+.saved-grid .saved-heart { position: absolute; top: 2px; right: 2px; background: var(--surface); color: var(--ink); font-size: 19px; line-height: 1; }
+@media (min-width: 701px) {
+  .welcome .mascot { mask-image: linear-gradient(to right, transparent 4%, black 21%); }
+  .sidebar h1::after { content: ''; display: inline-block; width: 24px; height: 22px; margin-left: 8px; background: linear-gradient(125deg,transparent 44%,#ffa31a 45% 59%,transparent 60%) left top / 10px 11px,linear-gradient(155deg,transparent 42%,#ffa31a 43% 58%,transparent 59%) right center / 14px 9px,linear-gradient(12deg,transparent 39%,#ffa31a 40% 59%,transparent 60%) right bottom / 13px 6px; background-repeat: no-repeat; }
+}

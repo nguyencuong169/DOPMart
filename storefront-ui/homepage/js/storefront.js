@@ -10,3 +10,5 @@ const linkedCategory = categoryIds.get(new URLSearchParams(location.search).get(
 if (linkedCategory !== undefined) {
   document.querySelector('.category[data-category="' + linkedCategory + '"]').click();
 }
+
+if (location.hash === '#favorites') favorites();

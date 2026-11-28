@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sản phẩm | DOP Mart</title>
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/pages/home.css" />
+    <link rel="stylesheet" href="css/pages/catalog.css" />
+  </head>
+
+  <body>
+    <div class="announcement">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M2 4h12v12H2z M14 8h4l4 5v3h-8" />
+        <circle cx="6" cy="17" r="2" />
+        <circle cx="18" cy="17" r="2" />
+      </svg>
+      Freeship cho đơn từ 199.000đ | Ưu đãi mới mỗi tuần | ⚡ Giao nhanh 2 giờ tại Hà Nội
+    </div>
+    <header class="header">
+      <div class="wrap header-inner">
+        <button class="icon menu" aria-label="Danh mục">&#9776;</button
+        ><a class="logo logo--accented" href="index.html" aria-label="DOP Mart – Trang chủ"
+          ><svg aria-hidden="true" viewBox="0 0 315 67">
+            <use href="assets/images/dop-mart.svg#accented" /></svg
+        ></a>
+        <nav class="nav">
+          <a href="#products">Sản phẩm</a><a href="#categories">Danh mục</a
+          ><a href="deals.html#combos">Combo</a><a href="deals.html">Ưu đãi</a
+          ><a href="index.html#hero">Về DOP Mart</a>
+        </nav>
+        <input
+          class="search"
+          type="search"
+          placeholder="Tìm sản phẩm, danh mục, thương hiệu…"
+          aria-label="Tìm sản phẩm"
+        />
+        <div class="actions">
+          <button class="icon mobile-search" aria-label="Tìm kiếm">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="10" cy="10" r="7" />
+              <path d="m15 15 7 7" />
+            </svg></button
+          ><button class="icon" id="favorites" aria-label="Yêu thích">♡</button
+          ><a class="icon account" href="login.html" aria-label="Tài khoản"
+            ><svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="7" r="4" />
+              <path d="M3 21q0-8 9-8t9 8z" /></svg></a
+          ><button class="icon" id="cart" aria-label="Giỏ hàng">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="19" cy="21" r="1" />
+              <path d="M2 3h3l3 13h11l3-10H6" /></svg
+            ><sup class="cart-count">0</sup>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="wrap catalog">
+      <div class="catalog-heading">
+        <h1>Sản phẩm</h1>
+        <label>Sắp xếp <select id="sort"><option value="default">Mặc định</option><option value="asc">Giá tăng dần</option><option value="desc">Giá giảm dần</option></select></label>
+      </div>
+      <div class="catalog-layout">
+        <aside id="categories" aria-label="Danh mục sản phẩm">
+          <h2>Danh mục</h2>
+          <div class="filters"><button type="button" id="all">Tất cả</button>
+          <button type="button" class="category" data-category="0">Đồ uống</button>
+<button type="button" class="category" data-category="1">Snack</button>
+<button type="button" class="category" data-category="2">Mì &amp; Ăn liền</button>
+<button type="button" class="category" data-category="3">Bánh kẹo</button>
+<button type="button" class="category" data-category="4">Đồ khô</button></div>
+        </aside>
+        <section id="products"><h2>Danh sách sản phẩm</h2>
+          <div class="catalog-grid"><article
+              class="product card"
+              data-id="cola"
+              data-category="0"
+              data-name="Coca-Cola 330ml"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Coca-Cola 330ml">♡</button
+              ><img src="assets/images/cola.webp" alt="Coca-Cola 330ml" />
+              <h3>Coca-Cola 330ml</h3>
+              <div class="product-bottom">
+                <span class="price">15.000đ</span
+                ><button class="add" aria-label="Thêm Coca-Cola 330ml vào giỏ">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2 3h3l3 13h11l3-10H6" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="lays"
+              data-category="1"
+              data-name="Lay’s Classic 52g"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Lay’s Classic 52g">♡</button
+              ><img src="assets/images/lays.webp" alt="Lay’s Classic 52g" />
+              <h3>Lay’s Classic 52g</h3>
+              <div class="product-bottom">
+                <span class="price">18.000đ</span
+                ><button class="add" aria-label="Thêm Lay’s Classic 52g vào giỏ">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2 3h3l3 13h11l3-10H6" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="choco"
+              data-category="3"
+              data-name="Choco Pie 12 cái"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Choco Pie 12 cái">♡</button
+              ><img src="assets/images/choco.webp" alt="Choco Pie 12 cái" />
+              <h3>Choco Pie 12 cái</h3>
+              <div class="product-bottom">
+                <span class="price">45.000đ</span
+                ><button class="add" aria-label="Thêm Choco Pie 12 cái vào giỏ">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2 3h3l3 13h11l3-10H6" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="water"
+              data-category="0"
+              data-name="Nước suối Lavie 500ml"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Nước suối Lavie 500ml">♡</button
+              ><img src="assets/images/water.webp" alt="Nước suối Lavie 500ml" />
+              <h3>Nước suối Lavie 500ml</h3>
+              <div class="product-bottom">
+                <span class="price">7.000đ</span
+                ><button class="add" aria-label="Thêm Nước suối Lavie 500ml vào giỏ">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2 3h3l3 13h11l3-10H6" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+<article
+              class="product card"
+              data-id="noodle"
+              data-category="2"
+              data-name="Mì Hảo Hảo tôm chua cay"
+            >
+              <span class="badge">Mới</span
+              ><button class="icon heart" aria-label="Yêu thích Mì Hảo Hảo tôm chua cay">♡</button
+              ><img src="assets/images/noodle.webp" alt="Mì Hảo Hảo tôm chua cay" />
+              <h3>Mì Hảo Hảo tôm chua cay</h3>
+              <div class="product-bottom">
+                <span class="price">8.000đ</span
+                ><button class="add" aria-label="Thêm Mì Hảo Hảo tôm chua cay vào giỏ">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2 3h3l3 13h11l3-10H6" />
+                  </svg>
+                </button>
+              </div>
+            </article></div>
+          <p class="empty" hidden>Không tìm thấy sản phẩm.</p>
+        </section>
+      </div>
+    </main>
+    <nav class="mobile-nav">
+      <button onclick="location.href = 'index.html'"><span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 11l10-8 10 8M5 9v12h5v-7h4v7h5V9"/></svg></span>Trang chủ</button
+      ><button onclick="location.hash = 'categories'"><span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg></span>Danh mục</button
+      ><button id="mobile-fav"><span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21l-8-8C-2 6 6 0 12 7c6-7 14-1 8 6z"/></svg></span>Yêu thích</button
+      ><a href="login.html"
+        ><span
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="7" r="4" />
+            <path d="M3 21q0-8 9-8t9 8z" /></svg></span
+        >Tài khoản</a
+      >
+    </nav>
+    <div class="toast" role="status" hidden></div>
+    <script src="js/cart-badge.js"></script><script src="js/storefront.js"></script>
+  <script src="js/catalog-sort.js"></script>
+  </body>
+</html>
